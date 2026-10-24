@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>Smart Studio Presenter Pro — Decoding Indology</title>
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <meta name="theme-color" content="#000000" />
+  <meta name="description" content="Fullscreen 4K Teaching & Presentation Studio for Android Smart Boards & OBS/StreamYard" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/src/styles/tokens.css" />
+  <link rel="stylesheet" href="/src/styles/layers.css" />
+  <link rel="stylesheet" href="/src/styles/toolbar.css" />
+  <link rel="stylesheet" href="/src/styles/board.css" />
+</head>
+<body>
+  <!-- Stage fills whole viewport: 100vw x 100dvh, margin 0, padding 0, background #000 -->
+  <div id="stage" class="stage">
+    <!-- Non-Zen Header (z-index 45) -->
+    <header id="header" class="header">
+      <div class="header-left">
+        <span class="channel-badge" id="channelName">Decoding Indology</span>
+        <span class="file-name" id="fileName">Sample Deck Loaded</span>
+      </div>
+      <div class="header-right">
+        <span class="page-counter" id="pageCounter">1 / 4</span>
+        <button id="btnOpenFile" class="header-btn" title="Open PDF/Deck (O)" aria-label="Open Presentation Deck">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <span class="btn-text">Open Deck</span>
+        </button>
+        <button id="btnBoardHeader" class="header-btn" title="Blackboard Studio (B)" aria-label="Toggle Blackboard Studio">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          <span class="btn-text">Board</span>
+        </button>
+        <button id="btnZenToggle" class="header-btn" title="Fullscreen Zen Mode (F)" aria-label="Toggle Zen Fullscreen">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Layer 10: slideCanvas (rendered PDF / image / board bg) -->
+    <canvas id="slideCanvas" class="canvas-layer z-slide"></canvas>
+
+    <!-- Layer 20: mediaLayer (floating video/image windows) -->
+    <div id="mediaLayer" class="media-layer z-media"></div>
+
+    <!-- Layer 30: annotationCanvas (committed strokes, shapes, typeset text) -->
+    <canvas id="annotationCanvas" class="canvas-layer z-annotation"></canvas>
+
+    <!-- Layer 35: previewCanvas (live in-progress stroke / shape / eraser preview) -->
+    <canvas id="previewCanvas" class="canvas-layer z-preview"></canvas>
+
+    <!-- Layer 40: Chevrons (semi-transparent on-canvas navigation) -->
+    <div id="navLeftZone" class="nav-edge-zone nav-zone-left" title="Previous Slide (← / Swipe Right)">
+      <button id="chevronLeft" class="chevron-btn chevron-left" aria-label="Previous Slide">
+        <svg viewBox="0 0 24 24" width="36" height="36" stroke="currentColor" stroke-width="2.5" fill="none"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+    </div>
+    <div id="navRightZone" class="nav-edge-zone nav-zone-right" title="Next Slide (→ / Swipe Left)">
+      <button id="chevronRight" class="chevron-btn chevron-right" aria-label="Next Slide">
+        <svg viewBox="0 0 24 24" width="36" height="36" stroke="currentColor" stroke-width="2.5" fill="none"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+    </div>
+
+    <!-- Layer 50: Floating Draggable Toolbar & Popovers -->
+    <div id="toolbarContainer" class="toolbar-container z-toolbar">
+      <!-- Toolbar rendered dynamically -->
+    </div>
+
+    <!-- Bottom Dock for Blackboard Studio (z-index 50) -->
+    <div id="boardDock" class="board-dock z-toolbar hidden">
+      <!-- Blackboard controls -->
+    </div>
+
+    <!-- Layer 60: WebOverlay (in-app browser) -->
+    <div id="webOverlay" class="web-overlay z-browser hidden">
+      <!-- In-app browser UI -->
+    </div>
+
+    <!-- Layer 70: Settings Modal / Gemini Chat Panel / Toasts -->
+    <div id="geminiPanel" class="gemini-panel z-modal hidden"></div>
+    <div id="settingsPanel" class="settings-modal z-modal hidden"></div>
+    <div id="toastContainer" class="toast-container z-modal"></div>
+    <div id="undoChipContainer" class="undo-chip-container z-modal"></div>
+
+    <!-- Hidden file inputs -->
+    <input type="file" id="fileInputDeck" accept=".pdf,.pptx,image/jpeg,image/png,image/webp" multiple class="sr-only" />
+    <input type="file" id="fileInputMedia" accept="video/mp4,video/webm,image/jpeg,image/png,image/webp" multiple class="sr-only" />
+  </div>
+
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>

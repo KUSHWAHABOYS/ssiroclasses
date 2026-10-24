@@ -1,0 +1,230 @@
+/* Layer Architecture & Strict z-index stack inside #stage */
+
+.stage {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100dvh;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+  background: #000000;
+  contain: strict;
+}
+
+/* Canvas Layers */
+.canvas-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* z-index mapping */
+.z-slide {
+  z-index: 10;
+  pointer-events: none;
+}
+
+.z-media {
+  z-index: 20;
+}
+
+.z-annotation {
+  z-index: 30;
+}
+
+.z-preview {
+  z-index: 35;
+  pointer-events: none; /* Preview canvas is driven by annotation canvas events */
+}
+
+.z-chevrons {
+  z-index: 40;
+}
+
+.header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 52px;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  z-index: 45;
+  transition: opacity var(--trans-normal), transform var(--trans-normal);
+  pointer-events: auto;
+}
+
+.header.hidden, .stage.zen-mode .header {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-100%);
+}
+
+.header-left, .header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.channel-badge {
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.5px;
+  color: var(--primary-accent);
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  padding: 4px 10px;
+  border-radius: 6px;
+}
+
+.file-name {
+  font-size: 13px;
+  color: var(--text-secondary);
+  max-width: 280px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.page-counter {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.1);
+  padding: 4px 12px;
+  border-radius: 6px;
+}
+
+.header-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-glass);
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  transition: background var(--trans-fast), transform var(--trans-fast);
+}
+
+.header-btn:hover {
+  background: var(--bg-surface-elevated);
+  border-color: rgba(255, 255, 255, 0.25);
+  transform: translateY(-1px);
+}
+
+.header-btn:active {
+  transform: translateY(0);
+}
+
+/* Nav edge zones and Chevrons (z-index 40) */
+.nav-edge-zone {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 8%;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  pointer-events: auto;
+}
+
+.nav-zone-left {
+  left: 0;
+  justify-content: flex-start;
+  padding-left: 12px;
+}
+
+.nav-zone-right {
+  right: 0;
+  justify-content: flex-end;
+  padding-right: 12px;
+}
+
+.chevron-btn {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: rgba(18, 20, 26, 0.4);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.15;
+  transition: opacity var(--trans-normal), transform var(--trans-fast), background var(--trans-fast);
+  cursor: pointer;
+}
+
+.nav-edge-zone:hover .chevron-btn,
+.chevron-btn:focus-visible,
+.chevron-btn.touch-active {
+  opacity: 0.7;
+  background: rgba(18, 20, 26, 0.8);
+  transform: scale(1.08);
+}
+
+.stage.zen-mode .chevron-btn.idle-faded {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Layer Isolation via body / stage class */
+/* Mode: select -> annotation canvases are transparent to pointers, media windows interactive */
+.stage[data-active-tool="select"] #annotationCanvas,
+.stage[data-active-tool="select"] #previewCanvas {
+  pointer-events: none;
+}
+
+.stage[data-active-tool="select"] #mediaLayer {
+  pointer-events: auto;
+}
+
+/* Mode: drawing tools -> annotation canvas captures pointers, mediaLayer is click-through */
+.stage:not([data-active-tool="select"]) #annotationCanvas {
+  pointer-events: auto;
+  cursor: crosshair;
+}
+
+.stage:not([data-active-tool="select"]) #mediaLayer {
+  pointer-events: none;
+}
+
+.stage:not([data-active-tool="select"]) #mediaLayer .media-window {
+  pointer-events: none !important;
+}
+
+/* Media Layer container */
+.media-layer {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* Modals & Overlays (z-indices 50, 60, 70) */
+.z-toolbar {
+  z-index: 50;
+}
+
+.z-browser {
+  z-index: 60;
+}
+
+.z-modal {
+  z-index: 70;
+}
+
+.hidden {
+  display: none !important;
+}

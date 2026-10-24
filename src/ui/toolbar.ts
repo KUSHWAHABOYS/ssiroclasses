@@ -1,0 +1,372 @@
+import { ActiveTool, BoardThemeId, ShapeType, store } from '../state/store';
+import { annotationStore } from '../draw/annotationStore';
+import { popoverManager } from './popovers';
+import { fullscreenService } from '../core/fullscreen';
+
+export class Toolbar {
+  private containerEl!: HTMLElement;
+  private tier1El!: HTMLElement;
+  private tier2El!: HTMLElement;
+  private dragHandleEl!: HTMLElement;
+
+  private idleDimTimer: number = 0;
+  private isDragging = false;
+  private dragStartX = 0;
+  private dragStartY = 0;
+  private initialToolbarLeft = 0;
+  private initialToolbarTop = 0;
+
+  private swatches = [
+    '#f59e0b', // Decoding Indology saffron / gold
+    '#ffffff', // Pure white
+    '#38bdf8', // Sky cyan
+    '#10b981', // Emerald green
+    '#ef4444', // Ruby red
+    '#a855f7'  // Royal purple
+  ];
+
+  init(): void {
+    this.containerEl = document.getElementById('toolbarContainer') as HTMLElement;
+    this.renderToolbar();
+    this.bindDragging();
+    this.bindGhostMode();
+    this.bindEvents();
+    this.bindStore();
+    this.restorePosition();
+  }
+
+  private renderToolbar(): void {
+    this.containerEl.innerHTML = `
+      <!-- Tier 1: Main Drawing & Swatches -->
+      <div class="toolbar-tier toolbar-tier-1" id="toolbarTier1">
+        <div class="drag-handle" id="dragHandle" title="Drag Toolbar (360°)">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="5" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="19" r="1"/></svg>
+        </div>
+
+        <button class="tool-btn active" id="btnToolSelect" data-tool="select" title="Select / Move Media">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 3 7 18 3-7 7-3L3 3z"/></svg>
+          <span class="btn-label">Select</span>
+        </button>
+
+        <button class="tool-btn" id="btnToolPen" data-tool="pen" title="Pen (Tap again for size & opacity)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+          <span class="btn-label">Pen</span>
+        </button>
+
+        <button class="tool-btn" id="btnToolHighlighter" data-tool="highlighter" title="Highlighter (Translucent marker)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 11-6 6v3h3l6-6"/><path d="m22 12-4.6 4.6a2 2 0 0 1-2.8 0l-5.2-5.2a2 2 0 0 1 0-2.8L14 4"/></svg>
+          <span class="btn-label">Marker</span>
+        </button>
+
+        <button class="tool-btn" id="btnToolEraser" data-tool="eraser" title="Eraser (Pixel / Stroke)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/><path d="M22 21H7"/><path d="m5 11 9 9"/></svg>
+          <span class="btn-label">Eraser</span>
+        </button>
+
+        <div class="swatch-group" id="swatchGroup">
+          ${this.swatches
+            .map(
+              (c, i) =>
+                `<div class="color-swatch ${i === 0 ? 'active' : ''}" style="background-color: ${c};" data-color="${c}"></div>`
+            )
+            .join('')}
+        </div>
+
+        <button class="tool-btn" id="btnUndo" title="Undo (Ctrl+Z)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg>
+          <span class="btn-label">Undo</span>
+        </button>
+
+        <button class="tool-btn" id="btnClearAll" title="Clear All Ink">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+          <span class="btn-label">Clear</span>
+        </button>
+
+        <button class="tool-btn" id="btnTierToggle" title="More Tools (+)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v8"/><path d="M8 12h8"/></svg>
+          <span class="btn-label">More</span>
+        </button>
+      </div>
+
+      <!-- Tier 2: Shapes, Arrow, Handwriting, Media, Browser, AI, Board, Settings -->
+      <div class="toolbar-tier toolbar-tier-2 collapsed" id="toolbarTier2">
+        <button class="tool-btn" id="btnToolShape" data-tool="shape" title="Shapes (Box/Circle/Line)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+          <span class="btn-label">Shape</span>
+        </button>
+
+        <button class="tool-btn" id="btnToolArrow" data-tool="arrow" title="Smart Arrow (Point A to B)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          <span class="btn-label">Arrow</span>
+        </button>
+
+        <button class="tool-btn" id="btnToolHandwriting" title="✍ ➔ Aa Handwriting-to-Text">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m18 2 4 4-12 12H6v-4L18 2z"/><path d="M14 6l4 4"/><path d="M4 22h16"/></svg>
+          <span class="btn-label">✍ ➔ Aa</span>
+        </button>
+
+        <button class="tool-btn" id="btnMediaOverlay" title="Add Video / Image Window">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+          <span class="btn-label">Media</span>
+        </button>
+
+        <button class="tool-btn" id="btnBrowserOverlay" title="In-App Browser">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          <span class="btn-label">Browser</span>
+        </button>
+
+        <button class="tool-btn" id="btnGemini" title="Gemini AI Teaching Assistant">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3L12 3z"/></svg>
+          <span class="btn-label">Gemini</span>
+        </button>
+
+        <button class="tool-btn" id="btnBoard" title="Universal Blackboard Studio (B)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          <span class="btn-label">Board</span>
+        </button>
+
+        <button class="tool-btn" id="btnSettings" title="Studio Settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          <span class="btn-label">Settings</span>
+        </button>
+
+        <button class="tool-btn" id="btnFullscreen" title="Fullscreen Zen Mode (F)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+          <span class="btn-label">Zen</span>
+        </button>
+      </div>
+    `;
+
+    this.tier1El = document.getElementById('toolbarTier1')!;
+    this.tier2El = document.getElementById('toolbarTier2')!;
+    this.dragHandleEl = document.getElementById('dragHandle')!;
+  }
+
+  private bindDragging(): void {
+    const handle = this.dragHandleEl;
+
+    handle.addEventListener('pointerdown', (e: PointerEvent) => {
+      this.isDragging = true;
+      handle.setPointerCapture(e.pointerId);
+      this.dragStartX = e.clientX;
+      this.dragStartY = e.clientY;
+
+      const rect = this.containerEl.getBoundingClientRect();
+      this.initialToolbarLeft = rect.left;
+      this.initialToolbarTop = rect.top;
+
+      this.wakeFromGhost();
+    });
+
+    handle.addEventListener('pointermove', (e: PointerEvent) => {
+      if (!this.isDragging) return;
+
+      const dx = e.clientX - this.dragStartX;
+      const dy = e.clientY - this.dragStartY;
+
+      let newLeft = this.initialToolbarLeft + dx;
+      let newTop = this.initialToolbarTop + dy;
+
+      // Clamp to viewport so toolbar is never dragged off-screen
+      const rect = this.containerEl.getBoundingClientRect();
+      const maxLeft = window.innerWidth - rect.width - 8;
+      const maxTop = window.innerHeight - rect.height - 8;
+
+      newLeft = Math.max(8, Math.min(newLeft, maxLeft));
+      newTop = Math.max(8, Math.min(newTop, maxTop));
+
+      this.containerEl.style.left = `${newLeft}px`;
+      this.containerEl.style.top = `${newTop}px`;
+      this.containerEl.style.transform = 'none';
+    });
+
+    handle.addEventListener('pointerup', (e: PointerEvent) => {
+      if (!this.isDragging) return;
+      this.isDragging = false;
+      try {
+        handle.releasePointerCapture(e.pointerId);
+      } catch {}
+
+      // Persist position
+      const rect = this.containerEl.getBoundingClientRect();
+      store.updateSettings({
+        toolbarPos: { x: Math.round(rect.left), y: Math.round(rect.top) }
+      });
+    });
+  }
+
+  private restorePosition(): void {
+    const pos = store.getState().settings.toolbarPos;
+    if (pos) {
+      const maxLeft = window.innerWidth - 300;
+      const maxTop = window.innerHeight - 80;
+      const x = Math.max(8, Math.min(pos.x, maxLeft));
+      const y = Math.max(8, Math.min(pos.y, maxTop));
+
+      this.containerEl.style.left = `${x}px`;
+      this.containerEl.style.top = `${y}px`;
+      this.containerEl.style.transform = 'none';
+    }
+  }
+
+  private bindGhostMode(): void {
+    const resetTimer = () => {
+      this.wakeFromGhost();
+      window.clearTimeout(this.idleDimTimer);
+      const idleSec = store.getState().settings.toolbarIdleSeconds || 4;
+      this.idleDimTimer = window.setTimeout(() => {
+        this.containerEl.classList.add('dimmed');
+      }, idleSec * 1000);
+    };
+
+    // Any interaction with container or window pointer movement
+    this.containerEl.addEventListener('pointerdown', resetTimer, { passive: true });
+    this.containerEl.addEventListener('pointermove', resetTimer, { passive: true });
+    window.addEventListener('keydown', resetTimer, { passive: true });
+
+    resetTimer();
+  }
+
+  private wakeFromGhost(): void {
+    this.containerEl.classList.remove('dimmed');
+  }
+
+  private bindEvents(): void {
+    // Tool buttons
+    const toolBtns = this.containerEl.querySelectorAll<HTMLButtonElement>('[data-tool]');
+    toolBtns.forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const tool = btn.getAttribute('data-tool') as ActiveTool;
+        const currentTool = store.getState().activeTool;
+
+        if (tool === currentTool) {
+          // Centered in-place popover for Pen, Highlighter, Eraser per B5.4
+          if (tool === 'pen') {
+            popoverManager.showPenPopover(btn);
+          } else if (tool === 'highlighter') {
+            popoverManager.showHighlighterPopover(btn);
+          } else if (tool === 'eraser') {
+            popoverManager.showEraserPopover(btn);
+          }
+        } else {
+          popoverManager.close();
+          store.setState({ activeTool: tool });
+        }
+      });
+    });
+
+    // Swatches
+    const swatchEls = this.containerEl.querySelectorAll<HTMLElement>('.color-swatch');
+    swatchEls.forEach((sw) => {
+      sw.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const color = sw.getAttribute('data-color')!;
+        swatchEls.forEach((s) => s.classList.remove('active'));
+        sw.classList.add('active');
+        store.setState({ activeColor: color });
+      });
+    });
+
+    // Undo & Clear All
+    document.getElementById('btnUndo')?.addEventListener('click', () => {
+      annotationStore.undo();
+    });
+
+    document.getElementById('btnClearAll')?.addEventListener('click', () => {
+      annotationStore.clearAll();
+    });
+
+    // Tier 2 toggle
+    document.getElementById('btnTierToggle')?.addEventListener('click', () => {
+      const isExpanded = !store.getState().isTier2Expanded;
+      store.setState({ isTier2Expanded: isExpanded });
+    });
+
+    // Handwriting ✍ ➔ Aa toggle
+    document.getElementById('btnToolHandwriting')?.addEventListener('click', (e) => {
+      const active = !store.getState().isHandwritingEnabled;
+      store.setState({ isHandwritingEnabled: active });
+      const btn = e.currentTarget as HTMLElement;
+      btn.classList.toggle('active', active);
+      window.dispatchEvent(
+        new CustomEvent('app-toast', {
+          detail: {
+            message: active
+              ? 'हस्तलेखन रूपांतरण सक्रिय (Handwriting-to-Text ON)'
+              : 'हस्तलेखन रूपांतरण निष्क्रिय (OFF)'
+          }
+        })
+      );
+    });
+
+    // Media overlay button
+    document.getElementById('btnMediaOverlay')?.addEventListener('click', () => {
+      const fileInput = document.getElementById('fileInputMedia') as HTMLInputElement;
+      fileInput.click();
+    });
+
+    // Browser overlay button
+    document.getElementById('btnBrowserOverlay')?.addEventListener('click', () => {
+      window.dispatchEvent(new CustomEvent('toggle-web-overlay'));
+    });
+
+    // Gemini AI button
+    document.getElementById('btnGemini')?.addEventListener('click', () => {
+      window.dispatchEvent(new CustomEvent('toggle-gemini'));
+    });
+
+    // Board button
+    document.getElementById('btnBoard')?.addEventListener('click', () => {
+      window.dispatchEvent(new CustomEvent('toggle-board'));
+    });
+
+    // Settings button
+    document.getElementById('btnSettings')?.addEventListener('click', () => {
+      window.dispatchEvent(new CustomEvent('toggle-settings'));
+    });
+
+    // Fullscreen button
+    document.getElementById('btnFullscreen')?.addEventListener('click', () => {
+      fullscreenService.toggleZen();
+    });
+  }
+
+  private bindStore(): void {
+    store.subscribe((state, prev) => {
+      // Active tool update
+      if (state.activeTool !== prev.activeTool) {
+        const toolBtns = this.containerEl.querySelectorAll<HTMLButtonElement>('[data-tool]');
+        toolBtns.forEach((btn) => {
+          const t = btn.getAttribute('data-tool');
+          btn.classList.toggle('active', t === state.activeTool);
+        });
+      }
+
+      // Tier 2 collapse / expand
+      if (state.isTier2Expanded !== prev.isTier2Expanded) {
+        this.tier2El.classList.toggle('collapsed', !state.isTier2Expanded);
+      }
+
+      // Zen mode toolbar visibility
+      if (state.isZen !== prev.isZen || state.isToolbarVisibleInZen !== prev.isToolbarVisibleInZen) {
+        if (state.isZen && !state.isToolbarVisibleInZen) {
+          this.containerEl.classList.add('zen-hidden');
+        } else {
+          this.containerEl.classList.remove('zen-hidden');
+        }
+      }
+
+      // Board mode: hide floating toolbar because bottom dock is used
+      if (state.isBoardMode !== prev.isBoardMode) {
+        if (state.isBoardMode) {
+          this.containerEl.classList.add('hidden');
+        } else {
+          this.containerEl.classList.remove('hidden');
+        }
+      }
+    });
+  }
+}
+
+export const toolbar = new Toolbar();

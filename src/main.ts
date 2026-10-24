@@ -1,0 +1,133 @@
+import { layerManager } from './core/layers';
+import { slideView } from './presenter/slideView';
+import { drawingEngine } from './draw/engine';
+import { toolbar } from './ui/toolbar';
+import { blackboardStudio } from './board/board';
+import { overlayManager } from './media/overlayManager';
+import { handwritingCoordinator } from './draw/handwriting';
+import { webOverlay } from './browser/webOverlay';
+import { geminiPanel } from './ui/geminiPanel';
+import { settingsPanel } from './ui/settingsPanel';
+import { voiceCommandService } from './voice/commands';
+import { shortcutManager } from './core/shortcuts';
+import { inputCoordinator } from './core/input';
+import { navigationController } from './presenter/navigation';
+import { fullscreenService } from './core/fullscreen';
+import { store } from './state/store';
+
+// PWA auto-updater
+if ('serviceWorker' in navigator) {
+  import('virtual:pwa-register')
+    .then(({ registerSW }) => {
+      registerSW({
+        immediate: true,
+        onNeedRefresh() {
+          console.log('New Smart Studio update available.');
+        },
+        onOfflineReady() {
+          console.log('Smart Studio is 100% offline ready.');
+        }
+      });
+    })
+    .catch(() => {});
+}
+
+class SmartStudioApp {
+  init(): void {
+    console.log('🚀 Initializing Smart Studio Presenter Pro (Decoding Indology)...');
+
+    // Initialize core layers and presentation view
+    layerManager.updateDimensions();
+    slideView.init();
+    drawingEngine.init();
+    toolbar.init();
+    blackboardStudio.init();
+    overlayManager.init();
+    handwritingCoordinator.init();
+    webOverlay.init();
+    geminiPanel.init();
+    settingsPanel.init();
+    voiceCommandService.init();
+
+    this.wireGesturesAndShortcuts();
+    this.wireToastSystem();
+
+    console.log('✅ Smart Studio Presenter Pro ready.');
+  }
+
+  private wireGesturesAndShortcuts(): void {
+    // Handwriting grouping hook
+    drawingEngine.onStrokeFinished((stroke) => {
+      handwritingCoordinator.onNewStroke(stroke);
+    });
+
+    // Touch swipe navigation
+    inputCoordinator.onSwipe((detail) => {
+      if (detail.direction === 'right') {
+        navigationController.nextPage();
+      } else {
+        navigationController.prevPage();
+      }
+    });
+
+    // Double-tap anywhere to toggle toolbar visibility in Zen mode
+    inputCoordinator.onDoubleTap(() => {
+      const state = store.getState();
+      if (state.isZen) {
+        store.setState({ isToolbarVisibleInZen: !state.isToolbarVisibleInZen });
+      }
+    });
+
+    // Keyboard shortcuts
+    shortcutManager.register('next', () => navigationController.nextPage());
+    shortcutManager.register('prev', () => navigationController.prevPage());
+    shortcutManager.register('first', () => navigationController.firstPage());
+    shortcutManager.register('last', () => navigationController.lastPage());
+    shortcutManager.register('board', () => blackboardStudio.toggleBoard());
+    shortcutManager.register('openDeck', () => {
+      const fileInput = document.getElementById('fileInputDeck') as HTMLInputElement;
+      fileInput?.click();
+    });
+    shortcutManager.register('closeOverlay', () => {
+      const state = store.getState();
+      if (state.isSettingsOpen) settingsPanel.close();
+      if (state.isGeminiOpen) geminiPanel.close();
+      if (state.isWebOverlayOpen) webOverlay.close();
+      if (state.isBoardMode) blackboardStudio.closeBoard();
+    });
+
+    window.addEventListener('close-all-overlays', () => {
+      settingsPanel.close();
+      geminiPanel.close();
+      webOverlay.close();
+    });
+  }
+
+  private wireToastSystem(): void {
+    const toastContainer = document.getElementById('toastContainer');
+    if (!toastContainer) return;
+
+    window.addEventListener('app-toast', (e: any) => {
+      const { message, isError } = e.detail || {};
+      if (!message) return;
+
+      const toast = document.createElement('div');
+      toast.className = `toast ${isError ? 'toast-error' : 'toast-success'}`;
+      toast.textContent = message;
+
+      toastContainer.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(-10px)';
+        toast.style.transition = 'all 200ms ease-out';
+        setTimeout(() => toast.remove(), 250);
+      }, 3500);
+    });
+  }
+}
+
+// Start application
+const app = new SmartStudioApp();
+window.addEventListener('DOMContentLoaded', () => {
+  app.init();
+});
