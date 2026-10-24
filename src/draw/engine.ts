@@ -2,6 +2,9 @@ import { ActiveTool, store } from '../state/store';
 import { layerManager } from '../core/layers';
 import { annotationStore, Point, Stroke } from './annotationStore';
 import { shortcutManager } from '../core/shortcuts';
+// INKFIX: Smart Ink and Voice Write managers
+import { smartInkController } from '../smartink/smartInkController';
+import { voiceWriteManager } from '../voice/writeCommand';
 
 export class DrawingEngine {
   private isDrawing = false;
@@ -109,6 +112,10 @@ export class DrawingEngine {
     this.startPoint = point;
     this.currentStrokePoints = [point];
 
+    // INKFIX: Notify smartInkController and record position for voice write
+    smartInkController.onPointerDown(e);
+    voiceWriteManager.recordPointerPosition(coords);
+
     const wf = this.getWidthScaleFactor();
 
     if (state.activeTool === 'eraser') {
@@ -150,7 +157,13 @@ export class DrawingEngine {
       this.updateEraserCursor(0, 0, 0, false);
     }
 
-    if (!this.isDrawing || e.pointerId !== this.activePointerId) return;
+    // INKFIX: Mouse jitter rejection (C1): ignore unpressed mouse moves
+    if (!this.isDrawing) {
+      if (e.pointerType === 'mouse' && e.buttons === 0) return;
+      return;
+    }
+
+    if (e.pointerId !== this.activePointerId) return;
 
     // Use coalesced events for smooth curves on 4K boards
     const events: PointerEvent[] = (e.getCoalescedEvents ? e.getCoalescedEvents() : [e]) as PointerEvent[];
@@ -168,6 +181,15 @@ export class DrawingEngine {
     }
 
     const currentPt = this.currentStrokePoints[this.currentStrokePoints.length - 1];
+
+    // INKFIX: Hold-to-snap and pointer movement tracking for Smart Ink
+    if (this.currentStrokePoints.length >= 2) {
+      const prevPt = this.currentStrokePoints[this.currentStrokePoints.length - 2];
+      const dx = currentPt.x - prevPt.x;
+      const dy = currentPt.y - prevPt.y;
+      smartInkController.onPointerMove(dx, dy);
+      smartInkController.onPointerStill(currentPt, e.clientX, e.clientY);
+    }
 
     if (state.activeTool === 'eraser') {
       this.executeEraser(currentPt);
@@ -275,8 +297,8 @@ export class DrawingEngine {
 
         annotationStore.addStroke(stroke);
 
-        // Notify handwriting group collector if enabled
-        if (state.isHandwritingEnabled && state.activeTool === 'pen') {
+        // INKFIX: Notify Smart Ink / handwriting group collector for pen or highlighter
+        if (state.isHandwritingEnabled && (state.activeTool === 'pen' || state.activeTool === 'highlighter')) {
           for (const cb of this.onStrokeFinishedCallbacks) {
             cb(stroke);
           }

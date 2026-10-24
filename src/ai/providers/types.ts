@@ -1,6 +1,6 @@
 // MIC-AI: Multi-Provider AI Common Interfaces and Task Types
 
-export type AITask = 'chat' | 'slide-explain' | 'handwriting-ocr' | 'text-fix' | 'quick-answer';
+export type AITask = 'chat' | 'slide-explain' | 'handwriting-ocr' | 'text-fix' | 'quick-answer' | 'shape-classify';
 
 export type AICapability = 'text' | 'vision' | 'streaming';
 

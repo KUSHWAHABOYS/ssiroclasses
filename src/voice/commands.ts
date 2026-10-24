@@ -8,6 +8,8 @@ import { fullscreenService } from '../core/fullscreen';
 import { zoomController } from '../zoom/zoomController';
 // MIC-AI: Import micController
 import { micController } from './micController';
+// INKFIX: Import voiceWriteManager
+import { voiceWriteManager } from './writeCommand';
 
 export class VoiceCommandService {
   private recognition: any = null;
@@ -155,6 +157,13 @@ export class VoiceCommandService {
   private processVoiceCommand(phrase: string): void {
     // Only process if mic is actively listening
     if (micController.getState() !== 'listening') return;
+
+    // INKFIX: Check Voice Write Command first (Part G: raw spoken command is never toasted or stored)
+    const writeCmd = voiceWriteManager.parseCommand(phrase);
+    if (writeCmd) {
+      voiceWriteManager.execute(writeCmd);
+      return;
+    }
 
     console.log('Voice Command received:', phrase);
 

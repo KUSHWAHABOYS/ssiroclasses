@@ -4,6 +4,8 @@ import { keyVault } from '../ai/keyVault';
 import { slideView } from '../presenter/slideView';
 // MIC-AI: Multi-Provider AI Settings Panel
 import { aiSettingsPanel } from '../ai/aiSettingsPanel';
+// INKFIX: Smart Ink Settings & Inspector Panel
+import { smartInkSettingsSection } from './smartInkSettingsSection';
 
 export class SettingsPanel {
   private modalEl!: HTMLElement;
@@ -12,6 +14,14 @@ export class SettingsPanel {
     this.modalEl = document.getElementById('settingsPanel') as HTMLElement;
     this.render();
     this.bindEvents();
+
+    // INKFIX: Re-render when inspector or sub-panels toggle
+    window.addEventListener('re-render-settings', () => {
+      if (store.getState().isSettingsOpen) {
+        this.render();
+        this.bindEvents();
+      }
+    });
   }
 
   private render(): void {
@@ -85,6 +95,9 @@ export class SettingsPanel {
 
         <!-- MIC-AI: Multi-Provider AI Section -->
         ${aiSettingsPanel.renderSection()}
+
+        <!-- INKFIX: Smart Ink & Inspector Section -->
+        ${smartInkSettingsSection.renderSection()}
 
         <!-- SSIRO-UPDATE: Welcome Screen Section -->
         <div class="settings-section">
@@ -286,7 +299,7 @@ export class SettingsPanel {
           <div style="display:flex; align-items:center; gap:16px; padding:8px 0;">
             <img src="/assets/brand/logo.svg" alt="SSIRO Logo" style="width:64px; height:64px; border-radius:14px; box-shadow:var(--shadow-lg);" />
             <div>
-              <div style="font-weight:700; font-size:15px; color:#ffffff;">Smart Studio Presenter Pro v1.2.0</div>
+              <div style="font-weight:700; font-size:15px; color:#ffffff;">Smart Studio Presenter Pro v1.3.0</div>
               <div style="font-size:12px; color:var(--primary-accent); margin-top:2px;">SSIRO Classes Edition</div>
               <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">4K Teaching & Presentation Studio • 100% Client-Side</div>
             </div>
@@ -421,6 +434,9 @@ export class SettingsPanel {
 
     // MIC-AI: Multi-Provider AI Settings Events
     aiSettingsPanel.bindEvents(this.modalEl);
+
+    // INKFIX: Smart Ink Settings & Inspector Events
+    smartInkSettingsSection.bindEvents(this.modalEl);
 
     // MIC-AI: Voice & Microphone Settings Events
     const voiceLang = this.modalEl.querySelector('#settingVoiceLang') as HTMLSelectElement;

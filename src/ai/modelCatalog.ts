@@ -66,6 +66,18 @@ export const TASK_PROFILES: Record<AITask, TaskProfile> = {
       balanced: 'fast',
       fast: 'fast'
     }
+  },
+  // INKFIX: Shape classification task profile per Part D3
+  'shape-classify': {
+    task: 'shape-classify',
+    requiresVision: true,
+    defaultTemperature: 0.0,
+    defaultMaxTokens: 40,
+    tierForQuality: {
+      best: 'fast',
+      balanced: 'fast',
+      fast: 'fast'
+    }
   }
 };
 

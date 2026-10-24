@@ -135,6 +135,72 @@ Smart Studio Presenter Pro features a zero-server, multi-provider AI router (`sr
 
 ---
 
+## ✍️ Smart Ink & Auto-Beautify (स्मार्ट इंक)
+
+Smart Ink automatically beautifies hand-drawn strokes into crisp geometric shapes, straight underlines, and typeset font words while guaranteeing that ink never vanishes.
+
+### 1. Invariant Guarantee: Ink Must Never Disappear
+Every conversion runs as an atomic transaction (`InkTransaction`):
+- **Raw Ink Preservation**: Raw pen strokes remain stored in `annotationStore` marked as `replacedBy: conversionId` (hidden from rendering). They are never deleted when a conversion runs.
+- **Invariant Assertion**: An automatic conversion can never reduce the visible ink on a slide to nothing. If an AI call fails, network drops, or JSON is invalid, the transaction instantly rolls back and restores the raw strokes exactly as drawn.
+- **Undo Support**: Raw strokes stay stored for 60 seconds (or until slide change), allowing immediate restoration via the Undo chip or Undo button.
+
+### 2. Underline & Straight Lines That Actually Work
+- **Underline vs. Shirorekha Classifier**:
+  - **Shirorekha**: If 2 or more glyph strokes hang below the horizontal stroke, it remains part of the Hindi/Devanagari text word.
+  - **Underline**: If glyph strokes or typeset text sit above the stroke (or the stroke is in the lowest 20% of the handwriting group), it becomes a straight line.
+- **Baseline Snapping**:
+  - Automatically aligns to the baseline $+ 0.12 \times \text{lineHeight}$ of the text line directly above.
+  - Snaps outward to word boundaries (or full text width if spanning $\ge 80\%$).
+- **Tolerant Straightening**: RMS lateral deviation $\le 6\%$ (for flat strokes) or $\le 8\%$; automatically snaps to horizontal or vertical within 12° of axis.
+
+### 3. Tolerant Shapes Recognition & Hold-to-Snap
+- **Supported Shapes**: Box (rectangle), Square, Circle, Ellipse, Triangle, Diamond, and Arrow (single and multi-stroke).
+- **Normal Sensitivity Thresholds**: Closed shape closure gap up to 25%, circle residual $\le 9\%$, rectangle angles $90^\circ \pm 18^\circ$, square ratio 0.88–1.12, RDP $\epsilon = 3.5\%$, corner merge $<10\%$.
+- **Hold-to-Snap**: Holding the pointer/stylus still for 0.5s before lifting triggers an instant snap on release with a visible countdown ring.
+- **AI Second Opinion**: Uncertain strokes (confidence 0.35–0.6) are sent to the `shape-classify` task for classification while local geometry fitters generate the clean 4K result.
+
+### 4. Speed & Speculative Recognition
+- **Low-Latency Defaults**: Shape delay 0.45s, highlighter snap 0.25s, text delay 1.0s (whole line mode: 2.0s).
+- **Speculative Recognition**: Starts background AI OCR after 500ms of idle time in parallel with the remaining wait. If the educator continues writing, the request is aborted immediately; if they pause, the clean text appears instantly.
+
+### 5. Word-Level Typeset Text
+- Strokes are clustered into words using horizontal gap thresholds ($0.35 \times \text{glyphHeight}$) and Devanagari shirorekha connectivity. Lone marks and matras wait for complete words.
+- Generates editable typeset word objects in Noto Sans Devanagari (Hindi) and Inter (English).
+- Sentence continuation appends words to the right on the same baseline with previous words sent as context.
+
+### 6. Smart Ink Inspector
+- Located under **Settings → Smart Ink & Auto-Beautify → Smart Ink Inspector**.
+- Provides a local in-memory log of the last 20 conversion decisions (time, tool, class scores, AI latency, result, reason).
+- Includes a **"📋 कॉपी रिपोर्ट (Copy Report)"** button to export diagnostic logs with zero personal speech or key data.
+
+---
+
+## 🎙️ Voice Write Commands ("बोलकर यहाँ लिखें")
+
+With the microphone activated, educators can dictate text directly onto the slide with intelligent anchor positioning.
+
+### Command Grammar
+Supports natural Hindi and English phrasing:
+| Spoken Phrase | Placement & Meaning |
+| :--- | :--- |
+| **"आगे विष्णु लिखो"** / **"write Vishnu at the arrow"** | Places *विष्णु* beyond the head of the most recent arrow. |
+| **"तीर के ऊपर / नीचे / पीछे ... लिखो"** | Places text above, below, or at the tail of that arrow. |
+| **"इसके अंदर ... लिखो"** / **"बीच में ... लिखो"** | Centers text inside the most recent circle, box, or shape. |
+| **"यहाँ ... लिखो"** / **"here ..."** | Places text at the last pen, touch, or cursor position. |
+| **"शीर्षक ... लिखो"** / **"title ..."** | Top-center placement in large title typography (7% stage height). |
+| **"इस लाइन के नीचे ... लिखो"** | Below the most recent straight line or underline. |
+| **"पिछला मिटाओ"** / **"delete last text"** | Removes the most recently written voice text object. |
+| **"बड़ा करो"** / **"छोटा करो"** | Resizes the last written text by $\pm 25\%$. |
+
+### Privacy & Polish Guarantees
+- **Zero Spoken Transcripts**: The raw spoken command is **never** displayed on screen, never toasted, and never stored. Only the intended typeset text object appears.
+- **Visual Feedback**: The newly placed text appears with a 150ms fade and a soft 600ms highlight ring so the teacher sees exactly where it went.
+- **Educational Glossary**: Normalizes common Indian history, science, and math terms (e.g., *Vishnu* $\rightarrow$ *विष्णु*, *Aryabhata* $\rightarrow$ *आर्यभट्ट*, *Harappa* $\rightarrow$ *हड़प्पा*).
+- **Slide Boundaries & Collision**: Keeps text strictly within the 3840×2160 slide boundaries with automatic nudging to avoid overlapping existing ink.
+
+---
+
 ## 🚀 Getting Started
 
 ### 1. Run Locally (Development)

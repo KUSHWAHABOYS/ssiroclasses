@@ -71,7 +71,7 @@ class Store {
       activeTool: 'select',
       activeShape: 'rect',
       activeColor: '#f59e0b', // Decoding Indology saffron gold
-      isHandwritingEnabled: false,
+      isHandwritingEnabled: settings.smartInkEnabled ?? true, // INKFIX: Enable Smart Ink by default
       isTier2Expanded: false,
       isToolbarVisibleInZen: true,
       isWebOverlayOpen: false,

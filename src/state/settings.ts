@@ -47,6 +47,17 @@ export interface AppSettings {
   aiWarnAfterCalls: number;
   aiTaskPinnedModels: Record<string, { provider: string; model: string }>;
   aiProviderPriority: string[];
+  // INKFIX: Smart Ink settings
+  smartInkEnabled: boolean;
+  smartInkSensitivity: 'normal' | 'strict' | 'forgiving';
+  smartInkHoldToSnap: boolean;
+  smartInkShapeDelayMs: number;
+  smartInkHighlighterDelayMs: number;
+  smartInkTextDelayMs: number;
+  smartInkConvertText: 'word' | 'line' | 'off';
+  smartInkAiAssist: boolean;
+  smartInkCorrectionLevel: 'light' | 'none' | 'full';
+  smartInkInspectorEnabled: boolean;
 }
 
 const SETTINGS_STORAGE_KEY = 'smart_studio_settings_v1';
@@ -99,7 +110,18 @@ export const DEFAULT_SETTINGS: AppSettings = {
   aiQualityPreference: 'balanced',
   aiWarnAfterCalls: 0,
   aiTaskPinnedModels: {},
-  aiProviderPriority: ['gemini', 'anthropic', 'openai', 'grok', 'groq', 'deepseek', 'mistral', 'openrouter', 'perplexity', 'custom']
+  aiProviderPriority: ['gemini', 'anthropic', 'openai', 'grok', 'groq', 'deepseek', 'mistral', 'openrouter', 'perplexity', 'custom'],
+  // INKFIX: Smart Ink defaults
+  smartInkEnabled: true,
+  smartInkSensitivity: 'normal',
+  smartInkHoldToSnap: true,
+  smartInkShapeDelayMs: 450,
+  smartInkHighlighterDelayMs: 250,
+  smartInkTextDelayMs: 1000,
+  smartInkConvertText: 'word',
+  smartInkAiAssist: true,
+  smartInkCorrectionLevel: 'light',
+  smartInkInspectorEnabled: false
 };
 
 export function loadSettings(): AppSettings {

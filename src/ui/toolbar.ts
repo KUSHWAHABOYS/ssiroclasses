@@ -423,7 +423,11 @@ export class Toolbar {
     });
 
     // Handwriting ✍ ➔ Aa toggle
-    document.getElementById('btnToolHandwriting')?.addEventListener('click', (e) => {
+    const btnHw = document.getElementById('btnToolHandwriting');
+    if (btnHw) {
+      btnHw.classList.toggle('active', store.getState().isHandwritingEnabled); // INKFIX: initialize state
+    }
+    btnHw?.addEventListener('click', (e) => {
       const active = !store.getState().isHandwritingEnabled;
       store.setState({ isHandwritingEnabled: active });
       const btn = e.currentTarget as HTMLElement;

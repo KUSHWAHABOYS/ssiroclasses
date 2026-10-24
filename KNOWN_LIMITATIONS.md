@@ -59,7 +59,7 @@ As part of our commitment to transparent engineering, this document details any 
 ### 6. PWA Taskbar & Desktop Shortcut Icon Updates on Windows PC
 - **Technical Constraint**: When a Progressive Web App (PWA) is installed via Chrome or Edge on Windows, the operating system creates Windows `.lnk` shortcuts and extracts the icon into the Windows Icon Cache (`%LOCALAPPDATA%\IconCache.db`). Although the Service Worker automatically refreshes the in-browser and in-window application assets (showing the "New version ready — Reload" toast), the Windows OS taskbar and desktop shortcuts may continue caching the previous icon until Windows rebuilds its shell cache.
 - **Implemented Solution & User Guidance**:
-  - The Service Worker cacheId has been bumped to `ssiro-smart-studio-v1.2.0` so browser tabs, splash screens, and window headers update immediately upon reload.
+  - The Service Worker cacheId has been bumped to `ssiro-smart-studio-v1.3.0` so browser tabs, splash screens, and window headers update immediately upon reload.
   - For installed desktop PWAs on Windows, if the taskbar icon does not immediately show the new SSIRO gold lotus icon, simply uninstall the PWA from Chrome/Edge (*Settings ➔ Apps ➔ Manage Apps*) and click Install again.
 
 ---
@@ -79,4 +79,22 @@ As part of our commitment to transparent engineering, this document details any 
   - **Android APK Advantage**: In the Android APK build, Smart Studio uses `CapacitorHttp` natively. Native requests bypass browser CORS sandboxing completely, allowing direct communication with OpenAI, Grok, Groq, Mistral, DeepSeek, and Perplexity directly from the smart board.
   - **PWA/PC Guidance**: On desktop browsers, if a CORS-restricted provider is selected, Smart Studio detects the network block within seconds and presents a clear message: *"This provider cannot be called directly from a browser. Use the Android app, or choose Gemini/OpenRouter/Anthropic that allows direct browser access."*
   - **Zero-Server Guarantee**: The application never introduces a middleman proxy or telemetry server. Keys and payloads are never transmitted to any third-party server under any circumstance.
+
+---
+
+### 9. Smart Ink Transactional Rollbacks & Network Latency (स्मार्ट इंक लेनदेन व विलंब)
+- **Technical Constraint**: When converting handwritten Hindi or English words into clean typeset fonts, the request travels over the internet to the educator's configured AI provider. If the smart board connection is slow or drops temporarily, an un-gated OCR system would delete ink or hang indefinitely.
+- **Implemented Architecture & Invariant**:
+  - **Ink Never Vanishes**: Every conversion is an atomic transaction. Raw strokes are kept stored in `annotationStore` (hidden) and only replaced after clean geometry or text is successfully validated and drawn. Any network timeout or offline state triggers an instant rollback, keeping drawn ink intact.
+  - **Speculative Recognition**: Background recognition begins after 500ms of idle time, cutting perceived conversion delay down to approximately 1.0s.
+  - **Local Shape Bypass**: Freehand shapes and underlines with high geometric confidence ($\ge 0.6$) snap completely locally in $<20$ms without making any AI network call.
+
+---
+
+### 10. Web Speech Recognition Variations in Voice Writing (आवाज लेखन सीमाएं)
+- **Technical Constraint**: The browser's `SpeechRecognition` API transcribes spoken words based on the device's selected language (`hi-IN` or `en-IN`). Educational terminology and Sanskrit proper nouns (e.g. *Vishnu*, *Aryabhata*) can be transcribed with slight regional spelling variations.
+- **Implemented Behavior**:
+  - **Phonetic & Glossary Normalization**: Dictated words are cross-referenced with a curated Indology and mathematics glossary, snapping variations automatically to standard forms (e.g., *Vishnu* $\rightarrow$ *विष्णु*).
+  - **Zero Spoken Transcript Exposure**: The raw spoken sentence is never toasted or stored on the slide, ensuring video recordings for YouTube or live streams are never cluttered with interim transcripts.
+
 

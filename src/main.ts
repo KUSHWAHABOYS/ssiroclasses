@@ -22,6 +22,9 @@ import { magnifierLensController } from './zoom/magnifierLens';
 import { zoomGestureHandler } from './zoom/zoomGestures';
 // MIC-AI: Import micController
 import { micController } from './voice/micController';
+// INKFIX: Import Smart Ink and Voice Write controllers
+import { smartInkController } from './smartink/smartInkController';
+import { voiceWriteManager } from './voice/writeCommand';
 
 // PWA auto-updater
 if ('serviceWorker' in navigator) {
@@ -85,6 +88,9 @@ class SmartStudioApp {
     voiceCommandService.init();
     // MIC-AI: Initialize central mic controller (default: off)
     micController.init();
+    // INKFIX: Initialize Smart Ink and Voice Write controllers
+    smartInkController.init();
+    voiceWriteManager.init();
 
     // SSIRO-UPDATE: Initialize Zoom and Magnifier subsystems
     zoomController.init();
@@ -113,9 +119,9 @@ class SmartStudioApp {
   }
 
   private wireGesturesAndShortcuts(): void {
-    // Handwriting grouping hook
+    // INKFIX: Smart Ink auto-beautification hook
     drawingEngine.onStrokeFinished((stroke) => {
-      handwritingCoordinator.onNewStroke(stroke);
+      smartInkController.onNewStroke(stroke);
     });
 
     // Touch swipe navigation

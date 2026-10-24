@@ -2,7 +2,64 @@
 
 All notable changes to "Smart Studio Presenter Pro" are documented in this file.
 
-## [1.2.0] — 2026-10-24 (Mic Control & Multi-Provider AI Router)
+## [1.3.0] — 2026-10-24 (Smart Ink Repair, Transactional Conversions & Voice Write Commands)
+
+### ✍️ Part B — Transactional Conversions & Invariant Guarantees (Ink Never Vanishes)
+- **Transactional Conversion Engine (`src/smartink/transaction.ts`)**:
+  - Replaced destructive stroke deletion (`eraseStrokeAt(point, 2000)`) with synchronous transactional commit/rollback (`InkTransaction`).
+  - Raw strokes remain stored in `annotationStore` marked with `replacedBy: conversionId` (hidden from rendering) and are never deleted when a conversion runs.
+  - Development-time invariant assertion: visible ink count on slide is never reduced by an automatic conversion.
+  - Instant rollback on error, network drop, timeout, or slide change: raw ink remains visible exactly as drawn.
+  - Preserved raw strokes are retained for 60 seconds to support Undo chip and normal Undo button.
+
+### 📏 Part C — Underline vs. Shirorekha & Baseline Snapping
+- **Classifier Rule (`src/smartink/classifier.ts`)**:
+  - Differentiates Hindi/Devanagari *shirorekha* from underlines: a stroke with 2+ glyph strokes hanging below remains part of the text word. A stroke below text or in the bottom 20% of handwriting is classified as an underline.
+  - Tolerant line straightening: RMS lateral deviation $\le 6\%$ (for aspect ratio $\ge 8:1$) or max deviation $\le 8\%$, min length $\max(60\text{px}, 4\% \text{stage width})$.
+  - Snapping to horizontal/vertical within 12° of axis.
+- **Baseline Alignment (`src/smartink/textLines.ts`)**:
+  - Snaps hand-drawn underline directly under text line at baseline $+ 0.12 \times \text{lineHeight}$.
+  - Snaps outward to word boundaries (or full text width if spanning $\ge 80\%$).
+
+### 🔷 Part D — Tolerant Shape Fitting & Hold-to-Snap
+- **Forgiving Geometric Fitter (`src/smartink/shapeFitter.ts`)**:
+  - Implemented Normal sensitivity thresholds: closed shape closure gap up to 25%, circle residual $\le 9\%$, rectangle angles $90^\circ \pm 18^\circ$, square ratio 0.88–1.12, RDP $\epsilon = 3.5\%$, corner merge $<10\%$.
+  - Fits boxes, squares, circles, ellipses, triangles, diamonds, and arrows (single and multi-stroke).
+  - Minimum size guard (diagonal $\ge 40$px) to avoid snapping tiny marks or text characters.
+- **Hold-to-Snap Gesture**:
+  - Holding stylus/pointer still for 0.5s before lifting triggers instant snap on release with a countdown ring indicator.
+- **AI-Assisted Shape Recognition (Second Opinion)**:
+  - Added router task profile `shape-classify` (vision, fast tier, temp 0, max 40 tokens) for uncertain strokes ($0.35 \le \text{confidence} < 0.6$). Local geometry fitter is forced to the AI's label.
+
+### ⚡ Part E — Speed & Speculative Recognition
+- **Optimized Delay Profiles**:
+  - Shape snap delay: 0.45s (default; range 0.2–1.5s).
+  - Highlighter snap delay: 0.25s.
+  - Text conversion delay: 1.0s (default; range 0.6–3.0s; whole line mode: 2.0s).
+- **Speculative Recognition**:
+  - Starts background AI OCR after 500ms of idle time. If the user draws again, the request is cancelled via `AbortController`. If user pauses, result appears immediately without compound network delay.
+
+### 📝 Part F — Word-Level Conversion (Never Letter-by-Letter)
+- **Word Clustering (`src/smartink/wordGrouper.ts`)**:
+  - Clusters strokes into words using horizontal gap threshold $0.35 \times \text{glyphHeight}$ and Devanagari shirorekha connectivity.
+  - Conversion unit is a complete word object with individual bounding box and typography (Noto Sans Devanagari for Hindi, Inter for English).
+  - Isolated single strokes and matras wait for neighbouring glyphs and remain untouched if incomplete.
+  - Sentence continuation appends words to the right on the same baseline with previous text context sent to AI.
+
+### 🎙️ Part G — Voice Write Commands ("Write This Here")
+- **Grammar & Anchor Resolution (`src/voice/writeCommand.ts`)**:
+  - Parses Hindi & English write commands: *"आगे विष्णु लिखो"*, *"तीर के आगे लिखो"*, *"इसके अंदर लिखो"*, *"बीच में लिखो"*, *"यहाँ लिखो"*, *"शीर्षक लिखो"*, *"पिछला मिटाओ"*, *"बड़ा/छोटा करो"*.
+  - Anchors text relative to most recent arrow (at head with directional offset), shape center, line below, or pointer position.
+  - Privacy guarantee: raw spoken command is never toasted or stored; only the resulting text object appears with a 600ms highlight ring.
+  - Normalizes educational vocabulary (e.g. *Vishnu* $\rightarrow$ *विष्णु*, *Aryabhata* $\rightarrow$ *आर्यभट्ट*).
+
+### 🔬 Part H — Diagnostics, Inspector & Test Suite
+- **Smart Ink Inspector (`src/smartink/inspector.ts` & `src/ui/smartInkSettingsSection.ts`)**:
+  - Settings $\rightarrow$ Smart Ink Inspector toggle with real-time log of the last 20 conversion decisions (tool, features, class scores, branch taken, AI call latency, result, reason).
+  - "📋 कॉपी रिपोर्ट (Copy Report)" button for easy diagnostic export.
+- **Automated Test Suite (`tests/smartink.test.ts`)**:
+  - 25 automated unit and integration tests covering underline straightening, ink invariant, mouse jitter rejection, shapes recognition accuracy ($\ge 95\%$), word-level grouping, and voice write commands. All 25 tests passing.
+
 
 ### 🎙️ Part B — Microphone Control & Privacy Protection
 - **Root Cause Fix & Complete Audit**:

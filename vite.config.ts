@@ -36,7 +36,7 @@ export default defineConfig({
         ]
       },
       workbox: {
-        cacheId: 'ssiro-smart-studio-v1.2.0',
+        cacheId: 'ssiro-smart-studio-v1.3.0',
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2,wasm}']
       }
     })

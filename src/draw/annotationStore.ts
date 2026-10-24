@@ -8,6 +8,9 @@ export interface Point {
   time?: number;
 }
 
+// INKFIX: Extended shape types for Smart Ink auto-beautified shapes
+export type ExtendedShapeType = ShapeType | 'square' | 'ellipse' | 'triangle' | 'diamond' | 'double_arrow' | 'arrow';
+
 export interface Stroke {
   id: string;
   tool: ActiveTool;
@@ -15,12 +18,18 @@ export interface Stroke {
   size: number;
   alpha: number;
   points: Point[];
-  shapeType?: ShapeType;
+  shapeType?: ShapeType | ExtendedShapeType;
   startPoint?: Point;
   endPoint?: Point;
   text?: string;
   box?: { x: number; y: number; width: number; height: number };
   timestamp: number;
+  // INKFIX: Transactional Smart Ink fields
+  replacedBy?: string; // If set, this stroke is hidden because replaced by a conversion
+  conversionId?: string; // If set, this stroke is the replacement resulting from a conversion
+  extraPoints?: Point[]; // Polygon vertices for triangle, diamond, quad
+  isUnderline?: boolean;
+  attachedTextId?: string;
 }
 
 export class AnnotationStore {
@@ -29,7 +38,53 @@ export class AnnotationStore {
   private perSlideStorage: Map<number, Stroke[]> = new Map();
 
   getStrokes(): Stroke[] {
+    return this.strokes.filter((s) => !s.replacedBy);
+  }
+
+  getAllStrokes(): Stroke[] {
     return this.strokes;
+  }
+
+  // INKFIX: Commit a conversion transaction
+  commitConversion(conversionId: string, rawStrokeIds: string[], replacements: Stroke[]): void {
+    this.saveSnapshot();
+    const rawSet = new Set(rawStrokeIds);
+    for (const s of this.strokes) {
+      if (rawSet.has(s.id)) {
+        s.replacedBy = conversionId;
+      }
+    }
+    this.strokes.push(...replacements);
+    this.redrawAll();
+  }
+
+  // INKFIX: Roll back conversion (e.g. on error or invariant failure)
+  rollbackConversion(conversionId: string): void {
+    this.strokes = this.strokes.filter((s) => s.conversionId !== conversionId);
+    for (const s of this.strokes) {
+      if (s.replacedBy === conversionId) {
+        delete s.replacedBy;
+      }
+    }
+    this.redrawAll();
+  }
+
+  // INKFIX: Undo conversion (restores raw strokes and records undo snapshot)
+  undoConversion(conversionId: string): boolean {
+    this.saveSnapshot();
+    this.rollbackConversion(conversionId);
+    return true;
+  }
+
+  // INKFIX: Purge hidden raw strokes older than maxAgeMs (default 60s per Part B4)
+  purgeOldReplacedStrokes(maxAgeMs = 60000): void {
+    const now = Date.now();
+    this.strokes = this.strokes.filter((s) => {
+      if (s.replacedBy && now - s.timestamp > maxAgeMs) {
+        return false;
+      }
+      return true;
+    });
   }
 
   addStroke(stroke: Stroke): void {
@@ -39,7 +94,8 @@ export class AnnotationStore {
   }
 
   saveSnapshot(): void {
-    this.undoStack.push([...this.strokes]);
+    // Deep clone array of strokes for undo stack
+    this.undoStack.push(this.strokes.map((s) => ({ ...s, points: [...s.points] })));
     if (this.undoStack.length > 30) {
       this.undoStack.shift();
     }
@@ -122,8 +178,12 @@ export class AnnotationStore {
   eraseStrokeAt(point: Point, radius: number): boolean {
     const rSq = radius * radius;
     const initialLen = this.strokes.length;
+    const erasedConversionIds = new Set<string>();
 
     this.strokes = this.strokes.filter((stroke) => {
+      // INKFIX: Hidden raw strokes (replacedBy) are not directly hit-tested
+      if (stroke.replacedBy) return true;
+
       // If shape or text, test bounding box
       if (stroke.box) {
         const b = stroke.box;
@@ -132,19 +192,40 @@ export class AnnotationStore {
           point.x <= b.x + b.width + radius &&
           point.y >= b.y - radius &&
           point.y <= b.y + b.height + radius;
-        return !inside;
+        if (inside) {
+          if (stroke.conversionId) erasedConversionIds.add(stroke.conversionId);
+          return false;
+        }
+        return true;
       }
 
-      // Freehand stroke: test points
-      for (const p of stroke.points) {
-        const dx = p.x - point.x;
-        const dy = p.y - point.y;
-        if (dx * dx + dy * dy <= rSq) {
-          return false; // Erase this stroke
+      // Freehand stroke or line: test points or endpoints
+      if (stroke.points && stroke.points.length > 0) {
+        for (const p of stroke.points) {
+          const dx = p.x - point.x;
+          const dy = p.y - point.y;
+          if (dx * dx + dy * dy <= rSq) {
+            if (stroke.conversionId) erasedConversionIds.add(stroke.conversionId);
+            return false; // Erase this stroke
+          }
+        }
+      } else if (stroke.startPoint && stroke.endPoint) {
+        const dx1 = stroke.startPoint.x - point.x;
+        const dy1 = stroke.startPoint.y - point.y;
+        const dx2 = stroke.endPoint.x - point.x;
+        const dy2 = stroke.endPoint.y - point.y;
+        if (dx1 * dx1 + dy1 * dy1 <= rSq || dx2 * dx2 + dy2 * dy2 <= rSq) {
+          if (stroke.conversionId) erasedConversionIds.add(stroke.conversionId);
+          return false;
         }
       }
       return true;
     });
+
+    // INKFIX: Clean up any hidden raw strokes associated with erased conversions
+    if (erasedConversionIds.size > 0) {
+      this.strokes = this.strokes.filter((s) => !s.replacedBy || !erasedConversionIds.has(s.replacedBy));
+    }
 
     if (this.strokes.length !== initialLen) {
       this.redrawAll();
@@ -156,8 +237,10 @@ export class AnnotationStore {
   redrawAll(): void {
     this.clearCanvases();
     const ctx = layerManager.annotationCtx;
+    if (!ctx) return;
 
     for (const stroke of this.strokes) {
+      if (stroke.replacedBy) continue; // INKFIX: Hidden because replaced by a transaction
       this.renderStroke(ctx, stroke);
     }
   }
@@ -188,7 +271,7 @@ export class AnnotationStore {
       ctx.lineWidth = stroke.size;
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
-      this.drawShape(ctx, stroke.shapeType, stroke.startPoint!, stroke.endPoint!);
+      this.drawShape(ctx, stroke.shapeType, stroke.startPoint!, stroke.endPoint!, stroke.extraPoints);
       ctx.restore();
       return;
     }
@@ -247,15 +330,21 @@ export class AnnotationStore {
     ctx.restore();
   }
 
-  drawShape(ctx: CanvasRenderingContext2D, type: ShapeType, start: Point, end: Point): void {
+  drawShape(
+    ctx: CanvasRenderingContext2D,
+    type: ShapeType | ExtendedShapeType,
+    start: Point,
+    end: Point,
+    extraPoints?: Point[]
+  ): void {
     ctx.beginPath();
-    if (type === 'rect') {
+    if (type === 'rect' || type === 'square') {
       const x = Math.min(start.x, end.x);
       const y = Math.min(start.y, end.y);
       const w = Math.abs(end.x - start.x);
       const h = Math.abs(end.y - start.y);
       ctx.strokeRect(x, y, w, h);
-    } else if (type === 'circle') {
+    } else if (type === 'circle' || type === 'ellipse') {
       const rx = Math.abs(end.x - start.x) / 2;
       const ry = Math.abs(end.y - start.y) / 2;
       const cx = (start.x + end.x) / 2;
@@ -266,10 +355,38 @@ export class AnnotationStore {
       ctx.moveTo(start.x, start.y);
       ctx.lineTo(end.x, end.y);
       ctx.stroke();
+    } else if (type === 'triangle') {
+      if (extraPoints && extraPoints.length >= 3) {
+        ctx.moveTo(extraPoints[0].x, extraPoints[0].y);
+        ctx.lineTo(extraPoints[1].x, extraPoints[1].y);
+        ctx.lineTo(extraPoints[2].x, extraPoints[2].y);
+        ctx.closePath();
+        ctx.stroke();
+      } else {
+        const topX = (start.x + end.x) / 2;
+        const topY = Math.min(start.y, end.y);
+        const botY = Math.max(start.y, end.y);
+        ctx.moveTo(topX, topY);
+        ctx.lineTo(start.x, botY);
+        ctx.lineTo(end.x, botY);
+        ctx.closePath();
+        ctx.stroke();
+      }
+    } else if (type === 'diamond') {
+      const cx = (start.x + end.x) / 2;
+      const cy = (start.y + end.y) / 2;
+      ctx.moveTo(cx, start.y);
+      ctx.lineTo(end.x, cy);
+      ctx.lineTo(cx, end.y);
+      ctx.lineTo(start.x, cy);
+      ctx.closePath();
+      ctx.stroke();
+    } else if (type === 'double_arrow') {
+      this.drawArrow(ctx, start, end, ctx.lineWidth, true);
     }
   }
 
-  drawArrow(ctx: CanvasRenderingContext2D, start: Point, end: Point, strokeWidth: number): void {
+  drawArrow(ctx: CanvasRenderingContext2D, start: Point, end: Point, strokeWidth: number, doubleEnded = false): void {
     const headLength = Math.max(14, strokeWidth * 4);
     const angle = Math.atan2(end.y - start.y, end.x - start.x);
     const arrowAngle = (28 * Math.PI) / 180; // 28 degrees per B6.5
@@ -287,7 +404,7 @@ export class AnnotationStore {
     ctx.lineTo(end.x, end.y);
     ctx.stroke();
 
-    // Triangular filled head
+    // Triangular filled head at end
     ctx.beginPath();
     ctx.moveTo(end.x, end.y);
     ctx.lineTo(
@@ -300,6 +417,23 @@ export class AnnotationStore {
     );
     ctx.closePath();
     ctx.fill();
+
+    // If double-ended, also draw head at start
+    if (doubleEnded) {
+      const backAngle = angle + Math.PI;
+      ctx.beginPath();
+      ctx.moveTo(start.x, start.y);
+      ctx.lineTo(
+        start.x - headLength * Math.cos(backAngle - arrowAngle),
+        start.y - headLength * Math.sin(backAngle - arrowAngle)
+      );
+      ctx.lineTo(
+        start.x - headLength * Math.cos(backAngle + arrowAngle),
+        start.y - headLength * Math.sin(backAngle + arrowAngle)
+      );
+      ctx.closePath();
+      ctx.fill();
+    }
 
     ctx.restore();
   }
