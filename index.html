@@ -220,8 +220,110 @@
         animation: none !important;
         opacity: 1 !important;
         transform: none !important;
-        width: 80% !important;
+    /* MIC-AI: Microphone control styles */
+    .mic-btn {
+      position: relative;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .mic-icon-wrapper {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .mic-btn.mic-off,
+    .btn-mic-header.mic-off {
+      color: var(--text-muted, #94a3b8);
+      background: rgba(255, 255, 255, 0.06);
+    }
+    .mic-btn.mic-listening,
+    .btn-mic-header.mic-listening {
+      background: #ef4444 !important;
+      color: #ffffff !important;
+      box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+      animation: micPulse 1.8s infinite;
+    }
+    .mic-btn.mic-error,
+    .btn-mic-header.mic-error {
+      background: rgba(245, 158, 11, 0.25) !important;
+      color: #f59e0b !important;
+      border: 1px solid #f59e0b !important;
+    }
+    .mic-error-badge {
+      display: none;
+      position: absolute;
+      top: -4px;
+      right: -6px;
+      background: #f59e0b;
+      color: #000;
+      font-size: 10px;
+      font-weight: 900;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      line-height: 14px;
+      text-align: center;
+    }
+    .mic-error .mic-error-badge {
+      display: inline-block;
+    }
+    /* Ghost mode: when toolbar dims, mic button stays at least 60% visible while listening */
+    .toolbar-container.dimmed .mic-btn.mic-listening {
+      opacity: 0.8 !important;
+    }
+    @keyframes micPulse {
+      0% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
       }
+      70% {
+        box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+      }
+      100% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+      }
+    }
+    /* 3-bar input-level meter animation */
+    .mic-level-meter {
+      display: none;
+      align-items: flex-end;
+      gap: 2px;
+      height: 10px;
+      margin-top: 2px;
+    }
+    .mic-listening .mic-level-meter {
+      display: inline-flex;
+    }
+    .mic-bar {
+      width: 3px;
+      background: #ffffff;
+      border-radius: 1px;
+      transition: height 0.15s ease;
+      height: 3px;
+    }
+    .mic-btn[data-level="1"] .bar-1 { height: 6px; }
+    .mic-btn[data-level="2"] .bar-1 { height: 8px; }
+    .mic-btn[data-level="2"] .bar-2 { height: 6px; }
+    .mic-btn[data-level="3"] .bar-1 { height: 10px; }
+    .mic-btn[data-level="3"] .bar-2 { height: 8px; }
+    .mic-btn[data-level="3"] .bar-3 { height: 10px; }
+    /* Zen mode mic dot: 12px pulsing red dot at top-right of stage */
+    .mic-zen-dot {
+      position: fixed;
+      top: 16px;
+      right: 20px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #ef4444;
+      box-shadow: 0 0 8px #ef4444;
+      animation: micDotPulse 1.4s infinite;
+      z-index: 99;
+      pointer-events: none;
+    }
+    @keyframes micDotPulse {
+      0% { transform: scale(0.9); opacity: 0.8; }
+      50% { transform: scale(1.2); opacity: 1; box-shadow: 0 0 14px #ef4444; }
+      100% { transform: scale(0.9); opacity: 0.8; }
     }
   </style>
 </head>
@@ -249,11 +351,31 @@
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
           <span class="btn-text">Board</span>
         </button>
+        <!-- MIC-AI: Top Bar Mirror Mic Button -->
+        <button id="btnMicHeader" class="header-btn btn-mic-header mic-off" title="माइक चालू / बंद (Mic ON/OFF • V)" aria-label="Toggle Microphone">
+          <svg class="mic-icon-off" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="1" y1="1" x2="23" y2="23"/>
+            <path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"/>
+            <path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"/>
+            <line x1="12" y1="19" x2="12" y2="23"/>
+            <line x1="8" y1="23" x2="16" y2="23"/>
+          </svg>
+          <svg class="mic-icon-on" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;">
+            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+            <line x1="12" y1="19" x2="12" y2="23"/>
+            <line x1="8" y1="23" x2="16" y2="23"/>
+          </svg>
+          <span class="btn-text">Mic</span>
+        </button>
         <button id="btnZenToggle" class="header-btn" title="Fullscreen Zen Mode (F)" aria-label="Toggle Zen Fullscreen">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
         </button>
       </div>
     </header>
+
+    <!-- MIC-AI: Discreet red mic-on dot (12px, top-right of stage) visible even in Zen mode -->
+    <div id="micZenDot" class="mic-zen-dot hidden" title="माइक सक्रिय है (Microphone LIVE)"></div>
 
     <!-- SSIRO-UPDATE: #zoomRoot container for whole-slide zoom & panning -->
     <div id="zoomRoot" class="zoom-root">

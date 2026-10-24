@@ -4,6 +4,8 @@ import { popoverManager } from './popovers';
 import { fullscreenService } from '../core/fullscreen';
 // SSIRO-UPDATE: Magnifier Popover
 import { zoomPopoverManager } from '../zoom/zoomPopover';
+// MIC-AI: Import micController
+import { micController, MicState } from '../voice/micController';
 
 export class Toolbar {
   private containerEl!: HTMLElement;
@@ -88,6 +90,32 @@ export class Toolbar {
         <button class="tool-btn" id="btnClearAll" title="Clear All Ink">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
           <span class="btn-label">Clear</span>
+        </button>
+
+        <!-- MIC-AI: 🎙 Mic Button in Tier 1 (Always visible, 56px touch target / 64px on 4K) -->
+        <button class="tool-btn mic-btn mic-off" id="btnToolMic" title="माइक चालू / बंद (Mic ON/OFF • V • दबाकर रखें मेनू के लिए)">
+          <div class="mic-icon-wrapper">
+            <svg class="mic-icon-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="1" y1="1" x2="23" y2="23"/>
+              <path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"/>
+              <path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"/>
+              <line x1="12" y1="19" x2="12" y2="23"/>
+              <line x1="8" y1="23" x2="16" y2="23"/>
+            </svg>
+            <svg class="mic-icon-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;">
+              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+              <line x1="12" y1="19" x2="12" y2="23"/>
+              <line x1="8" y1="23" x2="16" y2="23"/>
+            </svg>
+            <span class="mic-error-badge">!</span>
+          </div>
+          <div class="mic-level-meter" id="micLevelMeter">
+            <span class="mic-bar bar-1"></span>
+            <span class="mic-bar bar-2"></span>
+            <span class="mic-bar bar-3"></span>
+          </div>
+          <span class="btn-label">माइक / Mic</span>
         </button>
 
         <button class="tool-btn" id="btnTierToggle" title="More Tools (+)">
@@ -294,6 +322,99 @@ export class Toolbar {
     document.getElementById('btnClearAll')?.addEventListener('click', () => {
       annotationStore.clearAll();
     });
+
+    // MIC-AI: Wire Mic button and top-bar mirror button
+    const btnMic = document.getElementById('btnToolMic');
+    const btnMicHeader = document.getElementById('btnMicHeader');
+    const micZenDot = document.getElementById('micZenDot');
+    let pressTimer: number | null = null;
+    let didLongPress = false;
+
+    const handleMicPointerDown = (e: PointerEvent) => {
+      const s = store.getState().settings;
+      didLongPress = false;
+
+      if (s.pushToTalk) {
+        micController.handlePushToTalkDown();
+      } else {
+        pressTimer = window.setTimeout(() => {
+          didLongPress = true;
+          if (btnMic) popoverManager.showMicPopover(btnMic);
+        }, 500);
+      }
+    };
+
+    const handleMicPointerUp = (e: PointerEvent) => {
+      if (pressTimer !== null) {
+        clearTimeout(pressTimer);
+        pressTimer = null;
+      }
+      const s = store.getState().settings;
+      if (s.pushToTalk) {
+        micController.handlePushToTalkUp();
+      } else if (!didLongPress) {
+        micController.toggle();
+      }
+    };
+
+    btnMic?.addEventListener('pointerdown', handleMicPointerDown);
+    btnMic?.addEventListener('pointerup', handleMicPointerUp);
+    btnMic?.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      if (btnMic) popoverManager.showMicPopover(btnMic);
+    });
+
+    btnMicHeader?.addEventListener('click', () => {
+      micController.toggle();
+    });
+
+    // Sync UI with Mic state
+    const syncMicUI = (state: MicState) => {
+      const isListening = state === 'listening';
+
+      // Toolbar button
+      if (btnMic) {
+        btnMic.classList.remove('mic-off', 'mic-listening', 'mic-error');
+        btnMic.classList.add(`mic-${state}`);
+
+        const iconOff = btnMic.querySelector('.mic-icon-off') as HTMLElement;
+        const iconOn = btnMic.querySelector('.mic-icon-on') as HTMLElement;
+        if (iconOff) iconOff.style.display = isListening ? 'none' : 'block';
+        if (iconOn) iconOn.style.display = isListening ? 'block' : 'none';
+      }
+
+      // Top bar mirror button
+      if (btnMicHeader) {
+        btnMicHeader.classList.remove('mic-off', 'mic-listening', 'mic-error');
+        btnMicHeader.classList.add(`mic-${state}`);
+
+        const hIconOff = btnMicHeader.querySelector('.mic-icon-off') as HTMLElement;
+        const hIconOn = btnMicHeader.querySelector('.mic-icon-on') as HTMLElement;
+        if (hIconOff) hIconOff.style.display = isListening ? 'none' : 'block';
+        if (hIconOn) hIconOn.style.display = isListening ? 'block' : 'none';
+      }
+
+      // Zen red indicator dot
+      if (micZenDot) {
+        const showInZen = store.getState().settings.showMicDotInZen !== false;
+        if (isListening && showInZen) {
+          micZenDot.classList.remove('hidden');
+        } else {
+          micZenDot.classList.add('hidden');
+        }
+      }
+    };
+
+    micController.onStateChange(syncMicUI);
+
+    // Sync live input level bars
+    micController.onLevelChange((level) => {
+      if (btnMic) {
+        btnMic.setAttribute('data-level', String(level));
+      }
+    });
+
+    syncMicUI(micController.getState());
 
     // Tier 2 toggle
     document.getElementById('btnTierToggle')?.addEventListener('click', () => {

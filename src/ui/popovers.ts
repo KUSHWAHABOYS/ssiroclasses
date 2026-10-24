@@ -1,4 +1,6 @@
 import { store } from '../state/store';
+// MIC-AI: Import micController
+import { micController } from '../voice/micController';
 
 export class PopoverManager {
   private activePopover: HTMLElement | null = null;
@@ -173,6 +175,77 @@ export class PopoverManager {
       btnStroke.classList.add('active');
       btnPixel.classList.remove('active');
       store.setState({ eraserMode: 'stroke' });
+      this.resetIdleTimer();
+    });
+
+    this.bindOutsideAndIdle(popover, anchorEl);
+  }
+
+  // MIC-AI: Mic settings and status popover on long-press or second tap
+  showMicPopover(anchorEl: HTMLElement): void {
+    this.close();
+    const settings = store.getState().settings;
+    const isListening = micController.getState() === 'listening';
+
+    const popover = document.createElement('div');
+    popover.className = 'popover mic-popover';
+    popover.style.minWidth = '240px';
+    popover.innerHTML = `
+      <div class="popover-header">
+        <span>🎙️ माइक मेनू (Mic Menu)</span>
+      </div>
+      <div class="popover-row" style="justify-content: space-between; align-items: center; margin-bottom: 8px;">
+        <span style="font-size: 13px; font-weight: 600;">स्थिति / Status</span>
+        <button id="popoverToggleMic" class="header-btn" style="padding: 4px 10px; font-size: 12px; background: ${isListening ? '#ef4444' : '#333'}; color: #fff;">
+          ${isListening ? 'माइक चालू (ON)' : 'माइक बंद (OFF)'}
+        </button>
+      </div>
+      <div class="popover-row" style="flex-direction: column; align-items: stretch; gap: 4px; margin-bottom: 8px;">
+        <span style="font-size: 12px; color: var(--text-muted);">भाषा (Language)</span>
+        <select id="popoverVoiceLang" class="header-btn" style="background:#111; font-size: 12px; padding: 4px 8px;">
+          <option value="hi-IN" ${settings.voiceLang === 'hi-IN' ? 'selected' : ''}>हिंदी (Hindi - hi-IN)</option>
+          <option value="en-IN" ${settings.voiceLang === 'en-IN' ? 'selected' : ''}>English (India - en-IN)</option>
+        </select>
+      </div>
+      <div class="popover-row" style="flex-direction: column; align-items: stretch; gap: 4px; margin-bottom: 8px;">
+        <span style="font-size: 12px; color: var(--text-muted);">स्वतः बंद (Auto-off after)</span>
+        <select id="popoverMicAutoOff" class="header-btn" style="background:#111; font-size: 12px; padding: 4px 8px;">
+          <option value="0" ${settings.micAutoOffMinutes === 0 ? 'selected' : ''}>कभी नहीं (Off / Never)</option>
+          <option value="5" ${settings.micAutoOffMinutes === 5 ? 'selected' : ''}>5 मिनट (5 minutes)</option>
+          <option value="10" ${settings.micAutoOffMinutes === 10 ? 'selected' : ''}>10 मिनट (10 minutes - Default)</option>
+          <option value="30" ${settings.micAutoOffMinutes === 30 ? 'selected' : ''}>30 मिनट (30 minutes)</option>
+        </select>
+      </div>
+      <div class="popover-row" style="justify-content: space-between; align-items: center;">
+        <span style="font-size: 12px; color: var(--text-muted);">पुश-टू-टॉक (Push-to-talk)</span>
+        <input type="checkbox" id="popoverPushToTalk" ${settings.pushToTalk ? 'checked' : ''} style="accent-color: var(--primary-accent); width: 16px; height: 16px;" />
+      </div>
+    `;
+
+    this.positionPopover(popover, anchorEl);
+    document.body.appendChild(popover);
+    this.activePopover = popover;
+
+    popover.querySelector('#popoverToggleMic')?.addEventListener('click', () => {
+      micController.toggle();
+      this.close();
+    });
+
+    const langSelect = popover.querySelector('#popoverVoiceLang') as HTMLSelectElement;
+    langSelect?.addEventListener('change', () => {
+      store.updateSettings({ voiceLang: langSelect.value as any });
+      this.resetIdleTimer();
+    });
+
+    const autoOffSelect = popover.querySelector('#popoverMicAutoOff') as HTMLSelectElement;
+    autoOffSelect?.addEventListener('change', () => {
+      store.updateSettings({ micAutoOffMinutes: Number(autoOffSelect.value) });
+      this.resetIdleTimer();
+    });
+
+    const pttCheck = popover.querySelector('#popoverPushToTalk') as HTMLInputElement;
+    pttCheck?.addEventListener('change', () => {
+      store.updateSettings({ pushToTalk: pttCheck.checked });
       this.resetIdleTimer();
     });
 

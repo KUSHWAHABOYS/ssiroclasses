@@ -1,11 +1,16 @@
+// MIC-AI: Multi-Provider Key Vault with AES-GCM 256-bit non-extractable CryptoKey in IndexedDB
 const VAULT_DB = 'SmartStudioVaultDB';
 const VAULT_STORE = 'crypto_keys';
+const MULTI_VAULT_KEY = 'smart_studio_multi_vault';
+const LEGACY_GEMINI_KEY = 'gemini_encrypted_vault';
 
-interface StoredEncryptedPayload {
+export interface StoredEncryptedPayload {
   iv: number[];
   ciphertext: number[];
   last4: string;
 }
+
+type MultiVaultStore = Record<string, StoredEncryptedPayload>;
 
 async function getVaultDB(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
@@ -23,6 +28,7 @@ async function getVaultDB(): Promise<IDBDatabase> {
 
 export class KeyVault {
   private cachedKey: CryptoKey | null = null;
+  private migrated = false;
 
   private async getOrCreateCryptoKey(): Promise<CryptoKey> {
     if (this.cachedKey) return this.cachedKey;
@@ -47,7 +53,7 @@ export class KeyVault {
         name: 'AES-GCM',
         length: 256
       },
-      false, // extractable: false per B10.2
+      false, // non-extractable per B10.2 / C4
       ['encrypt', 'decrypt']
     );
 
@@ -63,7 +69,43 @@ export class KeyVault {
     return newKey;
   }
 
-  async storeApiKey(rawKey: string): Promise<string> {
+  // MIC-AI: Auto-migrate legacy Gemini key into multi-vault
+  private checkMigration(): void {
+    if (this.migrated) return;
+    this.migrated = true;
+    try {
+      const legacyRaw = localStorage.getItem(LEGACY_GEMINI_KEY);
+      if (legacyRaw) {
+        const multiStore = this.getMultiStore();
+        if (!multiStore['gemini']) {
+          const payload: StoredEncryptedPayload = JSON.parse(legacyRaw);
+          multiStore['gemini'] = payload;
+          localStorage.setItem(MULTI_VAULT_KEY, JSON.stringify(multiStore));
+        }
+      }
+    } catch (e) {
+      console.warn('KeyVault migration notice:', e);
+    }
+  }
+
+  private getMultiStore(): MultiVaultStore {
+    try {
+      const raw = localStorage.getItem(MULTI_VAULT_KEY);
+      return raw ? JSON.parse(raw) : {};
+    } catch {
+      return {};
+    }
+  }
+
+  private saveMultiStore(store: MultiVaultStore): void {
+    localStorage.setItem(MULTI_VAULT_KEY, JSON.stringify(store));
+  }
+
+  /**
+   * Stores an API key for any provider (AES-GCM encrypted)
+   */
+  async storeKey(providerId: string, rawKey: string): Promise<string> {
+    this.checkMigration();
     const trimmed = rawKey.trim();
     if (!trimmed) throw new Error('API Key cannot be empty');
 
@@ -87,18 +129,29 @@ export class KeyVault {
       last4
     };
 
-    localStorage.setItem('gemini_encrypted_vault', JSON.stringify(payload));
+    const store = this.getMultiStore();
+    store[providerId] = payload;
+    this.saveMultiStore(store);
+
+    // Keep legacy key slot updated if gemini
+    if (providerId === 'gemini') {
+      localStorage.setItem(LEGACY_GEMINI_KEY, JSON.stringify(payload));
+    }
+
     return `••••••••${last4}`;
   }
 
-  async getApiKey(): Promise<string | null> {
+  /**
+   * Decrypts in memory only for the request
+   */
+  async getKey(providerId: string = 'gemini'): Promise<string | null> {
+    this.checkMigration();
     try {
-      const raw = localStorage.getItem('gemini_encrypted_vault');
-      if (!raw) return null;
+      const store = this.getMultiStore();
+      const payload = store[providerId];
+      if (!payload) return null;
 
-      const payload: StoredEncryptedPayload = JSON.parse(raw);
       const cryptoKey = await this.getOrCreateCryptoKey();
-
       const iv = new Uint8Array(payload.iv);
       const ciphertext = new Uint8Array(payload.ciphertext);
 
@@ -113,28 +166,59 @@ export class KeyVault {
 
       return new TextDecoder().decode(decrypted);
     } catch (err) {
-      console.error('Failed to decrypt API key from vault:', err);
+      console.error(`Failed to decrypt API key for provider ${providerId}:`, err);
       return null;
     }
   }
 
-  getMaskedKey(): string | null {
+  getMaskedKey(providerId: string = 'gemini'): string | null {
+    this.checkMigration();
     try {
-      const raw = localStorage.getItem('gemini_encrypted_vault');
-      if (!raw) return null;
-      const payload: StoredEncryptedPayload = JSON.parse(raw);
+      const store = this.getMultiStore();
+      const payload = store[providerId];
+      if (!payload) return null;
       return `••••••••${payload.last4 || '••••'}`;
     } catch {
       return null;
     }
   }
 
-  hasKey(): boolean {
-    return !!localStorage.getItem('gemini_encrypted_vault');
+  hasKey(providerId: string = 'gemini'): boolean {
+    this.checkMigration();
+    const store = this.getMultiStore();
+    return !!store[providerId];
   }
 
-  deleteKey(): void {
-    localStorage.removeItem('gemini_encrypted_vault');
+  hasAnyKey(): boolean {
+    this.checkMigration();
+    const store = this.getMultiStore();
+    return Object.keys(store).length > 0;
+  }
+
+  getAllConfiguredProviders(): string[] {
+    this.checkMigration();
+    const store = this.getMultiStore();
+    return Object.keys(store);
+  }
+
+  deleteKey(providerId: string = 'gemini'): void {
+    this.checkMigration();
+    const store = this.getMultiStore();
+    delete store[providerId];
+    this.saveMultiStore(store);
+
+    if (providerId === 'gemini') {
+      localStorage.removeItem(LEGACY_GEMINI_KEY);
+    }
+  }
+
+  // --- Legacy Compatibility Methods ---
+  async storeApiKey(rawKey: string): Promise<string> {
+    return this.storeKey('gemini', rawKey);
+  }
+
+  async getApiKey(): Promise<string | null> {
+    return this.getKey('gemini');
   }
 }
 

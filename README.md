@@ -47,14 +47,91 @@
    - Replaces handwriting with crisp typography using bundled Devanagari (*Noto Sans Devanagari*) or Latin (*Inter*) fonts.
    - 3-second floating "Undo Conversion" chip restores original strokes.
 
-8. **Google Gemini AI Assistant & AES-GCM Key Vault**:
-   - 256-bit AES-GCM encryption with unextractable `CryptoKey` in IndexedDB.
-   - API key is never stored in plaintext and masked as `••••••••XXXX`.
-   - Direct HTTPS requests to Google's official API endpoint (zero third-party proxy).
+8. **Multi-Provider AI Assistant & Key Vault**:
+   - Universal `aiRouter` supports Google Gemini, Anthropic Claude, OpenAI, xAI Grok, Groq, Mistral, DeepSeek, OpenRouter, Perplexity, and Custom endpoints.
+   - 256-bit AES-GCM encryption with non-extractable `CryptoKey` in IndexedDB.
+   - Keys are decrypted in memory only during active requests, masked as `••••••••XXXX`, and never sent to any server other than the provider's official base URL.
+   - Quality tiers (Best, Balanced, Fast) and automatic best-model selection for each task (Chat, Slide Explain, Smart Ink OCR).
    - "Explain Slide with Vision" analyzes the current slide screenshot to assist during live streams.
 
-9. **Bilingual Voice Commands (Web Speech API)**:
-   - Voice navigation in Hindi (`hi-IN`) and English (`en-IN`): "Next" / "अगला", "Back" / "पीछे", "Slide 5" / "स्लाइड पाँच", "Clear" / "साफ़", "Board" / "बोर्ड", "Fullscreen", and tool selection.
+9. **Explicit Microphone Control & Privacy Protection**:
+   - Strictly `off` by default everywhere (launch, reload, slide navigation, blur, board entry).
+   - Dedicated 🎙 Mic button on Tier 1 toolbar, mirror icon in top bar, and 12px Zen dot.
+   - Complete pipeline release on mute (`recognition.abort()`, track termination) guarantees the browser/Android mic indicator turns off immediately.
+   - Spoken mute command: *"stop listening / माइक बंद करो"*.
+   - Auto-off idle timer (10 min default), Push-to-talk (`V` key hold), and honest privacy disclosure.
+
+---
+
+## 🎙️ Microphone Control (माइक नियंत्रण)
+
+### Strict User-Gated State Machine
+- **State Definition**: `micState = 'off' | 'listening' | 'error'`.
+- **Default State**: Strictly `off` on every launch, page reload, slide transition, return from the in-app browser, and window blur longer than 30 seconds. No setting or storage persists an "auto-on" state.
+- **Activating Listening (`off` → `listening`)**:
+  - Direct user action only: tap/click the 🎙 Mic button, press keyboard shortcut `V`, or hold the button/shortcut in Push-to-talk mode.
+  - Spoken voice commands can **never** turn the mic on.
+  - Microphone permissions are never requested at launch—only upon the user's first explicit toggle.
+- **Deactivating (`listening` → `off`)**:
+  - Tap the 🎙 Mic button or press `V`.
+  - Spoken command: *"stop listening / माइक बंद"* or *"माइक बंद करो"*.
+  - Tab visibility change (switching tabs or minimizing).
+  - Window blur longer than 30 seconds.
+  - Opening the Blackboard (when the *"Mute mic on Board"* setting is active).
+  - Auto-off idle timer (default 10 minutes of no recognized speech; configurable to off / 5 / 10 / 30 min).
+  - Any recognition error or page unload.
+- **True Hardware Pipeline Release**:
+  - When turning off, `recognition.abort()` is called, event handlers are detached, auto-restart loops are stopped, and any active `MediaStream` tracks are terminated (`track.stop()`). The browser tab recording indicator and Android status bar mic icon turn off immediately (< 1 s).
+- **Indicators**:
+  - **Toolbar 🎙 Mic Button**: Tier 1 placement beside Clear and More; 56 px touch target (64 px on 4K boards). Shows diagonal slash in neutral grey when off; solid red with pulsing ring and live 3-bar animated input meter when listening; amber with "!" on error.
+  - **Top Bar Mirror Icon**: `#btnMicHeader` provides instant status indication in standard mode.
+  - **Zen Mode 12px Dot**: Discreet red pulsing indicator (`#micZenDot`) at top-right of stage ensures presenter awareness even in distraction-free Zen mode.
+  - **Ghost Mode**: When toolbar dims, the Mic button maintains $\ge 60\%$ visibility while listening.
+- **Privacy Assurance**:
+  - The app itself never records, buffers, or saves audio files anywhere. Speech recognition is conducted by the browser's speech engine (Google Speech Services in Chrome / Android WebView).
+
+---
+
+## 🤖 AI Providers & Keys (बहु-प्रदाता AI राउटर)
+
+### Supported Providers
+Smart Studio Presenter Pro features a zero-server, multi-provider AI router (`src/ai/aiRouter.ts`) supporting:
+- **Google Gemini**: Google Generative Language API via `x-goog-api-key` header (Flash 2.0, 1.5 Pro, 1.5 Flash).
+- **Anthropic Claude**: Messages API with `x-api-key` and browser direct access (Claude 3.5 Sonnet, 3.5 Haiku, Claude 3.7).
+- **OpenAI**: `/chat/completions` with Bearer auth (GPT-4o, GPT-4o-mini).
+- **xAI Grok**: Grok-2, Grok-2 Vision.
+- **Groq**: Ultra-low-latency Llama-3.3-70B, Llama-3.1-8B, Llama-3.2-11B-Vision.
+- **Mistral AI**: Mistral Large, Pixtral Large (Vision), Pixtral 12B.
+- **DeepSeek**: DeepSeek-Chat, DeepSeek-Reasoner.
+- **OpenRouter**: Unified access to top open and commercial models.
+- **Perplexity**: Sonar Pro, Sonar search-grounded models.
+- **Custom Endpoint**: Any OpenAI-compatible local/remote endpoint (vLLM, Ollama, LocalAI).
+
+### Key Vault & Migration
+- **AES-GCM 256-bit Vault**: Managed in `src/ai/keyVault.ts` using non-extractable Web Crypto API keys stored in IndexedDB. Plaintext keys are never logged, never stored in localStorage, and never placed in URLs.
+- **Automatic Migration**: Pre-existing Gemini keys from previous versions are migrated automatically into the multi-provider vault on first launch without breaking existing setups.
+- **Key Auto-Detection**:
+  - Instant detection from key prefixes (`AIza` for Gemini, `sk-ant-` for Claude, `xai-` for Grok, `gsk_` for Groq, `sk-or-` for OpenRouter, `pplx-` for Perplexity).
+  - Ambiguous keys (`sk-...`) are probed in parallel against candidate `/models` endpoints to identify the correct provider automatically.
+
+### Automated Best-Model Selection & Fallbacks
+- **Task Profiles**:
+  - `chat`: Optimized for deep reasoning and detailed explanations.
+  - `slide-explain`: Vision-capable model with structured pedagogical analysis.
+  - `handwriting-ocr`: Low latency, deterministic temperature 0.0, high precision on Devanagari and Latin ink.
+  - `text-fix`: Fast and economical text cleanup.
+  - `quick-answer`: Fastest response tier.
+- **Quality Preferences**:
+  - **Balanced (Default)**: Flagship models for Chat and Slide Explain; fast/balanced models for frequent Smart Ink handwriting conversion.
+  - **Best Quality**: Highest reasoning tier across all tasks.
+  - **Fastest / Cheapest**: Lowest latency and token consumption.
+- **Automated Fallback Chain**: If a model encounters a rate limit, quota exhaustion, or temporary outage, the router automatically attempts the next ranked model for that provider, then falls back to secondary configured providers with a non-blocking toast.
+- **Abort Control**: In-flight AI requests are immediately aborted (`AbortController`) whenever the educator changes slides or closes the AI panel.
+
+### Browser CORS vs. Android APK
+- **Browser CORS Reality**: Web browsers enforce Cross-Origin Resource Sharing. Gemini, Anthropic (with browser header), and OpenRouter permit direct web browser calls.
+- **Android APK Advantage**: On the Android 4K APK build, `CapacitorHttp` natively routes provider requests, bypassing browser CORS restrictions entirely and allowing direct connections to OpenAI, Grok, Groq, Mistral, and DeepSeek.
+
 
 ---
 

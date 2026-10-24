@@ -20,6 +20,8 @@ import { welcomeScreen } from './ui/welcomeScreen';
 import { zoomController } from './zoom/zoomController';
 import { magnifierLensController } from './zoom/magnifierLens';
 import { zoomGestureHandler } from './zoom/zoomGestures';
+// MIC-AI: Import micController
+import { micController } from './voice/micController';
 
 // PWA auto-updater
 if ('serviceWorker' in navigator) {
@@ -81,6 +83,8 @@ class SmartStudioApp {
     geminiPanel.init();
     settingsPanel.init();
     voiceCommandService.init();
+    // MIC-AI: Initialize central mic controller (default: off)
+    micController.init();
 
     // SSIRO-UPDATE: Initialize Zoom and Magnifier subsystems
     zoomController.init();
@@ -145,6 +149,19 @@ class SmartStudioApp {
     shortcutManager.register('openDeck', () => {
       const fileInput = document.getElementById('fileInputDeck') as HTMLInputElement;
       fileInput?.click();
+    });
+    // MIC-AI: Register V shortcut for mic toggle or push-to-talk
+    shortcutManager.register('mic', () => {
+      const s = store.getState().settings;
+      if (s.pushToTalk) {
+        micController.handlePushToTalkDown();
+      } else {
+        micController.toggle();
+      }
+    });
+
+    window.addEventListener('mic-ptt-up', () => {
+      micController.handlePushToTalkUp();
     });
     shortcutManager.register('closeOverlay', () => {
       const state = store.getState();

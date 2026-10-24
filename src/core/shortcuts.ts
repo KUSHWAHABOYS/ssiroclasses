@@ -1,7 +1,8 @@
 import { store } from '../state/store';
 import { fullscreenService } from './fullscreen';
 
-export type ShortcutAction = 'next' | 'prev' | 'first' | 'last' | 'zen' | 'board' | 'closeOverlay' | 'openDeck';
+// MIC-AI: Registered 'mic' shortcut action (V key)
+export type ShortcutAction = 'next' | 'prev' | 'first' | 'last' | 'zen' | 'board' | 'closeOverlay' | 'openDeck' | 'mic';
 
 export class ShortcutManager {
   private handlers: Map<ShortcutAction, () => void> = new Map();
@@ -82,6 +83,13 @@ export class ShortcutManager {
         this.dispatch('openDeck');
         break;
 
+      // MIC-AI: V toggles mic (or push-to-talk down)
+      case 'v':
+      case 'V':
+        e.preventDefault();
+        this.dispatch('mic');
+        break;
+
       case 'Escape':
         e.preventDefault();
         const state = store.getState();
@@ -97,6 +105,10 @@ export class ShortcutManager {
   private handleKeyUp(e: KeyboardEvent): void {
     if (e.key === 'Shift') {
       this.isShiftDown = false;
+    }
+    // MIC-AI: Release push-to-talk on V keyup
+    if (e.key === 'v' || e.key === 'V') {
+      window.dispatchEvent(new CustomEvent('mic-ptt-up'));
     }
   }
 

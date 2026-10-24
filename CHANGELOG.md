@@ -2,6 +2,53 @@
 
 All notable changes to "Smart Studio Presenter Pro" are documented in this file.
 
+## [1.2.0] — 2026-10-24 (Mic Control & Multi-Provider AI Router)
+
+### 🎙️ Part B — Microphone Control & Privacy Protection
+- **Root Cause Fix & Complete Audit**:
+  - Audited codebase and eliminated unprompted auto-listening on startup and un-gated auto-restart loops in `src/voice/commands.ts`.
+  - Confirmed zero occurrences of `MediaRecorder`, `AudioContext`, or audio buffering; the app records/stores no audio files or buffers anywhere.
+- **State Machine (`src/voice/micController.ts`)**:
+  - Single source of truth: `micState = 'off' | 'listening' | 'error'`.
+  - Strictly `off` by default on launch, reload, slide change, browser return, and window blur (>30s). No setting remembers or auto-turns-on the mic.
+  - Transitions to `listening` only via physical user interaction: toolbar 🎙 Mic button, keyboard shortcut `V`, or push-to-talk.
+  - Complete audio pipeline release on mute: calls `recognition.abort()`, detaches all handlers, stops restart loops, and terminates any opened `MediaStream` tracks (`track.stop()`) so the browser/Android status mic-in-use indicator turns off immediately.
+  - Added auto-off idle timer (default 10 minutes of no recognized command; settings range off/5/10/30).
+  - Added spoken mute command: *"stop listening / माइक बंद करो"* mutes the microphone.
+- **Visual Indicators & Controls**:
+  - Added 🎙 Mic button to Tier 1 floating toolbar (56px touch target / 64px on 4K boards, labeled "माइक / Mic") between Clear and More tools.
+  - Off: grey icon with diagonal slash; Listening: solid icon, red background, soft pulsing ring, live 3-bar animated input meter; Error: amber with "!".
+  - Top bar mirror mic icon (`#btnMicHeader`) next to fullscreen button.
+  - 12px pulsing red dot (`#micZenDot`) top-right in Zen mode ensures presenter awareness.
+  - Ghost mode keeps mic button at $\ge 60\%$ opacity when toolbar dims.
+  - Debounced toasts ("🎙️ माइक चालू / Mic ON", "🔇 माइक बंद / Mic OFF").
+- **Settings → Voice Section**:
+  - Configurable Voice language (`hi-IN` / `en-IN`), Auto-off timer, Mute mic on Board toggle, Push-to-talk toggle, and Zen red dot toggle.
+  - Honest privacy disclaimer: *"In Chrome/Android WebView, speech recognition is performed by the browser's speech service, which may send audio to its provider while the mic is on. This app does not record or save audio."*
+
+### 🤖 Part C — Multi-Provider AI Router & Key Vault
+- **Universal Multi-Provider Architecture (`src/ai/`)**:
+  - Unified entry point `aiRouter.run(task, payload)` replaces all direct Gemini calls.
+  - Central provider registry supporting: Google Gemini, Anthropic Claude, OpenAI, xAI Grok, Groq, Mistral, DeepSeek, OpenRouter, Perplexity, and Custom OpenAI-compatible endpoints.
+  - Multi-key AES-GCM 256-bit unextractable vault in IndexedDB (`src/ai/keyVault.ts`) with seamless automatic migration of pre-existing Gemini keys.
+- **Key Auto-Detection & Validation**:
+  - Instant key shape detection (`AIza`, `sk-ant-`, `xai-`, `gsk_`, `sk-or-`, `pplx-`).
+  - Parallel probe against candidate `/models` endpoints for ambiguous keys (`sk-...`, Mistral, DeepSeek).
+  - Live connection verification before key acceptance.
+- **Model Discovery, Ranking & Dynamic Best-Model Selection**:
+  - Automated model listing from `/models` endpoints with 24-hour persistent caching.
+  - Task profiles (`chat`, `slide-explain`, `handwriting-ocr`, `text-fix`, `quick-answer`).
+  - Tiered ranking rules (`flagship`, `balanced`, `fast`) and Quality preference (Best quality, Balanced, Fastest/cheapest).
+  - Automated fallback chain across provider models and secondary providers with non-blocking feedback toasts.
+  - Immediate request cancellation (`AbortController`) on slide change or panel closure.
+- **CORS Handling & Platform Reality (`src/ai/http.ts`)**:
+  - Android APK: routes requests through `CapacitorHttp` natively, bypassing browser CORS restrictions.
+  - Desktop PWA/PC: displays clear, helpful guidance for CORS-blocked providers without introducing external proxy servers.
+- **UI & Feature Rewiring**:
+  - `src/ui/geminiPanel.ts`: converted to general AI Assistant showing dynamic provider/model badges (`Provider • Model`).
+  - `src/draw/handwriting.ts`: routed through `aiRouter.run('handwriting-ocr', ...)`; preserves ink untouched if no vision provider is configured.
+  - Settings → AI panel (`src/ai/aiSettingsPanel.ts`): key manager, test/replace/delete actions, quality selector, model allocations, call counter, and cost warning safeguard.
+
 ## [1.1.1] — 2026-10-24 (Welcome Screen Persistent Home & No Default Deck Fix)
 
 ### 🚀 Welcome-Fix: Persistent Home Screen & No Auto-Loaded Deck

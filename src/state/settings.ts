@@ -37,6 +37,16 @@ export interface AppSettings {
   keepZoomOnSlideChange: boolean;
   keepPenWidthOnZoom: boolean;
   tapZoomLevel: number;
+  // MIC-AI: Microphone settings
+  micAutoOffMinutes: number;
+  muteMicOnBoard: boolean;
+  pushToTalk: boolean;
+  showMicDotInZen: boolean;
+  // MIC-AI: AI Router settings
+  aiQualityPreference: 'best' | 'balanced' | 'fast';
+  aiWarnAfterCalls: number;
+  aiTaskPinnedModels: Record<string, { provider: string; model: string }>;
+  aiProviderPriority: string[];
 }
 
 const SETTINGS_STORAGE_KEY = 'smart_studio_settings_v1';
@@ -79,7 +89,17 @@ export const DEFAULT_SETTINGS: AppSettings = {
   keepLensOnSlideChange: false,
   keepZoomOnSlideChange: false,
   keepPenWidthOnZoom: true,
-  tapZoomLevel: 2.5
+  tapZoomLevel: 2.5,
+  // MIC-AI: Microphone defaults
+  micAutoOffMinutes: 10,
+  muteMicOnBoard: false,
+  pushToTalk: false,
+  showMicDotInZen: true,
+  // MIC-AI: AI Router defaults
+  aiQualityPreference: 'balanced',
+  aiWarnAfterCalls: 0,
+  aiTaskPinnedModels: {},
+  aiProviderPriority: ['gemini', 'anthropic', 'openai', 'grok', 'groq', 'deepseek', 'mistral', 'openrouter', 'perplexity', 'custom']
 };
 
 export function loadSettings(): AppSettings {

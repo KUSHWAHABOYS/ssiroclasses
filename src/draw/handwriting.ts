@@ -1,5 +1,6 @@
 import { Stroke, annotationStore } from './annotationStore';
-import { geminiService } from '../ai/gemini';
+// MIC-AI: Multi-Provider AI Router integration for Handwriting OCR
+import { aiRouter } from '../ai/aiRouter';
 import { keyVault } from '../ai/keyVault';
 import { store } from '../state/store';
 
@@ -25,8 +26,8 @@ export interface HandwritingRecognizer {
 
 export class GeminiHandwritingRecognizer implements HandwritingRecognizer {
   async recognize(group: WordGroup): Promise<string> {
-    if (!keyVault.hasKey()) {
-      throw new Error('No API Key');
+    if (!keyVault.hasAnyKey()) {
+      throw new Error('कोई AI कुंजी सेट नहीं है (No AI API Key found in settings)');
     }
 
     // Render group strokes to cropped offscreen canvas (black ink on white, padded 16px per B7.2)
@@ -59,8 +60,16 @@ export class GeminiHandwritingRecognizer implements HandwritingRecognizer {
     const dataUrl = canvas.toDataURL('image/png');
     const base64Png = dataUrl.replace(/^data:image\/png;base64,/, '');
 
-    const text = await geminiService.recognizeHandwriting(base64Png);
-    return text;
+    const prompt =
+      'Transcribe the single handwritten word or short phrase in this image exactly. Return only the text. Preserve Devanagari matras and shirorekha. If it is Hindi return Devanagari only; if English return Latin letters only. No explanation.';
+
+    const result = await aiRouter.run('handwriting-ocr', {
+      image: base64Png,
+      prompt,
+      temperature: 0.0,
+      maxTokens: 60
+    });
+    return result.text.trim();
   }
 }
 

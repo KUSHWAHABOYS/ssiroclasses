@@ -2,6 +2,8 @@ import { store } from '../state/store';
 import { keyVault } from '../ai/keyVault';
 // WELCOME-FIX: Import slideView for closing deck & developer demo deck
 import { slideView } from '../presenter/slideView';
+// MIC-AI: Multi-Provider AI Settings Panel
+import { aiSettingsPanel } from '../ai/aiSettingsPanel';
 
 export class SettingsPanel {
   private modalEl!: HTMLElement;
@@ -81,33 +83,8 @@ export class SettingsPanel {
           </div>
         </div>
 
-        <!-- Google Gemini AI Key Vault Section -->
-        <div class="settings-section">
-          <div class="settings-section-title">Google Gemini AI & Key Vault (AES-GCM 256-bit)</div>
-
-          <div class="setting-item" style="flex-direction: column; align-items: stretch; gap: 8px;">
-            <div class="setting-label">
-              <span class="setting-name">वर्तमान API कुंजी (Current Key)</span>
-              <span class="setting-desc" id="currentKeyDisplay" style="font-family: monospace; color: var(--primary-accent);">${maskedKey}</span>
-            </div>
-            <div style="display:flex; gap:8px;">
-              <input type="password" id="inputNewApiKey" placeholder="Google AI Studio API Key यहाँ पेस्ट करें..." class="gemini-input" style="flex:1;" />
-              <button class="header-btn" id="btnSaveApiKey" style="background:var(--primary-accent); color:#000; font-weight:700;">सहेजें (Save)</button>
-              <button class="header-btn" id="btnDeleteApiKey" style="color:#f87171;">हटाएं (Delete)</button>
-            </div>
-            <span style="font-size:11px; color:var(--text-muted);">
-              🔒 आपकी कुंजी इस डिवाइस पर AES-GCM से सुरक्षित एन्क्रिप्टेड रहती है और सीधे generativelanguage.googleapis.com को जाती है। कोई मध्यस्थ सर्वर नहीं है।
-            </span>
-          </div>
-
-          <div class="setting-item">
-            <div class="setting-label">
-              <span class="setting-name">Gemini मॉडल (Model)</span>
-              <span class="setting-desc">Vision और चैट के लिए Gemini मॉडल नाम</span>
-            </div>
-            <input type="text" id="settingGeminiModel" value="${s.geminiModel}" class="gemini-input" style="width:180px;" />
-          </div>
-        </div>
+        <!-- MIC-AI: Multi-Provider AI Section -->
+        ${aiSettingsPanel.renderSection()}
 
         <!-- SSIRO-UPDATE: Welcome Screen Section -->
         <div class="settings-section">
@@ -236,8 +213,21 @@ export class SettingsPanel {
 
           <div class="setting-item">
             <div class="setting-label">
-              <span class="setting-name">आवाज भाषा (Voice Command Language)</span>
-              <span class="setting-desc">Web Speech API के लिए भाषा</span>
+              <span class="setting-name">चैनल नाम (Channel Brand)</span>
+              <span class="setting-desc">शीर्ष पट्टी में प्रदर्शित चैनल का नाम</span>
+            </div>
+            <input type="text" id="settingChannelName" value="${s.channelName}" class="gemini-input" style="width:180px;" />
+          </div>
+        </div>
+
+        <!-- MIC-AI: Voice & Microphone Section -->
+        <div class="settings-section">
+          <div class="settings-section-title">🎙️ आवाज व माइक्रोफ़ोन नियंत्रण (Voice & Mic Control)</div>
+
+          <div class="setting-item">
+            <div class="setting-label">
+              <span class="setting-name">आवाज भाषा (Voice Language)</span>
+              <span class="setting-desc">स्पीच रिकग्निशन के लिए भाषा</span>
             </div>
             <select id="settingVoiceLang" class="header-btn" style="background:#111;">
               <option value="hi-IN" ${s.voiceLang === 'hi-IN' ? 'selected' : ''}>हिंदी (hi-IN)</option>
@@ -247,10 +237,46 @@ export class SettingsPanel {
 
           <div class="setting-item">
             <div class="setting-label">
-              <span class="setting-name">चैनल नाम (Channel Brand)</span>
-              <span class="setting-desc">शीर्ष पट्टी में प्रदर्शित चैनल का नाम</span>
+              <span class="setting-name">स्वतः बंद टाइमर (Auto-off Timer)</span>
+              <span class="setting-desc">बिना किसी कमांड के माइक अपने आप बंद होने का समय</span>
             </div>
-            <input type="text" id="settingChannelName" value="${s.channelName}" class="gemini-input" style="width:180px;" />
+            <select id="settingMicAutoOff" class="header-btn" style="background:#111;">
+              <option value="0" ${s.micAutoOffMinutes === 0 ? 'selected' : ''}>बंद (Never / Off)</option>
+              <option value="5" ${s.micAutoOffMinutes === 5 ? 'selected' : ''}>5 मिनट (5 min)</option>
+              <option value="10" ${s.micAutoOffMinutes === 10 ? 'selected' : ''}>10 मिनट (10 min - डिफ़ॉल्ट)</option>
+              <option value="30" ${s.micAutoOffMinutes === 30 ? 'selected' : ''}>30 मिनट (30 min)</option>
+            </select>
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-label">
+              <span class="setting-name">बोर्ड मोड पर म्यूट (Mute mic on Board)</span>
+              <span class="setting-desc">ब्लैकबोर्ड खोलते ही माइक तुरंत म्यूट करें</span>
+            </div>
+            <input type="checkbox" id="settingMuteMicOnBoard" ${s.muteMicOnBoard ? 'checked' : ''} style="width:20px; height:20px; accent-color:var(--primary-accent);" />
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-label">
+              <span class="setting-name">पुश-टू-टॉक (Push-to-talk)</span>
+              <span class="setting-desc">माइक बटन या V कुंजी दबाए रखने पर ही सुनें</span>
+            </div>
+            <input type="checkbox" id="settingPushToTalk" ${s.pushToTalk ? 'checked' : ''} style="width:20px; height:20px; accent-color:var(--primary-accent);" />
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-label">
+              <span class="setting-name">ज़ेन मोड में लाल बिंदु (Show mic-on dot in Zen mode)</span>
+              <span class="setting-desc">माइक चालू रहने पर शीर्ष-दाएं कोने में 12px लाल संकेतक</span>
+            </div>
+            <input type="checkbox" id="settingShowMicDotInZen" ${s.showMicDotInZen ? 'checked' : ''} style="width:20px; height:20px; accent-color:var(--primary-accent);" />
+          </div>
+
+          <div style="margin-top:8px; padding:10px; background:rgba(255,255,255,0.03); border-radius:6px; border:1px solid rgba(255,255,255,0.06);">
+            <span style="font-size:11px; color:var(--text-muted); line-height:1.5; display:block;">
+              🔒 <strong>गोपनीयता नोट (Privacy Note):</strong><br>
+              In Chrome/Android WebView, speech recognition is performed by the browser's speech service, which may send audio to its provider while the mic is on. This app does not record or save audio.
+            </span>
           </div>
         </div>
 
@@ -260,7 +286,7 @@ export class SettingsPanel {
           <div style="display:flex; align-items:center; gap:16px; padding:8px 0;">
             <img src="/assets/brand/logo.svg" alt="SSIRO Logo" style="width:64px; height:64px; border-radius:14px; box-shadow:var(--shadow-lg);" />
             <div>
-              <div style="font-weight:700; font-size:15px; color:#ffffff;">Smart Studio Presenter Pro v1.1.1</div>
+              <div style="font-weight:700; font-size:15px; color:#ffffff;">Smart Studio Presenter Pro v1.2.0</div>
               <div style="font-size:12px; color:var(--primary-accent); margin-top:2px;">SSIRO Classes Edition</div>
               <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">4K Teaching & Presentation Studio • 100% Client-Side</div>
             </div>
@@ -393,46 +419,33 @@ export class SettingsPanel {
       store.updateSettings({ keepAnnotationsPerSlide: keepPerSlide.checked });
     });
 
-    // Save API key
-    const btnSaveKey = this.modalEl.querySelector('#btnSaveApiKey');
-    const inputKey = this.modalEl.querySelector('#inputNewApiKey') as HTMLInputElement;
-    const currentKeyDisplay = this.modalEl.querySelector('#currentKeyDisplay') as HTMLElement;
+    // MIC-AI: Multi-Provider AI Settings Events
+    aiSettingsPanel.bindEvents(this.modalEl);
 
-    btnSaveKey?.addEventListener('click', async () => {
-      const raw = inputKey.value.trim();
-      if (!raw) return;
-      try {
-        const masked = await keyVault.storeApiKey(raw);
-        inputKey.value = '';
-        currentKeyDisplay.textContent = masked;
-        window.dispatchEvent(
-          new CustomEvent('app-toast', {
-            detail: { message: 'Gemini API Key सुरक्षित एन्क्रिप्टेड रूप में सहेजी गई!' }
-          })
-        );
-      } catch (err: any) {
-        alert(`कुंजी सहेजने में त्रुटि: ${err.message}`);
-      }
+    // MIC-AI: Voice & Microphone Settings Events
+    const voiceLang = this.modalEl.querySelector('#settingVoiceLang') as HTMLSelectElement;
+    voiceLang?.addEventListener('change', () => {
+      store.updateSettings({ voiceLang: voiceLang.value as any });
     });
 
-    // Delete API key
-    const btnDelKey = this.modalEl.querySelector('#btnDeleteApiKey');
-    btnDelKey?.addEventListener('click', () => {
-      if (confirm('क्या आप वाकई संग्रहीत API कुंजी को मिटाना चाहते हैं?')) {
-        keyVault.deleteKey();
-        currentKeyDisplay.textContent = 'कोई कुंजी सेट नहीं (None)';
-        window.dispatchEvent(
-          new CustomEvent('app-toast', {
-            detail: { message: 'API Key हटा दी गई।' }
-          })
-        );
-      }
+    const micAutoOff = this.modalEl.querySelector('#settingMicAutoOff') as HTMLSelectElement;
+    micAutoOff?.addEventListener('change', () => {
+      store.updateSettings({ micAutoOffMinutes: parseInt(micAutoOff.value, 10) });
     });
 
-    // Model name
-    const modelInput = this.modalEl.querySelector('#settingGeminiModel') as HTMLInputElement;
-    modelInput?.addEventListener('change', () => {
-      store.updateSettings({ geminiModel: modelInput.value.trim() });
+    const muteMicOnBoard = this.modalEl.querySelector('#settingMuteMicOnBoard') as HTMLInputElement;
+    muteMicOnBoard?.addEventListener('change', () => {
+      store.updateSettings({ muteMicOnBoard: muteMicOnBoard.checked });
+    });
+
+    const pushToTalk = this.modalEl.querySelector('#settingPushToTalk') as HTMLInputElement;
+    pushToTalk?.addEventListener('change', () => {
+      store.updateSettings({ pushToTalk: pushToTalk.checked });
+    });
+
+    const showMicDotInZen = this.modalEl.querySelector('#settingShowMicDotInZen') as HTMLInputElement;
+    showMicDotInZen?.addEventListener('change', () => {
+      store.updateSettings({ showMicDotInZen: showMicDotInZen.checked });
     });
 
     // Ghost timer
@@ -461,11 +474,6 @@ export class SettingsPanel {
       }
     });
 
-    // Voice language
-    const voiceLang = this.modalEl.querySelector('#settingVoiceLang') as HTMLSelectElement;
-    voiceLang?.addEventListener('change', () => {
-      store.updateSettings({ voiceLang: voiceLang.value as any });
-    });
 
     // Channel name
     const channelInput = this.modalEl.querySelector('#settingChannelName') as HTMLInputElement;

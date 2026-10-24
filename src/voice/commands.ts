@@ -1,3 +1,4 @@
+// MIC-AI: Voice Navigation & Command Service with explicit MicController integration
 import { store } from '../state/store';
 import { navigationController } from '../presenter/navigation';
 import { annotationStore } from '../draw/annotationStore';
@@ -5,11 +6,13 @@ import { blackboardStudio } from '../board/board';
 import { fullscreenService } from '../core/fullscreen';
 // SSIRO-UPDATE: Import zoomController for voice zoom commands
 import { zoomController } from '../zoom/zoomController';
+// MIC-AI: Import micController
+import { micController } from './micController';
 
 export class VoiceCommandService {
   private recognition: any = null;
   private isListening = false;
-  private shouldRestart = true;
+  private shouldRestart = false;
 
   // Number word dictionary for Hindi & English
   private numberWords: Record<string, number> = {
@@ -26,73 +29,133 @@ export class VoiceCommandService {
   };
 
   init(): void {
+    // MIC-AI: Do NOT start listening automatically on app launch.
+    // Mic is strictly off until user explicitly turns it on.
+    console.log('🎙️ VoiceCommandService initialized (mic is OFF by default).');
+  }
+
+  /**
+   * Called only when user explicitly activates the mic
+   */
+  startListening(): Promise<boolean> {
     const SpeechRec = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SpeechRec) {
-      console.warn('Web Speech API is not supported in this browser/WebView');
-      return;
+      window.dispatchEvent(
+        new CustomEvent('app-toast', {
+          detail: { message: 'इस ब्राउज़र में स्पीच रिकॉग्निशन समर्थित नहीं है / Web Speech API not supported', isError: true }
+        })
+      );
+      return Promise.resolve(false);
     }
 
-    try {
-      this.recognition = new SpeechRec();
-      this.recognition.continuous = true;
-      this.recognition.interimResults = false;
-      this.recognition.lang = store.getState().settings.voiceLang || 'hi-IN';
-
-      this.recognition.onresult = (event: any) => {
-        const last = event.results.length - 1;
-        const transcript = event.results[last][0].transcript.trim().toLowerCase();
-        this.processVoiceCommand(transcript);
-      };
-
-      this.recognition.onerror = (e: any) => {
-        console.warn('Speech recognition error:', e.error);
-        if (e.error === 'not-allowed') {
-          this.shouldRestart = false;
-          window.dispatchEvent(
-            new CustomEvent('app-toast', {
-              detail: { message: 'माइक अनुमति अस्वीकृत (Microphone permission denied)', isError: true }
-            })
-          );
-        }
-      };
-
-      this.recognition.onend = () => {
-        if (this.shouldRestart && this.isListening) {
+    return new Promise((resolve) => {
+      try {
+        if (this.recognition) {
           try {
-            this.recognition.start();
+            this.recognition.abort();
           } catch {}
+          this.recognition = null;
         }
-      };
 
-      // Auto start listening
-      this.start();
-    } catch (e) {
-      console.warn('Speech init failed:', e);
-    }
+        const rec = new SpeechRec();
+        rec.continuous = true;
+        rec.interimResults = false;
+        rec.lang = store.getState().settings.voiceLang || 'hi-IN';
+
+        rec.onaudiostart = () => {
+          micController.setInputLevel(1);
+        };
+
+        rec.onsoundstart = () => {
+          micController.setInputLevel(2);
+        };
+
+        rec.onspeechstart = () => {
+          micController.setInputLevel(3);
+        };
+
+        rec.onspeechend = () => {
+          micController.setInputLevel(1);
+        };
+
+        rec.onsoundend = () => {
+          micController.setInputLevel(0);
+        };
+
+        rec.onresult = (event: any) => {
+          micController.setInputLevel(2);
+          micController.reportActivity();
+          const last = event.results.length - 1;
+          const transcript = event.results[last][0].transcript.trim().toLowerCase();
+          this.processVoiceCommand(transcript);
+          setTimeout(() => micController.setInputLevel(0), 400);
+        };
+
+        rec.onerror = (e: any) => {
+          console.warn('Speech recognition error:', e.error);
+          micController.setInputLevel(0);
+          if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+            this.shouldRestart = false;
+            this.stopListening();
+            micController.reportError('माइक अनुमति अवरुद्ध है — ब्राउज़र/ऐप सेटिंग्स में अनुमति दें (Microphone blocked — allow it in browser/app settings)');
+            resolve(false);
+          } else if (e.error !== 'no-speech') {
+            // Transient error
+            micController.reportActivity();
+          }
+        };
+
+        rec.onend = () => {
+          micController.setInputLevel(0);
+          // Only restart if micController still wants listening active
+          if (this.shouldRestart && this.isListening && micController.getState() === 'listening') {
+            try {
+              rec.start();
+            } catch (err) {
+              console.warn('Speech restart error:', err);
+            }
+          }
+        };
+
+        this.recognition = rec;
+        this.shouldRestart = true;
+        this.isListening = true;
+        rec.start();
+        resolve(true);
+      } catch (err: any) {
+        console.warn('Speech recognition start failed:', err);
+        this.isListening = false;
+        resolve(false);
+      }
+    });
   }
 
-  start(): void {
-    if (!this.recognition || this.isListening) return;
-    try {
-      this.shouldRestart = true;
-      this.recognition.start();
-      this.isListening = true;
-    } catch (e) {
-      console.warn('Speech start error:', e);
-    }
-  }
-
-  stop(): void {
+  /**
+   * Truly release the microphone hardware and stop all callbacks
+   */
+  stopListening(): void {
     this.shouldRestart = false;
     this.isListening = false;
     if (this.recognition) {
       try {
-        this.recognition.stop();
+        this.recognition.onaudiostart = null;
+        this.recognition.onsoundstart = null;
+        this.recognition.onspeechstart = null;
+        this.recognition.onspeechend = null;
+        this.recognition.onsoundend = null;
+        this.recognition.onresult = null;
+        this.recognition.onerror = null;
+        this.recognition.onend = null;
+        this.recognition.abort();
       } catch {}
+      this.recognition = null;
     }
   }
 
   private processVoiceCommand(phrase: string): void {
+    // Only process if mic is actively listening
+    if (micController.getState() !== 'listening') return;
+
     console.log('Voice Command received:', phrase);
 
     // Feedback toast
@@ -101,6 +164,12 @@ export class VoiceCommandService {
         detail: { message: `🎙️ आवाज आदेश: "${phrase}"` }
       })
     );
+
+    // MIC-AI: Stop listening voice command ("stop listening / माइक बंद")
+    if (/stop\s*listening|माइक\s*बंद|माइक\s*ऑफ|म्यूट/i.test(phrase)) {
+      micController.turnOff();
+      return;
+    }
 
     // WELCOME-FIX: In welcome state, voice navigation and tools are inert.
     // Only board, open, and fullscreen commands are allowed.
@@ -166,8 +235,8 @@ export class VoiceCommandService {
 
     // Close overlays
     if (/close|बंद|हटाओ/i.test(phrase)) {
-      const state = store.getState();
-      if (state.isBoardMode) blackboardStudio.closeBoard();
+      const s = store.getState();
+      if (s.isBoardMode) blackboardStudio.closeBoard();
       window.dispatchEvent(new CustomEvent('close-all-overlays'));
       return;
     }

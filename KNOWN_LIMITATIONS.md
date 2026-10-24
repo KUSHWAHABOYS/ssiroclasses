@@ -35,15 +35,15 @@ As part of our commitment to transparent engineering, this document details any 
 
 ---
 
-### 4. Continuous Voice Recognition Across Smart Board WebViews
-- **Technical Constraint**: The Web Speech API (`SpeechRecognition` / `webkitSpeechRecognition`) relies on speech-to-text engines provided by the underlying OS / browser:
-  - On PC Chrome/Edge: Powered by Google Cloud Speech services; works seamlessly when online.
-  - On Android Smart Boards: Older smart boards running Android 9, 10, or 11 with outdated Android System WebViews may require Google Speech Services to be installed or updated from Google Play Services.
-- **Implemented Architecture**:
-  - Continuous speech recognition auto-restarts upon completion.
-  - The Android `MainActivity.java` explicitly intercepts `WebChromeClient.onPermissionRequest` to automatically grant microphone permissions to the WebView without interrupting teaching.
-  - Bilingual command dictionary supports both Hindi (*अगला, पीछे, बोर्ड, साफ़*) and English (*next, back, board, clear, slide [n]*).
-  - If microphone access is denied or unavailable on an older board, full presentation control is smoothly maintained via touch chevrons, edge clicks, swipe gestures, and keyboard/remote shortcuts.
+### 4. Microphone Control & Speech Recognition Privacy (माइक नियंत्रण व गोपनीयता)
+- **Technical Constraint & Privacy Reality**: The Web Speech API (`SpeechRecognition` / `webkitSpeechRecognition`) relies on speech-to-text engines provided by the underlying browser/OS (in Google Chrome and Android WebView, audio may be processed via Google Speech Services while the mic is active). The app itself does not record, buffer, or upload audio files anywhere.
+- **Strict User-Gated Architecture (v1.2.0)**:
+  - **Off by Default**: The mic is strictly `off` on every launch, reload, slide change, return from in-app browser, and window blur (>30s). No setting or mechanism can turn it on automatically.
+  - **Explicit User Action Only**: Turns on only via physical tap on the 🎙 Mic button, keyboard shortcut `V`, or push-to-talk. Spoken commands can never turn the mic on.
+  - **Complete Pipeline Release**: When turning off, `recognition.abort()` is called, all event listeners are detached, restart loops are stopped, and any active audio tracks are terminated (`track.stop()`) to immediately extinguish the browser/system mic-in-use indicator.
+  - **Auto-off Idle Timer**: Automatically mutes after 10 minutes (configurable: off / 5 / 10 / 30 min) of no recognized command.
+  - **Spoken Mute Command**: "stop listening / माइक बंद करो" immediately mutes the mic.
+  - **Visual Safeguards**: Pulsing red ring, live 3-bar input meter, Tier 1 toolbar button, header mirror button, and a 12px red dot in Zen mode ensure the presenter is always aware when the mic is active.
 
 ---
 
@@ -59,7 +59,7 @@ As part of our commitment to transparent engineering, this document details any 
 ### 6. PWA Taskbar & Desktop Shortcut Icon Updates on Windows PC
 - **Technical Constraint**: When a Progressive Web App (PWA) is installed via Chrome or Edge on Windows, the operating system creates Windows `.lnk` shortcuts and extracts the icon into the Windows Icon Cache (`%LOCALAPPDATA%\IconCache.db`). Although the Service Worker automatically refreshes the in-browser and in-window application assets (showing the "New version ready — Reload" toast), the Windows OS taskbar and desktop shortcuts may continue caching the previous icon until Windows rebuilds its shell cache.
 - **Implemented Solution & User Guidance**:
-  - The Service Worker cacheId has been bumped to `ssiro-smart-studio-v1.1.0` so browser tabs, splash screens, and window headers update immediately upon reload.
+  - The Service Worker cacheId has been bumped to `ssiro-smart-studio-v1.2.0` so browser tabs, splash screens, and window headers update immediately upon reload.
   - For installed desktop PWAs on Windows, if the taskbar icon does not immediately show the new SSIRO gold lotus icon, simply uninstall the PWA from Chrome/Edge (*Settings ➔ Apps ➔ Manage Apps*) and click Install again.
 
 ---
@@ -69,3 +69,14 @@ As part of our commitment to transparent engineering, this document details any 
 - **Implemented Solution**:
   - The conflict rule cleanly isolates tool behaviors: for all normal tools (Pen, Highlighter, Eraser, Shapes, Select), double-tap toggles toolbar visibility as before.
   - When the **Zoom tool** is explicitly active, double-tap toggles zoom level (1× ↔ 2.5×), and the toolbar remains accessible at all times via its 360° drag handle (`⋮⋮`) or a 3-finger tap.
+
+---
+
+### 8. Multi-Provider AI Browser CORS Restrictions (ब्राउज़र CORS सीमाएं)
+- **Technical Constraint & Platform Reality**: Certain AI providers (such as OpenAI, xAI Grok, Groq, Mistral, DeepSeek, and Perplexity) configure their official HTTP endpoints without wildcard browser CORS headers (`Access-Control-Allow-Origin: *`), purposefully blocking direct `fetch()` requests originating from arbitrary web page origins.
+- **Implemented Architecture & Zero-Server Compliance**:
+  - **Direct Browser-Capable Providers**: Google Gemini, Anthropic Claude (via the official `anthropic-dangerous-direct-browser-access: true` header), and OpenRouter natively permit direct browser calls.
+  - **Android APK Advantage**: In the Android APK build, Smart Studio uses `CapacitorHttp` natively. Native requests bypass browser CORS sandboxing completely, allowing direct communication with OpenAI, Grok, Groq, Mistral, DeepSeek, and Perplexity directly from the smart board.
+  - **PWA/PC Guidance**: On desktop browsers, if a CORS-restricted provider is selected, Smart Studio detects the network block within seconds and presents a clear message: *"This provider cannot be called directly from a browser. Use the Android app, or choose Gemini/OpenRouter/Anthropic that allows direct browser access."*
+  - **Zero-Server Guarantee**: The application never introduces a middleman proxy or telemetry server. Keys and payloads are never transmitted to any third-party server under any circumstance.
+
