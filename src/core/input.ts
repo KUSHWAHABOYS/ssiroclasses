@@ -1,4 +1,6 @@
 import { store } from '../state/store';
+// SSIRO-UPDATE: Import zoomController for zoom-aware input handling
+import { zoomController } from '../zoom/zoomController';
 
 export interface SwipeEventDetails {
   direction: 'left' | 'right';
@@ -68,7 +70,9 @@ export class InputCoordinator {
       const velocity = absX / Math.max(1, duration);
 
       const state = store.getState();
-      const allowSwipe = state.activeTool === 'select' || this.touchCount >= 2;
+      // SSIRO-UPDATE: While zoomed, swipe navigation is disabled per C6 spec
+      const isZoomed = zoomController.getScale() > 1.05;
+      const allowSwipe = !isZoomed && (state.activeTool === 'select' || this.touchCount >= 2);
 
       // Swipe detection: horizontal swipe with threshold > 60px and velocity > 0.3 px/ms
       if (allowSwipe && absX > 60 && absX > absY * 1.5 && velocity > 0.3) {
@@ -78,8 +82,8 @@ export class InputCoordinator {
       }
 
       // Double-tap detection: window 300ms, tolerance 30px
-      // Only count when activeTool === 'select' or when toolbar is hidden and no stroke drawn
-      const isSelectOrHidden = state.activeTool === 'select' || !state.isToolbarVisibleInZen;
+      // SSIRO-UPDATE: Conflict rule: when Zoom tool active, double-tap is reserved for zoom toggle
+      const isSelectOrHidden = (state.activeTool === 'select' || !state.isToolbarVisibleInZen) && state.activeTool !== 'zoom';
       if (isSelectOrHidden && absX < 30 && absY < 30) {
         const tapInterval = now - this.lastTapTime;
         const tapDist = Math.hypot(touch.clientX - this.lastTapX, touch.clientY - this.lastTapY);

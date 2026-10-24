@@ -3,6 +3,8 @@ import { navigationController } from '../presenter/navigation';
 import { annotationStore } from '../draw/annotationStore';
 import { blackboardStudio } from '../board/board';
 import { fullscreenService } from '../core/fullscreen';
+// SSIRO-UPDATE: Import zoomController for voice zoom commands
+import { zoomController } from '../zoom/zoomController';
 
 export class VoiceCommandService {
   private recognition: any = null;
@@ -156,6 +158,22 @@ export class VoiceCommandService {
       store.setState({ activeTool: 'highlighter' });
     } else if (/eraser|रबर|इरेज़र/i.test(phrase)) {
       store.setState({ activeTool: 'eraser' });
+    } else if (/magnifier|मैग्नीफ़ायर|मैग्नीफायर|लेंस/i.test(phrase)) {
+      // SSIRO-UPDATE: Magnifier Voice Command
+      store.setState({ activeTool: 'magnifier' });
+    } else if (/zoom\s*in|झूम\s*इन|बड़ा\s*करो/i.test(phrase)) {
+      // SSIRO-UPDATE: Zoom In Voice Command
+      zoomController.animateZoom(zoomController.getScale() * 1.5);
+    } else if (/zoom\s*out|झूम\s*आउट|छोटा\s*करो/i.test(phrase)) {
+      // SSIRO-UPDATE: Zoom Out Voice Command
+      zoomController.animateZoom(zoomController.getScale() / 1.5);
+    } else if (/reset\s*zoom|झूम\s*हटाओ|रीसेट\s*झूम/i.test(phrase)) {
+      // SSIRO-UPDATE: Reset Zoom Voice Command
+      zoomController.resetZoom();
+    } else if (/spotlight|स्पॉटलाइट/i.test(phrase)) {
+      // SSIRO-UPDATE: Spotlight Voice Command
+      const cur = store.getState().settings.magnifierSpotlight;
+      store.updateSettings({ magnifierSpotlight: !cur });
     }
   }
 }

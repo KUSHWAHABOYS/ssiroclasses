@@ -20,6 +20,23 @@ export interface AppSettings {
   boardDefaultTheme: 'slate' | 'chalkboard' | 'chroma' | 'navy' | 'maths';
   clearMediaOnSlideChange: boolean;
   channelName: string;
+  // SSIRO-UPDATE: Welcome screen settings
+  showWelcomeScreen: boolean;
+  welcomeLine1: string;
+  welcomeLine2: string;
+  welcomeDuration: number;
+  // SSIRO-UPDATE: Magnifier and Zoom settings
+  magnifierSize: number;
+  magnifierZoom: number;
+  magnifierShape: 'circle' | 'rect';
+  magnifierMode: 'follow' | 'pin';
+  magnifierSpotlight: boolean;
+  magnifierSpotlightDim: number;
+  magnifierTouchPos: 'above' | 'under';
+  keepLensOnSlideChange: boolean;
+  keepZoomOnSlideChange: boolean;
+  keepPenWidthOnZoom: boolean;
+  tapZoomLevel: number;
 }
 
 const SETTINGS_STORAGE_KEY = 'smart_studio_settings_v1';
@@ -45,7 +62,24 @@ export const DEFAULT_SETTINGS: AppSettings = {
   geminiModel: 'gemini-1.5-flash',
   boardDefaultTheme: 'slate',
   clearMediaOnSlideChange: false,
-  channelName: 'Decoding Indology'
+  channelName: 'Decoding Indology',
+  // SSIRO-UPDATE: Welcome screen defaults
+  showWelcomeScreen: true,
+  welcomeLine1: 'Welcome to',
+  welcomeLine2: 'SSIRO Classes',
+  welcomeDuration: 2.8,
+  // SSIRO-UPDATE: Magnifier & Zoom defaults
+  magnifierSize: typeof window !== 'undefined' && window.innerWidth > 1800 ? 280 : 220,
+  magnifierZoom: 3.0,
+  magnifierShape: 'circle',
+  magnifierMode: 'follow',
+  magnifierSpotlight: false,
+  magnifierSpotlightDim: 0.45,
+  magnifierTouchPos: 'above',
+  keepLensOnSlideChange: false,
+  keepZoomOnSlideChange: false,
+  keepPenWidthOnZoom: true,
+  tapZoomLevel: 2.5
 };
 
 export function loadSettings(): AppSettings {

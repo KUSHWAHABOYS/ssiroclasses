@@ -3,17 +3,142 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <title>Smart Studio Presenter Pro — Decoding Indology</title>
+  <title>Smart Studio Presenter Pro — SSIRO Classes</title>
   <link rel="manifest" href="/manifest.webmanifest" />
-  <meta name="theme-color" content="#000000" />
+  <meta name="theme-color" content="#0A1633" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="alternate icon" href="/favicon.ico" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
   <meta name="description" content="Fullscreen 4K Teaching & Presentation Studio for Android Smart Boards & OBS/StreamYard" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700;800&family=Poppins:wght@700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/src/styles/tokens.css" />
   <link rel="stylesheet" href="/src/styles/layers.css" />
   <link rel="stylesheet" href="/src/styles/toolbar.css" />
   <link rel="stylesheet" href="/src/styles/board.css" />
+  <link rel="stylesheet" href="/src/styles/zoom.css" />
+
+  <style>
+    /* SSIRO-UPDATE: Critical inline CSS for zero-flash Welcome Screen */
+    .welcome-screen {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100dvh;
+      background: linear-gradient(135deg, #14306B 0%, #0A1633 100%);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      touch-action: none;
+      user-select: none;
+      transition: opacity 300ms ease, visibility 300ms ease;
+    }
+    .welcome-screen.fade-out {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+    .welcome-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      position: relative;
+      padding: 24px;
+      max-width: 90vw;
+    }
+    .welcome-logo-container {
+      height: 14vh;
+      max-height: 120px;
+      aspect-ratio: 1;
+      margin-bottom: 24px;
+      animation: welcomeLogoIn 400ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    .welcome-text-glow {
+      position: absolute;
+      width: 60%;
+      height: 40%;
+      background: radial-gradient(circle, rgba(255, 215, 106, 0.18) 0%, rgba(232, 137, 12, 0) 70%);
+      filter: blur(40px);
+      pointer-events: none;
+      animation: welcomeGlowPulse 3s ease-in-out infinite alternate;
+    }
+    .welcome-title {
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: clamp(40px, 7.5vw, 160px);
+      line-height: 1.05;
+      letter-spacing: -0.01em;
+      font-weight: 800;
+      font-family: 'Inter', 'Poppins', 'Noto Sans Devanagari', sans-serif;
+    }
+    .welcome-line-1 {
+      font-size: 0.6em;
+      color: #ffffff;
+      opacity: 0;
+      animation: welcomeTextRise 450ms cubic-bezier(0.16, 1, 0.3, 1) 150ms forwards;
+    }
+    .welcome-line-2 {
+      font-size: 1em;
+      background: linear-gradient(135deg, #FFD76A 0%, #E8890C 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      opacity: 0;
+      animation: welcomeTextRise 450ms cubic-bezier(0.16, 1, 0.3, 1) 300ms forwards;
+    }
+    .welcome-underline {
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, transparent 0%, #FFD76A 50%, transparent 100%);
+      margin-top: 16px;
+      animation: welcomeUnderlineIn 500ms ease-out 450ms forwards;
+    }
+    .welcome-hint {
+      margin-top: 36px;
+      font-size: 15px;
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.65);
+      letter-spacing: 0.5px;
+      opacity: 0;
+      animation: welcomeHintFade 400ms ease-in 1200ms forwards;
+    }
+    @keyframes welcomeLogoIn {
+      from { opacity: 0; transform: scale(0.85); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    @keyframes welcomeTextRise {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes welcomeUnderlineIn {
+      from { width: 0%; }
+      to { width: 80%; }
+    }
+    @keyframes welcomeGlowPulse {
+      from { opacity: 0.6; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1.1); }
+    }
+    @keyframes welcomeHintFade {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .welcome-logo-container, .welcome-line-1, .welcome-line-2, .welcome-underline, .welcome-hint {
+        animation: none !important;
+        opacity: 1 !important;
+        transform: none !important;
+        width: 80% !important;
+      }
+    }
+  </style>
 </head>
 <body>
   <!-- Stage fills whole viewport: 100vw x 100dvh, margin 0, padding 0, background #000 -->
@@ -21,7 +146,7 @@
     <!-- Non-Zen Header (z-index 45) -->
     <header id="header" class="header">
       <div class="header-left">
-        <span class="channel-badge" id="channelName">Decoding Indology</span>
+        <span class="channel-badge" id="channelName">SSIRO Classes</span>
         <span class="file-name" id="fileName">Sample Deck Loaded</span>
       </div>
       <div class="header-right">
@@ -40,17 +165,32 @@
       </div>
     </header>
 
-    <!-- Layer 10: slideCanvas (rendered PDF / image / board bg) -->
-    <canvas id="slideCanvas" class="canvas-layer z-slide"></canvas>
+    <!-- SSIRO-UPDATE: #zoomRoot container for whole-slide zoom & panning -->
+    <div id="zoomRoot" class="zoom-root">
+      <!-- Layer 10: slideCanvas (rendered PDF / image / board bg) -->
+      <canvas id="slideCanvas" class="canvas-layer z-slide"></canvas>
 
-    <!-- Layer 20: mediaLayer (floating video/image windows) -->
-    <div id="mediaLayer" class="media-layer z-media"></div>
+      <!-- Layer 20: mediaLayer (floating video/image windows) -->
+      <div id="mediaLayer" class="media-layer z-media"></div>
 
-    <!-- Layer 30: annotationCanvas (committed strokes, shapes, typeset text) -->
-    <canvas id="annotationCanvas" class="canvas-layer z-annotation"></canvas>
+      <!-- Layer 30: annotationCanvas (committed strokes, shapes, typeset text) -->
+      <canvas id="annotationCanvas" class="canvas-layer z-annotation"></canvas>
 
-    <!-- Layer 35: previewCanvas (live in-progress stroke / shape / eraser preview) -->
-    <canvas id="previewCanvas" class="canvas-layer z-preview"></canvas>
+      <!-- Layer 35: previewCanvas (live in-progress stroke / shape / eraser preview) -->
+      <canvas id="previewCanvas" class="canvas-layer z-preview"></canvas>
+    </div>
+
+    <!-- SSIRO-UPDATE: Layer 37: Spotlight Dim Layer -->
+    <canvas id="spotlightLayer" class="spotlight-layer z-spotlight hidden"></canvas>
+
+    <!-- SSIRO-UPDATE: Layer 38: Magnifier Lens Canvas -->
+    <canvas id="lensCanvas" class="lens-canvas z-lens hidden"></canvas>
+
+    <!-- SSIRO-UPDATE: Floating Transient Zoom Indicator and 1x Reset Chip -->
+    <div id="zoomIndicator" class="zoom-indicator hidden">1.0×</div>
+    <button id="btnZoomReset" class="zoom-reset-chip hidden" title="Reset Zoom 1×">
+      <span>1× रीसेट</span>
+    </button>
 
     <!-- Layer 40: Chevrons (semi-transparent on-canvas navigation) -->
     <div id="navLeftZone" class="nav-edge-zone nav-zone-left" title="Previous Slide (← / Swipe Right)">
@@ -84,6 +224,41 @@
     <div id="settingsPanel" class="settings-modal z-modal hidden"></div>
     <div id="toastContainer" class="toast-container z-modal"></div>
     <div id="undoChipContainer" class="undo-chip-container z-modal"></div>
+
+    <!-- SSIRO-UPDATE: Layer 100: Welcome Screen ("Welcome to SSIRO Classes") -->
+    <div id="welcomeScreen" class="welcome-screen">
+      <div class="welcome-content">
+        <div class="welcome-logo-container">
+          <svg class="welcome-logo" viewBox="0 0 512 512" width="100%" height="100%">
+            <defs>
+              <linearGradient id="wl_bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#14306B"/><stop offset="1" stop-color="#0A1633"/></linearGradient>
+              <linearGradient id="wl_gold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFD76A"/><stop offset="1" stop-color="#E8890C"/></linearGradient>
+              <radialGradient id="wl_glass" cx="0.4" cy="0.35" r="0.8"><stop offset="0" stop-color="#2A4A94"/><stop offset="1" stop-color="#0F2150"/></radialGradient>
+              <linearGradient id="wl_petalC" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#FF9A2E"/><stop offset="1" stop-color="#FFE08A"/></linearGradient>
+              <linearGradient id="wl_petalS" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#FFE9B8"/><stop offset="1" stop-color="#FFFFFF"/></linearGradient>
+            </defs>
+            <rect width="512" height="512" rx="112" fill="url(#wl_bg)"/>
+            <g transform="translate(-12 -8)">
+              <line x1="330" y1="322" x2="418" y2="410" stroke="url(#wl_gold)" stroke-width="40" stroke-linecap="round"/>
+              <circle cx="240" cy="232" r="130" fill="url(#wl_glass)" stroke="url(#wl_gold)" stroke-width="26"/>
+              <path d="M240 195 C264 222 264 262 240 290 C216 262 216 222 240 195 Z" fill="url(#wl_petalS)" opacity="0.85" transform="rotate(-68 240 290)"/>
+              <path d="M240 195 C264 222 264 262 240 290 C216 262 216 222 240 195 Z" fill="url(#wl_petalS)" opacity="0.85" transform="rotate(68 240 290)"/>
+              <path d="M240 160 C272 195 272 255 240 290 C208 255 208 195 240 160 Z" fill="url(#wl_petalS)" transform="rotate(-36 240 290)"/>
+              <path d="M240 160 C272 195 272 255 240 290 C208 255 208 195 240 160 Z" fill="url(#wl_petalS)" transform="rotate(36 240 290)"/>
+              <path d="M240 160 C272 195 272 255 240 290 C208 255 208 195 240 160 Z" fill="url(#wl_petalC)"/>
+              <path d="M150 190 A100 100 0 0 1 215 130" fill="none" stroke="#FFFFFF" stroke-opacity="0.28" stroke-width="10" stroke-linecap="round"/>
+            </g>
+          </svg>
+        </div>
+        <div class="welcome-text-glow"></div>
+        <h1 class="welcome-title">
+          <span class="welcome-line-1">Welcome to</span>
+          <span class="welcome-line-2">SSIRO Classes</span>
+        </h1>
+        <div class="welcome-underline"></div>
+        <p class="welcome-hint">शुरू करने के लिए छूएँ / Tap to start</p>
+      </div>
+    </div>
 
     <!-- Hidden file inputs -->
     <input type="file" id="fileInputDeck" accept=".pdf,.pptx,image/jpeg,image/png,image/webp" multiple class="sr-only" />

@@ -14,6 +14,12 @@ import { inputCoordinator } from './core/input';
 import { navigationController } from './presenter/navigation';
 import { fullscreenService } from './core/fullscreen';
 import { store } from './state/store';
+// SSIRO-UPDATE: Welcome Screen
+import { welcomeScreen } from './ui/welcomeScreen';
+// SSIRO-UPDATE: Zoom and Magnifier subsystems
+import { zoomController } from './zoom/zoomController';
+import { magnifierLensController } from './zoom/magnifierLens';
+import { zoomGestureHandler } from './zoom/zoomGestures';
 
 // PWA auto-updater
 if ('serviceWorker' in navigator) {
@@ -23,6 +29,12 @@ if ('serviceWorker' in navigator) {
         immediate: true,
         onNeedRefresh() {
           console.log('New Smart Studio update available.');
+          // SSIRO-UPDATE: Show reload toast on new version ready
+          window.dispatchEvent(
+            new CustomEvent('app-toast', {
+              detail: { message: 'नया संस्करण उपलब्ध है — पुनः लोड करें (New version ready — Reload)' }
+            })
+          );
         },
         onOfflineReady() {
           console.log('Smart Studio is 100% offline ready.');
@@ -32,9 +44,27 @@ if ('serviceWorker' in navigator) {
     .catch(() => {});
 }
 
+// SSIRO-UPDATE: OS File Handler launchQueue
+if ('launchQueue' in window && 'files' in (window as any).LaunchParams.prototype) {
+  (window as any).launchQueue.setConsumer(async (launchParams: any) => {
+    if (!launchParams.files || launchParams.files.length === 0) return;
+    const fileHandles = launchParams.files;
+    const files: File[] = [];
+    for (const handle of fileHandles) {
+      files.push(await handle.getFile());
+    }
+    welcomeScreen.show(() => {
+      window.dispatchEvent(new CustomEvent('app-open-files', { detail: { files } }));
+    });
+  });
+}
+
 class SmartStudioApp {
   init(): void {
-    console.log('🚀 Initializing Smart Studio Presenter Pro (Decoding Indology)...');
+    console.log('🚀 Initializing Smart Studio Presenter Pro (SSIRO Classes)...');
+
+    // SSIRO-UPDATE: Launch Welcome Screen immediately
+    welcomeScreen.show();
 
     // Initialize core layers and presentation view
     layerManager.updateDimensions();
@@ -48,6 +78,20 @@ class SmartStudioApp {
     geminiPanel.init();
     settingsPanel.init();
     voiceCommandService.init();
+
+    // SSIRO-UPDATE: Initialize Zoom and Magnifier subsystems
+    zoomController.init();
+    magnifierLensController.init();
+    zoomGestureHandler.init();
+
+    // SSIRO-UPDATE: touch-action:none on stage while Magnifier/Zoom are active per C7
+    store.subscribe((state, prev) => {
+      const isZoomOrMag = state.activeTool === 'magnifier' || state.activeTool === 'zoom';
+      const wasZoomOrMag = prev.activeTool === 'magnifier' || prev.activeTool === 'zoom';
+      if (isZoomOrMag !== wasZoomOrMag) {
+        layerManager.stageEl.style.touchAction = isZoomOrMag ? 'none' : '';
+      }
+    });
 
     this.wireGesturesAndShortcuts();
     this.wireToastSystem();

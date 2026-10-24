@@ -27,6 +27,14 @@ export class SlideView {
       this.reRenderCurrentSlide();
     });
 
+    // SSIRO-UPDATE: Listen for files received via OS launchQueue
+    window.addEventListener('app-open-files', async (e: any) => {
+      const files = e.detail?.files;
+      if (files && files.length > 0) {
+        await this.handleIncomingFiles(files);
+      }
+    });
+
     // Load initial sample deck so user immediately sees crisp 4K content
     this.loadInitialDeck();
   }

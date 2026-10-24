@@ -153,8 +153,88 @@ The project includes a ready-to-build Android Capacitor project under `android/`
 | **Previous Slide** | `←` / `PageUp` | Horizontal Swipe Right / Left Edge Click |
 | **First Slide** | `Home` | — |
 | **Last Slide** | `End` | — |
-| **Zen Fullscreen** | `F` | Double-Click / Double-Tap |
+| **Zen Fullscreen** | `F` | Double-Click / Double-Tap (except Zoom tool) |
 | **Blackboard Studio** | `B` | Board button on header / toolbar |
 | **Open Deck** | `O` | Open Deck button on header |
-| **Close Overlays** | `Escape` | Tap ✕ on overlay |
+| **Close Overlays / Tool** | `Escape` | Tap ✕ on overlay / closes active tool |
 | **Square / Perfect Circle** | Hold `Shift` while dragging | — |
+| **Magnifier Lens** | `M` | Tap 🔍 button in Tier 1 / Stylus Hover / Finger Drag |
+| **Pin Lens** | — | Long-press (500ms) / Alt+Click / Tap in Pin Mode |
+| **Adjust Magnification** | `Wheel` | Slider in Popover / ➕ / ➖ on pinned ring |
+| **Adjust Lens Size** | `Shift` + `Wheel` | Corner handle drag / Slider in Popover |
+| **Whole-Slide Zoom Tool** | `Z` | Tap Zoom button in Tier 2 / Two-finger Pinch (1×–8×) |
+| **Tap to Zoom (2.5× ↔ 1×)** | — | Single tap on slide when Zoom tool active |
+| **Pan Zoomed Slide** | Middle-Mouse Drag | Two-finger drag / 1-finger drag in Zoom tool |
+| **Zoom In / Out / Reset** | `+` / `-` / `0` | Floating 1× Reset Chip |
+
+---
+
+## 🔍 Magnifier Lens & Whole-Slide Zoom (New in v1.1.0)
+
+### 1. Magnifier Lens
+- **Activation**: Click the **🔍 Lens** button in Tier 1 of the floating toolbar or press `M`.
+- **Follow Behavior**:
+  - Mouse follows `pointermove`.
+  - Stylus follows hover (`pointerType === 'pen'`) and contact.
+  - Finger touch displays the lens above fingertip (`radius + 24px`) with zero obstruction of underlying detail.
+  - Content stays centered with mathematical sub-pixel accuracy (≤ 4px error at rest).
+- **Pinning Lenses**:
+  - Long-press for 500ms or Alt+click to drop a pinned lens on the slide (up to 3 simultaneous pinned lenses).
+  - Pinned lenses feature a gold gradient ring, corner resize handle, zoom ➕/➖ buttons, ✕ remove button, and a **Fixed Area (🔒)** vs **Glass Mode (🔍)** toggle.
+  - Pinned lenses survive tool changes (you can switch back to Pen and annotate inside the lens!).
+- **Spotlight Dim Mode**:
+  - In Settings or the Magnifier Popover, enable **Spotlight** to dim the rest of the canvas by 45%, directing 100% of student focus to the lens.
+- **Settings Popover**:
+  - Tapping the active 🔍 button opens an in-place popover directly above the button to customize size (120–600 px), magnification (1.5×–8×), shape (Circle / Rounded Rect), mode (Follow / Pin-on-tap), spotlight, and touch position.
+
+### 2. Whole-Slide Zoom
+- **Activation**: Tap the **Zoom** button in Tier 2 of the toolbar, press `Z`, or simply pinch with two fingers anywhere on the stage.
+- **Gestures**:
+  - **Pinch**: Smooth 1:1 hardware-accelerated zoom (1× to 8×) about the finger midpoint.
+  - **Two-Finger Pan**: Drag anywhere when zoomed (`> 1.05×`) with inertial physics (0.92 friction). Slides always cover 100% of stage (no empty borders).
+  - **Tap-to-Zoom**: In Zoom tool, tap any detail to smoothly animate to 2.5× centered on that point; double-tap to reset to 1×.
+  - **Floating 1× Chip**: Tap the floating `1×` badge in the bottom-right corner to instantly return to normal view.
+- **Conflict Rule**:
+  - For standard drawing tools, double-tap toggles toolbar visibility in Zen mode as before.
+  - When the Zoom tool is active, double-tap toggles zoom, and the toolbar remains accessible via its drag handle (`⋮⋮`) or a 3-finger tap.
+
+---
+
+## 🌟 Welcome Screen Customization
+
+Smart Studio Presenter Pro features an instant, cold-start welcome splash ("Welcome to SSIRO Classes") rendered with bundled high-contrast typography (*Noto Sans Devanagari 800*, *Inter 800*).
+
+- **Brand Defaults**: Defined in `src/brand.ts`:
+  ```ts
+  export const WELCOME_LINE_1 = 'Welcome to';
+  export const WELCOME_LINE_2 = 'SSIRO Classes';
+  ```
+- **Customization**: Open **Settings ➔ स्वागत स्क्रीन (Welcome Screen)**:
+  - Toggle welcome screen on/off.
+  - Customize Text Line 1 and Text Line 2.
+  - Adjust duration slider (1.0 to 5.0 seconds, default 2.8s).
+- **Instant Skip**: Tap anywhere or press any key after 800ms to dismiss immediately.
+- **Background Pre-Warming**: While the splash renders, local fonts and `pdf.worker.min.mjs` are silently pre-cached so the presentation deck appears with zero latency.
+
+---
+
+## 🎨 Icon Generation Pipeline (`npm run icons`)
+
+Icons are derived deterministically from the master vector SVG at `assets/brand/logo.svg` using Sharp:
+
+```bash
+npm run icons
+```
+
+Generated assets:
+- `public/icons/icon-192.png`: 192×192 standard icon (transparent corners).
+- `public/icons/icon-512.png`: 512×512 master high-resolution icon.
+- `public/icons/maskable-512.png`: Full-bleed background with 0.78 scaled content for Android adaptive / round icon masks.
+- `public/apple-touch-icon.png`: 180×180 iOS touch icon (no transparency).
+- `public/favicon.svg`: Vector browser tab favicon.
+- `public/favicon-32.png`: 32×32 PNG favicon.
+- `public/favicon.ico`: Standard multi-resolution Windows ICO (16, 32, 48 px).
+
+> **Note on Windows PC Taskbar Icons**:  
+> When updating an already-installed PWA on Windows, Chrome/Edge caches application shortcuts in the Windows shell. The in-app window, splash screen, and browser tabs update immediately via the new Service Worker cache (`ssiro-smart-studio-v1.1.0`). To force Windows Explorer to refresh the taskbar shortcut icon immediately, simply uninstall the PWA via Chrome (*Settings ➔ Apps ➔ Manage Apps*) and re-install.
+

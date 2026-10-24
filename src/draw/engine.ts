@@ -62,9 +62,25 @@ export class DrawingEngine {
     this.eraserCursorEl.style.height = `${size}px`;
   }
 
+  // SSIRO-UPDATE: Helper for constant on-screen pen width when zoomed
+  private getWidthScaleFactor(): number {
+    const state = store.getState();
+    const keep = state.settings.keepPenWidthOnZoom ?? true;
+    if (!keep) return 1.0;
+    const zoomRoot = document.getElementById('zoomRoot');
+    if (!zoomRoot) return 1.0;
+    const match = zoomRoot.style.transform.match(/scale\(([^)]+)\)/);
+    if (match) {
+      const s = parseFloat(match[1]);
+      if (s > 1.0) return 1 / s;
+    }
+    return 1.0;
+  }
+
   private handlePointerDown(e: PointerEvent): void {
     const state = store.getState();
-    if (state.activeTool === 'select') return;
+    // SSIRO-UPDATE: Magnifier & Zoom tools do not draw ink
+    if (state.activeTool === 'select' || state.activeTool === 'magnifier' || state.activeTool === 'zoom') return;
 
     // Palm rejection: if stylus was used and this event is a wide finger touch, reject
     if (e.pointerType === 'pen') {
@@ -79,7 +95,8 @@ export class DrawingEngine {
     this.activePointerId = e.pointerId;
     layerManager.annotationCanvas.setPointerCapture(e.pointerId);
 
-    const coords = layerManager.toStageCoords(e.clientX, e.clientY);
+    // SSIRO-UPDATE: Use toSlideCoords for zoom coordinate inversion
+    const coords = layerManager.toSlideCoords(e.clientX, e.clientY);
     const point: Point = {
       x: coords.x,
       y: coords.y,
@@ -89,6 +106,8 @@ export class DrawingEngine {
 
     this.startPoint = point;
     this.currentStrokePoints = [point];
+
+    const wf = this.getWidthScaleFactor();
 
     if (state.activeTool === 'eraser') {
       this.updateEraserCursor(e.clientX, e.clientY, state.eraserSize, true);
@@ -100,10 +119,10 @@ export class DrawingEngine {
       ctx.save();
       ctx.strokeStyle = state.activeColor;
       ctx.fillStyle = state.activeColor;
-      ctx.lineWidth = state.penSize;
+      ctx.lineWidth = state.penSize * wf;
       ctx.globalAlpha = state.penAlpha;
       ctx.beginPath();
-      ctx.arc(point.x, point.y, state.penSize / 2, 0, Math.PI * 2);
+      ctx.arc(point.x, point.y, (state.penSize * wf) / 2, 0, Math.PI * 2);
       ctx.fill();
       ctx.restore();
     } else if (state.activeTool === 'highlighter') {
@@ -115,7 +134,7 @@ export class DrawingEngine {
       layerManager.previewCanvas.style.opacity = `${state.highlighterAlpha}`;
       layerManager.previewCanvas.style.mixBlendMode = 'multiply';
       ctx.strokeStyle = state.activeColor;
-      ctx.lineWidth = state.highlighterWidth;
+      ctx.lineWidth = state.highlighterWidth * wf;
       ctx.lineCap = 'butt';
       ctx.lineJoin = 'round';
     }
@@ -135,7 +154,8 @@ export class DrawingEngine {
     const events: PointerEvent[] = (e.getCoalescedEvents ? e.getCoalescedEvents() : [e]) as PointerEvent[];
 
     for (const evt of events) {
-      const coords = layerManager.toStageCoords(evt.clientX, evt.clientY);
+      // SSIRO-UPDATE: Use toSlideCoords
+      const coords = layerManager.toSlideCoords(evt.clientX, evt.clientY);
       const point: Point = {
         x: coords.x,
         y: coords.y,
@@ -283,15 +303,16 @@ export class DrawingEngine {
 
   private executeEraser(point: Point): void {
     const state = store.getState();
+    const wf = this.getWidthScaleFactor();
     if (state.eraserMode === 'stroke') {
-      annotationStore.eraseStrokeAt(point, state.eraserSize / 2);
+      annotationStore.eraseStrokeAt(point, (state.eraserSize / 2) * wf);
     } else {
       // Pixel eraser using destination-out
       const ctx = layerManager.annotationCtx;
       ctx.save();
       ctx.globalCompositeOperation = 'destination-out';
       ctx.beginPath();
-      ctx.arc(point.x, point.y, state.eraserSize / 2, 0, Math.PI * 2);
+      ctx.arc(point.x, point.y, (state.eraserSize / 2) * wf, 0, Math.PI * 2);
       ctx.fill();
       ctx.restore();
     }
@@ -303,11 +324,12 @@ export class DrawingEngine {
 
     const ctx = layerManager.previewCtx;
     const state = store.getState();
+    const wf = this.getWidthScaleFactor();
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
     ctx.save();
     ctx.strokeStyle = state.activeColor;
-    ctx.lineWidth = state.penSize;
+    ctx.lineWidth = state.penSize * wf;
     ctx.globalAlpha = state.penAlpha;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
@@ -330,11 +352,12 @@ export class DrawingEngine {
 
     const ctx = layerManager.previewCtx;
     const state = store.getState();
+    const wf = this.getWidthScaleFactor();
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
     ctx.save();
     ctx.strokeStyle = state.activeColor;
-    ctx.lineWidth = state.highlighterWidth;
+    ctx.lineWidth = state.highlighterWidth * wf;
     ctx.lineCap = 'butt';
     ctx.lineJoin = 'round';
 
@@ -353,6 +376,7 @@ export class DrawingEngine {
   private renderShapePreview(start: Point, current: Point, shape: any): void {
     const ctx = layerManager.previewCtx;
     const state = store.getState();
+    const wf = this.getWidthScaleFactor();
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
     let endP = current;
@@ -366,7 +390,7 @@ export class DrawingEngine {
 
     ctx.save();
     ctx.strokeStyle = state.activeColor;
-    ctx.lineWidth = state.penSize;
+    ctx.lineWidth = state.penSize * wf;
     ctx.globalAlpha = state.penAlpha;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
@@ -378,15 +402,18 @@ export class DrawingEngine {
   private renderArrowPreview(start: Point, current: Point): void {
     const ctx = layerManager.previewCtx;
     const state = store.getState();
+    const wf = this.getWidthScaleFactor();
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
     ctx.save();
     ctx.strokeStyle = state.activeColor;
     ctx.fillStyle = state.activeColor;
-    ctx.lineWidth = state.penSize;
+    ctx.lineWidth = state.penSize * wf;
     ctx.globalAlpha = state.penAlpha;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
 
-    annotationStore.drawArrow(ctx, start, current, state.penSize);
+    annotationStore.drawArrow(ctx, start, current, state.penSize * wf);
     ctx.restore();
   }
 }

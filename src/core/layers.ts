@@ -109,6 +109,20 @@ export class LayerManager {
     this.onResizeCallbacks.push(cb);
   }
 
+  // SSIRO-UPDATE: Inverse zoom coordinate conversion for drawing and ink
+  private slideCoordsConverter?: (clientX: number, clientY: number) => { x: number; y: number };
+
+  setSlideCoordsConverter(fn: (clientX: number, clientY: number) => { x: number; y: number }): void {
+    this.slideCoordsConverter = fn;
+  }
+
+  toSlideCoords(clientX: number, clientY: number): { x: number; y: number } {
+    if (this.slideCoordsConverter) {
+      return this.slideCoordsConverter(clientX, clientY);
+    }
+    return this.toStageCoords(clientX, clientY);
+  }
+
   toStageCoords(clientX: number, clientY: number): { x: number; y: number } {
     const rect = this.stageEl.getBoundingClientRect();
     return {

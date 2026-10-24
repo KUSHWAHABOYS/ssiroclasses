@@ -2,6 +2,8 @@ import { ActiveTool, BoardThemeId, ShapeType, store } from '../state/store';
 import { annotationStore } from '../draw/annotationStore';
 import { popoverManager } from './popovers';
 import { fullscreenService } from '../core/fullscreen';
+// SSIRO-UPDATE: Magnifier Popover
+import { zoomPopoverManager } from '../zoom/zoomPopover';
 
 export class Toolbar {
   private containerEl!: HTMLElement;
@@ -63,6 +65,12 @@ export class Toolbar {
           <span class="btn-label">Eraser</span>
         </button>
 
+        <!-- SSIRO-UPDATE: Magnifier Button in Tier 1 next to Eraser -->
+        <button class="tool-btn" id="btnToolMagnifier" data-tool="magnifier" title="Magnifier Lens (🔍 Tap again for settings)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <span class="btn-label">Lens</span>
+        </button>
+
         <div class="swatch-group" id="swatchGroup">
           ${this.swatches
             .map(
@@ -88,7 +96,7 @@ export class Toolbar {
         </button>
       </div>
 
-      <!-- Tier 2: Shapes, Arrow, Handwriting, Media, Browser, AI, Board, Settings -->
+      <!-- Tier 2: Shapes, Arrow, Zoom, Handwriting, Media, Browser, AI, Board, Settings -->
       <div class="toolbar-tier toolbar-tier-2 collapsed" id="toolbarTier2">
         <button class="tool-btn" id="btnToolShape" data-tool="shape" title="Shapes (Box/Circle/Line)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
@@ -98,6 +106,12 @@ export class Toolbar {
         <button class="tool-btn" id="btnToolArrow" data-tool="arrow" title="Smart Arrow (Point A to B)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
           <span class="btn-label">Arrow</span>
+        </button>
+
+        <!-- SSIRO-UPDATE: Whole-slide Zoom button in Tier 2 -->
+        <button class="tool-btn" id="btnToolZoom" data-tool="zoom" title="Whole-Slide Zoom & Pan (Z)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+          <span class="btn-label">Zoom</span>
         </button>
 
         <button class="tool-btn" id="btnToolHandwriting" title="✍ ➔ Aa Handwriting-to-Text">
@@ -241,16 +255,20 @@ export class Toolbar {
         const currentTool = store.getState().activeTool;
 
         if (tool === currentTool) {
-          // Centered in-place popover for Pen, Highlighter, Eraser per B5.4
+          // Centered in-place popover for Pen, Highlighter, Eraser, Magnifier per spec
           if (tool === 'pen') {
             popoverManager.showPenPopover(btn);
           } else if (tool === 'highlighter') {
             popoverManager.showHighlighterPopover(btn);
           } else if (tool === 'eraser') {
             popoverManager.showEraserPopover(btn);
+          } else if (tool === 'magnifier') {
+            // SSIRO-UPDATE: Open Magnifier Settings Popover directly above button
+            zoomPopoverManager.showMagnifierPopover(btn);
           }
         } else {
           popoverManager.close();
+          zoomPopoverManager.close();
           store.setState({ activeTool: tool });
         }
       });

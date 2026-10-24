@@ -53,3 +53,19 @@ As part of our commitment to transparent engineering, this document details any 
   - Complete native Android project generated and synced under `android/`.
   - AndroidManifest.xml and MainActivity.java configured with immersive sticky mode, keep-awake, hardware acceleration, and mic permissions.
   - Can be built immediately in Android Studio or CI/CD using `./gradlew assembleDebug`.
+
+---
+
+### 6. PWA Taskbar & Desktop Shortcut Icon Updates on Windows PC
+- **Technical Constraint**: When a Progressive Web App (PWA) is installed via Chrome or Edge on Windows, the operating system creates Windows `.lnk` shortcuts and extracts the icon into the Windows Icon Cache (`%LOCALAPPDATA%\IconCache.db`). Although the Service Worker automatically refreshes the in-browser and in-window application assets (showing the "New version ready — Reload" toast), the Windows OS taskbar and desktop shortcuts may continue caching the previous icon until Windows rebuilds its shell cache.
+- **Implemented Solution & User Guidance**:
+  - The Service Worker cacheId has been bumped to `ssiro-smart-studio-v1.1.0` so browser tabs, splash screens, and window headers update immediately upon reload.
+  - For installed desktop PWAs on Windows, if the taskbar icon does not immediately show the new SSIRO gold lotus icon, simply uninstall the PWA from Chrome/Edge (*Settings ➔ Apps ➔ Manage Apps*) and click Install again.
+
+---
+
+### 7. Toolbar Double-Tap vs. Zoom Double-Tap Conflict Rule
+- **Technical Constraint**: The app features a global double-tap gesture to toggle toolbar visibility in Zen mode. In the new Whole-Slide Zoom tool, educators also expect double-tap to toggle between 1× and 2.5× zoom.
+- **Implemented Solution**:
+  - The conflict rule cleanly isolates tool behaviors: for all normal tools (Pen, Highlighter, Eraser, Shapes, Select), double-tap toggles toolbar visibility as before.
+  - When the **Zoom tool** is explicitly active, double-tap toggles zoom level (1× ↔ 2.5×), and the toolbar remains accessible at all times via its 360° drag handle (`⋮⋮`) or a 3-finger tap.

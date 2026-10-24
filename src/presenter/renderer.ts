@@ -33,6 +33,12 @@ export class SlideRenderer {
     return this.currentMetrics;
   }
 
+  // SSIRO-UPDATE: Expose current 3x bitmap for Magnifier Lens crisp rendering
+  getCurrentBitmap(): ImageBitmap | null {
+    const currentPage = store.getState().currentPage;
+    return this.cache.get(currentPage)?.bitmap || null;
+  }
+
   clearCache(): void {
     for (const entry of this.cache.values()) {
       entry.bitmap.close?.();

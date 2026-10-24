@@ -1,6 +1,9 @@
 import { store } from '../state/store';
 import { annotationStore } from '../draw/annotationStore';
 import { slideRenderer } from './renderer';
+// SSIRO-UPDATE: Import zoom and magnifier controllers
+import { zoomController } from '../zoom/zoomController';
+import { magnifierLensController } from '../zoom/magnifierLens';
 
 export class NavigationController {
   private isNavigating = false;
@@ -19,6 +22,10 @@ export class NavigationController {
 
     // Guaranteed Auto-erase: synchronously clear before new slide is painted
     annotationStore.onSlideChange(oldPage, clamped);
+
+    // SSIRO-UPDATE: Reset zoom & clear pinned lenses in the same synchronous step before paint
+    zoomController.onSlideChange();
+    magnifierLensController.onSlideChange();
 
     // Cancel in-progress strokes / pending handwriting recognition
     window.dispatchEvent(new CustomEvent('cancel-in-progress-drawing'));

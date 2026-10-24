@@ -30,7 +30,13 @@ export const i18n = {
     geminiExplainSlide: 'यह स्लाइड समझाएं (Explain Slide)',
     geminiPlaceholder: 'जेमिनी से कुछ भी पूछें (हिंदी या English)...',
     apiKeyNote: 'आपकी API कुंजी इस डिवाइस पर AES-GCM से एन्क्रिप्टेड है और सीधे Google को जाती है।',
-    offlineNotice: 'ऑफ़लाइन मोड सक्रिय'
+    offlineNotice: 'ऑफ़लाइन मोड सक्रिय',
+    // SSIRO-UPDATE: Strings for Magnifier & Zoom
+    magnifier: 'मैग्नीफ़ायर',
+    zoom: 'झूम',
+    pinLens: 'लेंस टिकाएँ',
+    resetZoom: 'रीसेट 1×',
+    spotlight: 'स्पॉटलाइट'
   },
   en: {
     appTitle: 'Smart Studio Presenter Pro',
@@ -63,7 +69,13 @@ export const i18n = {
     geminiExplainSlide: 'Explain this Slide with Vision',
     geminiPlaceholder: 'Ask Gemini anything (Hindi or English)...',
     apiKeyNote: 'Your API key is encrypted on-device via AES-GCM; requests go directly to Google.',
-    offlineNotice: 'Offline Mode Active'
+    offlineNotice: 'Offline Mode Active',
+    // SSIRO-UPDATE: Strings for Magnifier & Zoom
+    magnifier: 'Magnifier',
+    zoom: 'Zoom',
+    pinLens: 'Pin lens',
+    resetZoom: 'Reset 1×',
+    spotlight: 'Spotlight'
   }
 };
 

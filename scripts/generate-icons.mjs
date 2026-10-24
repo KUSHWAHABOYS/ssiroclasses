@@ -1,89 +1,150 @@
-import fs from 'fs';
-import path from 'path';
-import zlib from 'zlib';
+// SSIRO-UPDATE: Icon Generation Pipeline using Sharp
+import fs from 'node:fs';
+import path from 'node:path';
+import sharp from 'sharp';
 
-function createPNG(width, height, r, g, b) {
-  // Signature
-  const signature = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
+const ROOT_DIR = process.cwd();
+const BRAND_DIR = path.join(ROOT_DIR, 'assets', 'brand');
+const PUBLIC_DIR = path.join(ROOT_DIR, 'public');
+const ICONS_DIR = path.join(PUBLIC_DIR, 'icons');
 
-  // IHDR chunk
-  const ihdrData = Buffer.alloc(13);
-  ihdrData.writeUInt32BE(width, 0);
-  ihdrData.writeUInt32BE(height, 4);
-  ihdrData[8] = 8; // bit depth
-  ihdrData[9] = 2; // color type: truecolor RGB
-  ihdrData[10] = 0; // compression
-  ihdrData[11] = 0; // filter
-  ihdrData[12] = 0; // interlace
+async function main() {
+  console.log('🎨 Generating SSIRO Brand Icons & PWA Assets...');
 
-  const ihdrChunk = createChunk('IHDR', ihdrData);
+  fs.mkdirSync(ICONS_DIR, { recursive: true });
 
-  // Raw image data with scanline filter byte 0
-  const scanlineLength = 1 + width * 3;
-  const rawData = Buffer.alloc(height * scanlineLength);
+  const userLogoPng = path.join(BRAND_DIR, 'user-logo.png');
+  const masterSvgPath = path.join(BRAND_DIR, 'logo.svg');
 
-  for (let y = 0; y < height; y++) {
-    const rowOffset = y * scanlineLength;
-    rawData[rowOffset] = 0; // filter None
-    for (let x = 0; x < width; x++) {
-      const pixelOffset = rowOffset + 1 + x * 3;
-      // create a nice dark gradient with red/gold accent in center
-      const dx = x - width / 2;
-      const dy = y - height / 2;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      const isInside = dist < (width * 0.42);
-      if (isInside) {
-        rawData[pixelOffset] = r;
-        rawData[pixelOffset + 1] = g;
-        rawData[pixelOffset + 2] = b;
-      } else {
-        rawData[pixelOffset] = 18;
-        rawData[pixelOffset + 1] = 18;
-        rawData[pixelOffset + 2] = 24;
-      }
-    }
-  }
+  let masterSvg = fs.readFileSync(masterSvgPath, 'utf8');
 
-  const compressedData = zlib.deflateSync(rawData);
-  const idatChunk = createChunk('IDAT', compressedData);
-  const iendChunk = createChunk('IEND', Buffer.alloc(0));
+  // Create maskable SVG variant per Part D spec:
+  // Background <rect> has no rx (full bleed) and content group has:
+  // transform="translate(256 256) scale(0.78) translate(-256 -256) translate(-12 -8)"
+  const maskableSvg = masterSvg
+    .replace(/<rect width="512" height="512" rx="112" fill="url\(#bg\)"\/>/, '<rect width="512" height="512" fill="url(#bg)"/>')
+    .replace(
+      /<g transform="translate\(-12 -8\)">/,
+      '<g transform="translate(256 256) scale(0.78) translate(-256 -256) translate(-12 -8)">'
+    );
 
-  return Buffer.concat([signature, ihdrChunk, idatChunk, iendChunk]);
+  const svgBuffer = Buffer.from(masterSvg);
+  const maskableBuffer = Buffer.from(maskableSvg);
+
+  // 1. icon-192.png (192x192, transparent corners)
+  console.log('Generating public/icons/icon-192.png...');
+  await sharp(svgBuffer)
+    .resize(192, 192)
+    .png()
+    .toFile(path.join(ICONS_DIR, 'icon-192.png'));
+
+  // 2. icon-512.png (512x512, transparent corners)
+  console.log('Generating public/icons/icon-512.png...');
+  await sharp(svgBuffer)
+    .resize(512, 512)
+    .png()
+    .toFile(path.join(ICONS_DIR, 'icon-512.png'));
+
+  // 3. maskable-512.png (512x512, full bleed background + 0.78 scaled content)
+  console.log('Generating public/icons/maskable-512.png...');
+  await sharp(maskableBuffer)
+    .resize(512, 512)
+    .png()
+    .toFile(path.join(ICONS_DIR, 'maskable-512.png'));
+
+  // Also maintain backward-compatible icon-512-maskable.png
+  await sharp(maskableBuffer)
+    .resize(512, 512)
+    .png()
+    .toFile(path.join(ICONS_DIR, 'icon-512-maskable.png'));
+
+  // 4. apple-touch-icon.png 180x180 (from maskable version, no transparency)
+  console.log('Generating public/apple-touch-icon.png...');
+  await sharp(maskableBuffer)
+    .resize(180, 180)
+    .png()
+    .toFile(path.join(PUBLIC_DIR, 'apple-touch-icon.png'));
+
+  // 5. favicon.svg (copy of master SVG)
+  console.log('Writing public/favicon.svg...');
+  fs.writeFileSync(path.join(PUBLIC_DIR, 'favicon.svg'), masterSvg, 'utf8');
+
+  // 6. favicon-32.png (32x32)
+  console.log('Generating public/favicon-32.png...');
+  const png32 = await sharp(svgBuffer)
+    .resize(32, 32)
+    .png()
+    .toBuffer();
+  fs.writeFileSync(path.join(PUBLIC_DIR, 'favicon-32.png'), png32);
+
+  // 7. favicon.ico (16, 32, 48 PNG-in-ICO standard format)
+  console.log('Generating public/favicon.ico...');
+  const png16 = await sharp(svgBuffer).resize(16, 16).png().toBuffer();
+  const png48 = await sharp(svgBuffer).resize(48, 48).png().toBuffer();
+
+  const icoBuffer = createIcoFromPngs([
+    { size: 16, buffer: png16 },
+    { size: 32, buffer: png32 },
+    { size: 48, buffer: png48 }
+  ]);
+  fs.writeFileSync(path.join(PUBLIC_DIR, 'favicon.ico'), icoBuffer);
+
+  console.log('✅ All icons successfully generated and verified!');
 }
 
-function crc32(buf) {
-  let table = new Uint32Array(256);
-  for (let i = 0; i < 256; i++) {
-    let c = i;
-    for (let k = 0; k < 8; k++) {
-      c = (c & 1) ? (0xedb88320 ^ (c >>> 1)) : (c >>> 1);
-    }
-    table[i] = c;
+/**
+ * Packs multiple PNG images into a valid multi-resolution Windows ICO file.
+ */
+function createIcoFromPngs(images) {
+  const numImages = images.length;
+  const headerSize = 6;
+  const dirEntrySize = 16;
+  const totalDirSize = headerSize + numImages * dirEntrySize;
+
+  let currentOffset = totalDirSize;
+  const entries = [];
+
+  for (const img of images) {
+    entries.push({
+      width: img.size === 256 ? 0 : img.size,
+      height: img.size === 256 ? 0 : img.size,
+      size: img.buffer.length,
+      offset: currentOffset,
+      buffer: img.buffer
+    });
+    currentOffset += img.buffer.length;
   }
-  let crc = 0xffffffff;
-  for (let i = 0; i < buf.length; i++) {
-    crc = table[(crc ^ buf[i]) & 0xff] ^ (crc >>> 8);
+
+  const outBuffer = Buffer.alloc(currentOffset);
+
+  // ICO Header
+  outBuffer.writeUInt16LE(0, 0); // Reserved
+  outBuffer.writeUInt16LE(1, 2); // 1 = ICO type
+  outBuffer.writeUInt16LE(numImages, 4); // Number of images
+
+  // Directory entries
+  let entryPos = 6;
+  for (const entry of entries) {
+    outBuffer.writeUInt8(entry.width, entryPos);
+    outBuffer.writeUInt8(entry.height, entryPos + 1);
+    outBuffer.writeUInt8(0, entryPos + 2); // Color palette
+    outBuffer.writeUInt8(0, entryPos + 3); // Reserved
+    outBuffer.writeUInt16LE(1, entryPos + 4); // Color planes
+    outBuffer.writeUInt16LE(32, entryPos + 6); // Bits per pixel
+    outBuffer.writeUInt32LE(entry.size, entryPos + 8); // Image data size
+    outBuffer.writeUInt32LE(entry.offset, entryPos + 12); // Image data offset
+    entryPos += 16;
   }
-  return (crc ^ 0xffffffff) >>> 0;
+
+  // Concatenate image payloads
+  for (const entry of entries) {
+    entry.buffer.copy(outBuffer, entry.offset);
+  }
+
+  return outBuffer;
 }
 
-function createChunk(type, data) {
-  const len = Buffer.alloc(4);
-  len.writeUInt32BE(data.length, 0);
-
-  const typeBuf = Buffer.from(type, 'ascii');
-  const typeAndData = Buffer.concat([typeBuf, data]);
-
-  const crcBuf = Buffer.alloc(4);
-  crcBuf.writeUInt32BE(crc32(typeAndData), 0);
-
-  return Buffer.concat([len, typeAndData, crcBuf]);
-}
-
-const outDir = path.resolve('public/icons');
-fs.mkdirSync(outDir, { recursive: true });
-
-fs.writeFileSync(path.join(outDir, 'icon-192.png'), createPNG(192, 192, 230, 80, 40));
-fs.writeFileSync(path.join(outDir, 'icon-512.png'), createPNG(512, 512, 230, 80, 40));
-fs.writeFileSync(path.join(outDir, 'icon-512-maskable.png'), createPNG(512, 512, 200, 60, 30));
-console.log('Icons generated successfully!');
+main().catch((err) => {
+  console.error('Icon generation failed:', err);
+  process.exit(1);
+});
