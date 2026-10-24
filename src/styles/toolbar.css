@@ -5,7 +5,8 @@
   top: 80px;
   left: calc(50% - 240px);
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  align-items: center;
   background: var(--bg-surface);
   backdrop-filter: var(--backdrop-blur);
   -webkit-backdrop-filter: var(--backdrop-blur);
@@ -13,12 +14,53 @@
   border-radius: var(--panel-radius);
   box-shadow: var(--shadow-lg);
   padding: 6px;
-  gap: 6px;
+  gap: 4px;
   opacity: 1;
-  transition: opacity var(--trans-normal), transform var(--trans-fast);
+  transform: scale(var(--toolbar-scale, 1));
+  transform-origin: top left;
+  transition: opacity var(--trans-normal), left 200ms cubic-bezier(0.4, 0, 0.2, 1);
   touch-action: none;
   user-select: none;
   pointer-events: auto;
+  white-space: nowrap;
+  max-width: calc(100vw - 24px);
+  box-sizing: border-box;
+}
+
+.toolbar-container.is-dragging {
+  transition: opacity var(--trans-normal) !important;
+}
+
+/* Horizontal scroll wrapper for small screens */
+.toolbar-content {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 4px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+  scrollbar-width: thin;
+  max-width: 100%;
+  padding-bottom: 1px;
+}
+
+.toolbar-content::-webkit-scrollbar {
+  height: 4px;
+}
+
+.toolbar-content::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+.toolbar-content::-webkit-scrollbar-thumb {
+  background: rgba(245, 158, 11, 0.35);
+  border-radius: 4px;
+}
+
+.toolbar-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(245, 158, 11, 0.6);
 }
 
 /* Ghost mode: auto-dim */
@@ -36,13 +78,14 @@
 .stage.zen-mode .toolbar-container.zen-hidden {
   opacity: 0;
   pointer-events: none;
-  transform: translateY(20px) scale(0.95);
+  transform: scale(var(--toolbar-scale, 1)) translateY(20px);
 }
 
 .toolbar-tier {
   display: flex;
   align-items: center;
   gap: 4px;
+  flex-shrink: 0;
 }
 
 /* Drag Handle */
@@ -56,12 +99,37 @@
   color: var(--text-muted);
   border-radius: 8px;
   touch-action: none;
+  flex-shrink: 0;
 }
 
 .drag-handle:active {
   cursor: grabbing;
   color: var(--text-primary);
   background: rgba(255, 255, 255, 0.08);
+}
+
+/* Resize Handle (Touch target >= 44px) */
+.toolbar-resize-handle {
+  width: 44px;
+  height: var(--touch-target-size);
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: nwse-resize;
+  color: var(--text-muted);
+  border-radius: 8px;
+  touch-action: none;
+  flex-shrink: 0;
+  transition: color var(--trans-fast), background var(--trans-fast);
+  user-select: none;
+}
+
+.toolbar-resize-handle:hover,
+.toolbar-resize-handle:active {
+  color: var(--primary-accent);
+  background: rgba(245, 158, 11, 0.15);
 }
 
 /* Toolbar Buttons */
@@ -137,17 +205,35 @@
   box-shadow: 0 0 8px rgba(255, 255, 255, 0.6);
 }
 
-/* Tier 2 Container */
-.toolbar-tier-2 {
+/* Inline Tier 2 (Extra Tools) Container */
+.toolbar-tier-2,
+.toolbar-extra-tools {
   display: flex;
+  flex-direction: row;
   align-items: center;
   gap: 4px;
-  padding-top: 4px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+  max-width: 1600px;
+  opacity: 1;
+  transition: max-width 200ms cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 180ms ease,
+              padding 200ms ease,
+              margin 200ms ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+  margin-left: 2px;
+  border-left: 1px solid rgba(255, 255, 255, 0.12);
+  padding-left: 4px;
 }
 
-.toolbar-tier-2.collapsed {
-  display: none;
+.toolbar-tier-2.collapsed,
+.toolbar-extra-tools.collapsed {
+  max-width: 0;
+  opacity: 0;
+  pointer-events: none;
+  margin-left: 0;
+  padding-left: 0;
+  border-left: none;
 }
 
 /* Centered in-place Popovers */

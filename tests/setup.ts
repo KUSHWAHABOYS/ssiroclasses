@@ -21,6 +21,7 @@ const mockCtx = {
   clearRect: () => {},
   fillRect: () => {},
   strokeRect: () => {},
+  ellipse: () => {},
   fillText: () => {},
   measureText: (text: string) => ({ width: text.length * 12 }),
   setLineDash: () => {},

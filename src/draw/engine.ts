@@ -5,6 +5,7 @@ import { shortcutManager } from '../core/shortcuts';
 // INKFIX: Smart Ink and Voice Write managers
 import { smartInkController } from '../smartink/smartInkController';
 import { voiceWriteManager } from '../voice/writeCommand';
+import { shapeSelector } from './shapeSelector';
 
 export class DrawingEngine {
   private isDrawing = false;
@@ -28,6 +29,12 @@ export class DrawingEngine {
     // Handle cancellation during slide change or overlay opening
     window.addEventListener('cancel-in-progress-drawing', () => {
       this.cancelCurrentStroke();
+    });
+
+    store.subscribe((state, prev) => {
+      if (state.activeTool !== 'select' && prev.activeTool === 'select') {
+        shapeSelector.deselect();
+      }
     });
 
     this.createEraserCursor();
@@ -84,8 +91,18 @@ export class DrawingEngine {
     const state = store.getState();
     // WELCOME-FIX: Drawing is completely inert in welcome state
     if (state.appState === 'welcome') return;
+    if (state.activeTool === 'select') {
+      const handled = shapeSelector.handlePointerDown(e);
+      if (handled) {
+        this.activePointerId = e.pointerId;
+        try {
+          layerManager.annotationCanvas.setPointerCapture(e.pointerId);
+        } catch {}
+      }
+      return;
+    }
     // SSIRO-UPDATE: Magnifier & Zoom tools do not draw ink
-    if (state.activeTool === 'select' || state.activeTool === 'magnifier' || state.activeTool === 'zoom') return;
+    if (state.activeTool === 'magnifier' || state.activeTool === 'zoom') return;
 
     // Palm rejection: if stylus was used and this event is a wide finger touch, reject
     if (e.pointerType === 'pen') {
@@ -151,6 +168,11 @@ export class DrawingEngine {
 
   private handlePointerMove(e: PointerEvent): void {
     const state = store.getState();
+    if (state.activeTool === 'select') {
+      shapeSelector.handlePointerMove(e);
+      return;
+    }
+
     if (state.activeTool === 'eraser') {
       this.updateEraserCursor(e.clientX, e.clientY, state.eraserSize, true);
     } else {
@@ -205,6 +227,15 @@ export class DrawingEngine {
   }
 
   private handlePointerUp(e: PointerEvent): void {
+    const state = store.getState();
+    if (state.activeTool === 'select') {
+      shapeSelector.handlePointerUp();
+      try {
+        layerManager.annotationCanvas.releasePointerCapture(e.pointerId);
+      } catch {}
+      return;
+    }
+
     if (!this.isDrawing || e.pointerId !== this.activePointerId) return;
     this.isDrawing = false;
     this.activePointerId = null;
@@ -213,7 +244,6 @@ export class DrawingEngine {
       layerManager.annotationCanvas.releasePointerCapture(e.pointerId);
     } catch {}
 
-    const state = store.getState();
     const currentPt = this.currentStrokePoints[this.currentStrokePoints.length - 1];
 
     // Reset preview canvas styles
@@ -232,7 +262,7 @@ export class DrawingEngine {
       const dist = Math.hypot(currentPt.x - this.startPoint.x, currentPt.y - this.startPoint.y);
       if (dist >= 6) {
         let endP = currentPt;
-        if (shortcutManager.isShiftDown && (state.activeShape === 'rect' || state.activeShape === 'circle')) {
+        if (shortcutManager.isShiftDown && (state.activeShape === 'rect' || state.activeShape === 'circle' || state.activeShape === 'triangle')) {
           const side = Math.max(Math.abs(currentPt.x - this.startPoint.x), Math.abs(currentPt.y - this.startPoint.y));
           endP = {
             x: this.startPoint.x + Math.sign(currentPt.x - this.startPoint.x) * side,
@@ -311,6 +341,10 @@ export class DrawingEngine {
   }
 
   private handlePointerCancel(e: PointerEvent): void {
+    if (store.getState().activeTool === 'select') {
+      shapeSelector.handlePointerUp();
+      return;
+    }
     this.cancelCurrentStroke();
   }
 
@@ -404,7 +438,7 @@ export class DrawingEngine {
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
     let endP = current;
-    if (shortcutManager.isShiftDown && (shape === 'rect' || shape === 'circle')) {
+    if (shortcutManager.isShiftDown && (shape === 'rect' || shape === 'circle' || shape === 'triangle')) {
       const side = Math.max(Math.abs(current.x - start.x), Math.abs(current.y - start.y));
       endP = {
         x: start.x + Math.sign(current.x - start.x) * side,

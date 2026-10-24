@@ -7,6 +7,7 @@ export interface AppSettings {
   toolbarIdleSeconds: number;
   toolbarDimmedOpacity: number;
   toolbarPos: { x: number; y: number } | null;
+  toolbarScale: number;
   defaultPenSize: number;
   defaultPenAlpha: number;
   defaultHighlighterWidth: number;
@@ -77,6 +78,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   toolbarIdleSeconds: 4,
   toolbarDimmedOpacity: 0.2,
   toolbarPos: null,
+  toolbarScale: 1.0,
   defaultPenSize: 4,
   defaultPenAlpha: 1,
   defaultHighlighterWidth: 32,

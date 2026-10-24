@@ -218,6 +218,20 @@ export class SettingsPanel {
 
           <div class="setting-item">
             <div class="setting-label">
+              <span class="setting-name">टूलबार का आकार (Toolbar Size)</span>
+              <span class="setting-desc">टूलबार को 60% से 160% तक छोटा या बड़ा करें</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <button class="header-btn" id="btnToolbarScaleDown" style="min-width:36px; height:36px; padding:0 8px; font-weight:bold;">−</button>
+              <input type="range" id="settingToolbarScale" min="60" max="160" step="5" value="${Math.round((s.toolbarScale || 1.0) * 100)}" class="popover-slider" style="width:110px;" />
+              <button class="header-btn" id="btnToolbarScaleUp" style="min-width:36px; height:36px; padding:0 8px; font-weight:bold;">+</button>
+              <span id="toolbarScaleVal" style="min-width:44px; text-align:right; font-weight:600;">${Math.round((s.toolbarScale || 1.0) * 100)}%</span>
+              <button class="header-btn" id="btnResetToolbarScale" style="margin-left:6px; font-size:12px;">रीसेट (100%)</button>
+            </div>
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-label">
               <span class="setting-name">टूलबार स्थिति रीसेट (Reset Toolbar Position)</span>
               <span class="setting-desc">टूलबार को डिफ़ॉल्ट शीर्ष केंद्र स्थिति पर लाएं</span>
             </div>
@@ -473,6 +487,44 @@ export class SettingsPanel {
       store.updateSettings({ toolbarIdleSeconds: v });
     });
 
+    // Toolbar scale
+    const scaleSlider = this.modalEl.querySelector('#settingToolbarScale') as HTMLInputElement;
+    const scaleVal = this.modalEl.querySelector('#toolbarScaleVal') as HTMLElement;
+    const btnScaleDown = this.modalEl.querySelector('#btnToolbarScaleDown');
+    const btnScaleUp = this.modalEl.querySelector('#btnToolbarScaleUp');
+    const btnResetScale = this.modalEl.querySelector('#btnResetToolbarScale');
+
+    const updateScale = (pct: number) => {
+      const clampedPct = Math.max(60, Math.min(160, pct));
+      if (scaleSlider) scaleSlider.value = String(clampedPct);
+      if (scaleVal) scaleVal.textContent = `${clampedPct}%`;
+      const scale = Math.round((clampedPct / 100) * 100) / 100;
+      store.updateSettings({ toolbarScale: scale });
+    };
+
+    scaleSlider?.addEventListener('input', () => {
+      updateScale(Number(scaleSlider.value));
+    });
+
+    btnScaleDown?.addEventListener('click', () => {
+      const currentPct = Number(scaleSlider?.value || 100);
+      updateScale(currentPct - 10);
+    });
+
+    btnScaleUp?.addEventListener('click', () => {
+      const currentPct = Number(scaleSlider?.value || 100);
+      updateScale(currentPct + 10);
+    });
+
+    btnResetScale?.addEventListener('click', () => {
+      updateScale(100);
+      window.dispatchEvent(
+        new CustomEvent('app-toast', {
+          detail: { message: 'टूलबार का आकार 100% पर रीसेट किया गया।' }
+        })
+      );
+    });
+
     // Reset toolbar position
     const btnResetPos = this.modalEl.querySelector('#btnResetToolbarPos');
     btnResetPos?.addEventListener('click', () => {
@@ -480,7 +532,8 @@ export class SettingsPanel {
       if (tb) {
         tb.style.left = 'calc(50% - 240px)';
         tb.style.top = '80px';
-        tb.style.transform = 'none';
+        const currentScale = store.getState().settings.toolbarScale || 1.0;
+        tb.style.transform = `scale(${currentScale})`;
         store.updateSettings({ toolbarPos: null });
         window.dispatchEvent(
           new CustomEvent('app-toast', {
