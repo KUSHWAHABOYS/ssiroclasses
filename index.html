@@ -101,14 +101,99 @@
       margin-top: 16px;
       animation: welcomeUnderlineIn 500ms ease-out 450ms forwards;
     }
-    .welcome-hint {
+    /* WELCOME-FIX: Touch-friendly large Open Deck button & drop hint */
+    .welcome-actions {
       margin-top: 36px;
-      font-size: 15px;
-      font-weight: 500;
-      color: rgba(255, 255, 255, 0.65);
-      letter-spacing: 0.5px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
       opacity: 0;
-      animation: welcomeHintFade 400ms ease-in 1200ms forwards;
+      animation: welcomeHintFade 400ms ease-in 500ms forwards;
+      pointer-events: auto;
+    }
+    .welcome-open-btn {
+      min-height: 64px;
+      height: clamp(64px, 8.5vh, 76px);
+      padding: 0 clamp(32px, 4vw, 52px);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      background: linear-gradient(135deg, #FFD76A 0%, #E8890C 100%);
+      color: #0A1633;
+      border: none;
+      border-radius: 40px;
+      font-size: clamp(17px, 2.2vw, 22px);
+      font-weight: 800;
+      font-family: inherit;
+      letter-spacing: 0.3px;
+      cursor: pointer;
+      box-shadow: 0 10px 30px rgba(232, 137, 12, 0.45), 0 0 20px rgba(255, 215, 106, 0.25);
+      transition: transform 180ms ease, box-shadow 180ms ease, filter 180ms ease;
+      touch-action: manipulation;
+    }
+    .welcome-open-btn:hover {
+      transform: translateY(-2px) scale(1.03);
+      box-shadow: 0 14px 36px rgba(232, 137, 12, 0.6), 0 0 28px rgba(255, 215, 106, 0.4);
+      filter: brightness(1.05);
+    }
+    .welcome-open-btn:active {
+      transform: translateY(1px) scale(0.98);
+    }
+    .welcome-drop-hint {
+      margin: 0;
+      font-size: clamp(13px, 1.4vw, 15px);
+      color: rgba(255, 255, 255, 0.7);
+      letter-spacing: 0.4px;
+      font-weight: 500;
+      text-align: center;
+    }
+    /* WELCOME-FIX: Compact layout when "Show welcome screen" is off */
+    .welcome-screen.is-compact .welcome-logo-container {
+      width: clamp(64px, 10vh, 100px);
+      height: clamp(64px, 10vh, 100px);
+      animation: none !important;
+      opacity: 1 !important;
+    }
+    .welcome-screen.is-compact .welcome-title {
+      font-size: clamp(32px, 5vw, 64px);
+    }
+    .welcome-screen.is-compact .welcome-line-1,
+    .welcome-screen.is-compact .welcome-line-2,
+    .welcome-screen.is-compact .welcome-underline,
+    .welcome-screen.is-compact .welcome-actions {
+      animation: none !important;
+      opacity: 1 !important;
+      transform: none !important;
+      width: 60% !important;
+    }
+    /* WELCOME-FIX: App State Visibility Controls */
+    body.state-welcome #fileName,
+    body.state-welcome #pageCounter,
+    body.state-welcome #btnCloseDeckHeader,
+    body.state-welcome #navLeftZone,
+    body.state-welcome #navRightZone,
+    body.state-welcome #toolbarContainer,
+    body.state-welcome #boardDock,
+    body.state-welcome #zoomIndicator,
+    body.state-welcome #btnZoomReset,
+    body.state-welcome #lensCanvas,
+    body.state-welcome #spotlightLayer {
+      display: none !important;
+      pointer-events: none !important;
+    }
+    body.state-deck #welcomeScreen {
+      display: none !important;
+    }
+    body.state-deck #btnCloseDeckHeader {
+      display: inline-flex !important;
+    }
+    body.state-board #welcomeScreen,
+    body.state-board #navLeftZone,
+    body.state-board #navRightZone,
+    body.state-board #toolbarContainer {
+      display: none !important;
     }
     @keyframes welcomeLogoIn {
       from { opacity: 0; transform: scale(0.85); }
@@ -131,7 +216,7 @@
       to { opacity: 1; }
     }
     @media (prefers-reduced-motion: reduce) {
-      .welcome-logo-container, .welcome-line-1, .welcome-line-2, .welcome-underline, .welcome-hint {
+      .welcome-logo-container, .welcome-line-1, .welcome-line-2, .welcome-underline, .welcome-actions {
         animation: none !important;
         opacity: 1 !important;
         transform: none !important;
@@ -140,20 +225,25 @@
     }
   </style>
 </head>
-<body>
+<body class="state-welcome">
   <!-- Stage fills whole viewport: 100vw x 100dvh, margin 0, padding 0, background #000 -->
   <div id="stage" class="stage">
     <!-- Non-Zen Header (z-index 45) -->
     <header id="header" class="header">
       <div class="header-left">
         <span class="channel-badge" id="channelName">SSIRO Classes</span>
-        <span class="file-name" id="fileName">Sample Deck Loaded</span>
+        <span class="file-name" id="fileName"></span>
       </div>
       <div class="header-right">
-        <span class="page-counter" id="pageCounter">1 / 4</span>
+        <span class="page-counter" id="pageCounter">1 / 1</span>
         <button id="btnOpenFile" class="header-btn" title="Open PDF/Deck (O)" aria-label="Open Presentation Deck">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
           <span class="btn-text">Open Deck</span>
+        </button>
+        <!-- WELCOME-FIX: Close Deck button visible in state-deck -->
+        <button id="btnCloseDeckHeader" class="header-btn btn-close-deck" title="Close Deck" aria-label="Close Presentation Deck">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          <span class="btn-text">Close Deck</span>
         </button>
         <button id="btnBoardHeader" class="header-btn" title="Blackboard Studio (B)" aria-label="Toggle Blackboard Studio">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
@@ -256,7 +346,14 @@
           <span class="welcome-line-2">SSIRO Classes</span>
         </h1>
         <div class="welcome-underline"></div>
-        <p class="welcome-hint">शुरू करने के लिए छूएँ / Tap to start</p>
+        <!-- WELCOME-FIX: Persistent Welcome Screen Action & Drop Zone -->
+        <div class="welcome-actions">
+          <button id="btnWelcomeOpenDeck" class="welcome-open-btn" aria-label="Open Presentation Deck">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <span>डेक खोलें / Open Deck</span>
+          </button>
+          <p class="welcome-drop-hint">PDF / PPTX यहाँ खींचकर छोड़ें / drag & drop a file here</p>
+        </div>
       </div>
     </div>
 

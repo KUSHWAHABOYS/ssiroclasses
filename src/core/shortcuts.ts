@@ -30,6 +30,15 @@ export class ShortcutManager {
       return;
     }
 
+    // WELCOME-FIX: In welcome state, slide navigation keys are completely inert
+    const state = store.getState();
+    if (state.appState === 'welcome') {
+      if (['ArrowRight', 'ArrowLeft', 'PageDown', 'PageUp', ' ', 'Home', 'End'].includes(e.key)) {
+        e.preventDefault();
+        return;
+      }
+    }
+
     switch (e.key) {
       case 'ArrowRight':
       case 'PageDown':

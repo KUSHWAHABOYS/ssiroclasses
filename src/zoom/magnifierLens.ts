@@ -155,6 +155,13 @@ export class MagnifierLensController {
       lens.containerEl.remove();
     }
     this.pinnedLenses = [];
+    this.isFollowActive = false;
+    this.isFollowVisible = false;
+    this.followOpacity = 0;
+    this.clearSpotlight();
+    if (this.lensCtx && this.lensCanvas) {
+      this.lensCtx.clearRect(0, 0, this.lensCanvas.width, this.lensCanvas.height);
+    }
     this.needsRedraw = true;
   }
 

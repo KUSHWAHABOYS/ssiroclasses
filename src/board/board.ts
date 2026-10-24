@@ -3,6 +3,8 @@ import { BOARD_THEMES, BoardThemeDef } from './themes';
 import { layerManager } from '../core/layers';
 import { annotationStore } from '../draw/annotationStore';
 import { slideRenderer } from '../presenter/renderer';
+// WELCOME-FIX: import welcomeScreen for state transitions
+import { welcomeScreen } from '../ui/welcomeScreen';
 
 export class BlackboardStudio {
   private dockEl!: HTMLElement;
@@ -161,7 +163,8 @@ export class BlackboardStudio {
   openBoard(): void {
     // Save current slide annotations if needed
     annotationStore.clearAll();
-    store.setState({ isBoardMode: true });
+    // WELCOME-FIX: Transition appState to 'board'
+    store.setState({ isBoardMode: true, appState: 'board' });
     this.dockEl.classList.remove('hidden');
     this.renderBoardSurface();
   }
@@ -169,21 +172,27 @@ export class BlackboardStudio {
   closeBoard(): void {
     const strokes = annotationStore.getStrokes();
     if (strokes.length > 0) {
-      const confirmClose = confirm('क्या आप ब्लैकबोर्ड बंद करना चाहते हैं? बोर्ड की स्याही साफ़ हो जाएगी।');
+      const confirmClose = confirm('क्या आप ब्लैकबोर्ड बंद करना चाहते हैं? बोर्ड की स्याही साफ़ हो जाएगी। / Close blackboard? Ink will be cleared.');
       if (!confirmClose) return;
     }
 
     annotationStore.clearAll();
-    store.setState({ isBoardMode: false });
     this.dockEl.classList.add('hidden');
 
-    // Restore presentation slide
     const state = store.getState();
-    if (state.currentDeck) {
+    const nextState = state.currentDeck ? 'deck' : 'welcome';
+    // WELCOME-FIX: Return to 'deck' if a deck is loaded, otherwise return to 'welcome'
+    store.setState({ isBoardMode: false, appState: nextState });
+
+    if (nextState === 'deck' && state.currentDeck) {
       const page = state.currentDeck.pages[state.currentPage - 1];
       if (page) {
         slideRenderer.renderSlide(page);
       }
+    } else {
+      // Clear canvas and show persistent welcome screen
+      layerManager.slideCtx.clearRect(0, 0, layerManager.slideCanvas.width, layerManager.slideCanvas.height);
+      welcomeScreen.show();
     }
   }
 

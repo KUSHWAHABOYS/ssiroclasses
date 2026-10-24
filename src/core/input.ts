@@ -33,9 +33,11 @@ export class InputCoordinator {
     // Double-click for mouse
     stage.addEventListener('dblclick', (e) => {
       // Don't trigger if clicked on an active control button or inputs
-      if ((e.target as HTMLElement).closest('.toolbar-container, .board-dock, .header, .web-overlay, .gemini-panel, .settings-modal')) {
+      if ((e.target as HTMLElement).closest('.toolbar-container, .board-dock, .header, .web-overlay, .gemini-panel, .settings-modal, .welcome-screen')) {
         return;
       }
+      // WELCOME-FIX: Double-click is inert in welcome state
+      if (store.getState().appState === 'welcome') return;
       this.fireDoubleTap();
     });
 
@@ -70,6 +72,8 @@ export class InputCoordinator {
       const velocity = absX / Math.max(1, duration);
 
       const state = store.getState();
+      // WELCOME-FIX: Touch gestures are inert in welcome state
+      if (state.appState === 'welcome') return;
       // SSIRO-UPDATE: While zoomed, swipe navigation is disabled per C6 spec
       const isZoomed = zoomController.getScale() > 1.05;
       const allowSwipe = !isZoomed && (state.activeTool === 'select' || this.touchCount >= 2);

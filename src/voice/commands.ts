@@ -102,6 +102,33 @@ export class VoiceCommandService {
       })
     );
 
+    // WELCOME-FIX: In welcome state, voice navigation and tools are inert.
+    // Only board, open, and fullscreen commands are allowed.
+    const state = store.getState();
+    if (state.appState === 'welcome') {
+      if (/board|ब्लैकबोर्ड|बोर्ड/i.test(phrase)) {
+        blackboardStudio.toggleBoard();
+        return;
+      }
+      if (/open|खोलो|खोलें/i.test(phrase)) {
+        const fileInput = document.getElementById('fileInputDeck') as HTMLInputElement;
+        fileInput?.click();
+        return;
+      }
+      if (/fullscreen|फुलस्क्रीन|पूर्ण स्क्रीन/i.test(phrase)) {
+        fullscreenService.toggleZen();
+        return;
+      }
+      return; // All other voice navigation/drawing commands inert in welcome state
+    }
+
+    // Open Deck
+    if (/open|खोलो|खोलें/i.test(phrase)) {
+      const fileInput = document.getElementById('fileInputDeck') as HTMLInputElement;
+      fileInput?.click();
+      return;
+    }
+
     // Next slide
     if (/next|अगला|आगे|नेक्स्ट/i.test(phrase)) {
       navigationController.nextPage();

@@ -1,105 +1,97 @@
-// SSIRO-UPDATE: Welcome Screen Controller ("Welcome to SSIRO Classes")
+// WELCOME-FIX: Persistent Welcome Home Screen Controller ("Welcome to SSIRO Classes")
 import { store } from '../state/store';
 import { WELCOME_LINE_1, WELCOME_LINE_2 } from '../brand';
 
 export class WelcomeScreen {
   private element: HTMLElement | null = null;
-  private isDismissed = false;
-  private canSkip = false;
-  private skipTimer = 0;
-  private autoDismissTimer = 0;
-  private onFinishedCallbacks: Array<() => void> = [];
+  private openDeckBtn: HTMLElement | null = null;
+  private isBound = false;
 
-  show(onFinished?: () => void): void {
-    if (onFinished) {
-      this.onFinishedCallbacks.push(onFinished);
-    }
+  show(): void {
+    this.element = document.getElementById('welcomeScreen');
+    if (!this.element) return;
 
     const settings = store.getState().settings;
-    if (!settings.showWelcomeScreen) {
-      this.finish();
-      return;
-    }
 
-    this.element = document.getElementById('welcomeScreen');
-    if (!this.element) {
-      this.finish();
-      return;
-    }
-
-    // Update dynamic text from settings or brand constants
+    // Update dynamic text lines from settings or brand constants
     const line1El = this.element.querySelector('.welcome-line-1');
     const line2El = this.element.querySelector('.welcome-line-2');
     if (line1El) line1El.textContent = settings.welcomeLine1 || WELCOME_LINE_1;
     if (line2El) line2El.textContent = settings.welcomeLine2 || WELCOME_LINE_2;
 
+    // If "Show welcome screen" is turned off, use compact version per requirement 9
+    if (settings.showWelcomeScreen === false) {
+      this.element.classList.add('is-compact');
+    } else {
+      this.element.classList.remove('is-compact');
+    }
+
     this.element.classList.remove('hidden', 'fade-out');
 
-    // Tap/key skipping allowed after 800ms
-    this.skipTimer = window.setTimeout(() => {
-      this.canSkip = true;
-    }, 800);
+    if (!this.isBound) {
+      this.bindEvents();
+      this.isBound = true;
+    }
 
-    // Auto dismiss after duration (default 2.8s)
-    const durationMs = Math.max(1000, Math.min(5000, (settings.welcomeDuration || 2.8) * 1000));
-    this.autoDismissTimer = window.setTimeout(() => {
-      this.dismiss();
-    }, durationMs);
-
-    this.bindEvents();
     this.preWarmServices();
   }
 
   private bindEvents(): void {
     if (!this.element) return;
 
-    const handleSkip = (e: Event) => {
-      if (!this.canSkip || this.isDismissed) return;
+    // Open Deck Button inside Welcome Screen
+    this.openDeckBtn = this.element.querySelector('#btnWelcomeOpenDeck');
+    this.openDeckBtn?.addEventListener('click', (e) => {
       e.stopPropagation();
-      this.dismiss();
-    };
+      const fileInput = document.getElementById('fileInputDeck') as HTMLInputElement;
+      fileInput?.click();
+    });
 
-    this.element.addEventListener('pointerdown', handleSkip, { passive: true });
-    window.addEventListener('keydown', handleSkip, { passive: true });
-    window.addEventListener('touchstart', handleSkip, { passive: true });
+    // Drag and drop onto the welcome screen
+    this.element.addEventListener('dragover', (e: DragEvent) => {
+      e.preventDefault();
+      if (e.dataTransfer) {
+        e.dataTransfer.dropEffect = 'copy';
+      }
+    });
+
+    this.element.addEventListener('drop', (e: DragEvent) => {
+      e.preventDefault();
+      if (e.dataTransfer?.files && e.dataTransfer.files.length > 0) {
+        const files = Array.from(e.dataTransfer.files);
+        window.dispatchEvent(new CustomEvent('app-open-files', { detail: { files } }));
+      }
+    });
+
+    // Requirement 3 & 5: Stray taps and clicks on the welcome screen must do nothing
+    this.element.addEventListener('pointerdown', (e: PointerEvent) => {
+      if ((e.target as HTMLElement).closest('.welcome-open-btn, .header-btn')) return;
+      e.stopPropagation();
+    });
   }
 
   dismiss(): void {
-    if (this.isDismissed || !this.element) return;
-    this.isDismissed = true;
-    window.clearTimeout(this.skipTimer);
-    window.clearTimeout(this.autoDismissTimer);
+    if (!this.element) {
+      this.element = document.getElementById('welcomeScreen');
+    }
+    if (!this.element) return;
 
-    // Cross-fade (300ms) into the home screen
+    // Fade out over 300ms into the slide view
     this.element.classList.add('fade-out');
     window.setTimeout(() => {
-      if (this.element) {
+      if (this.element && this.element.classList.contains('fade-out')) {
         this.element.classList.add('hidden');
-        this.element.remove();
       }
-      this.finish();
     }, 300);
   }
 
-  private finish(): void {
-    for (const cb of this.onFinishedCallbacks) {
-      try {
-        cb();
-      } catch (e) {
-        console.error('Error in welcomeScreen onFinished callback:', e);
-      }
-    }
-    this.onFinishedCallbacks = [];
-  }
-
-  // Silently pre-warm fonts, pdf.js worker, last-used settings in background
+  // Silently pre-warm fonts and pdf.js worker in background
   private preWarmServices(): void {
     try {
       if ('fonts' in document) {
         (document as any).fonts.load('800 64px Inter').catch(() => {});
         (document as any).fonts.load('800 64px "Noto Sans Devanagari"').catch(() => {});
       }
-      // Pre-warm local PDF worker
       const link = document.createElement('link');
       link.rel = 'prefetch';
       link.href = '/pdf.worker.min.mjs';

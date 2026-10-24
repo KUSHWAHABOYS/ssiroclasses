@@ -79,6 +79,8 @@ export class DrawingEngine {
 
   private handlePointerDown(e: PointerEvent): void {
     const state = store.getState();
+    // WELCOME-FIX: Drawing is completely inert in welcome state
+    if (state.appState === 'welcome') return;
     // SSIRO-UPDATE: Magnifier & Zoom tools do not draw ink
     if (state.activeTool === 'select' || state.activeTool === 'magnifier' || state.activeTool === 'zoom') return;
 

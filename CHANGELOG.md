@@ -2,6 +2,32 @@
 
 All notable changes to "Smart Studio Presenter Pro" are documented in this file.
 
+## [1.1.1] — 2026-10-24 (Welcome Screen Persistent Home & No Default Deck Fix)
+
+### 🚀 Welcome-Fix: Persistent Home Screen & No Auto-Loaded Deck
+- **No Default Deck Ever**:
+  - Removed all automatic startup loaders for sample decks (`slideView.loadInitialDeck()` on startup disabled).
+  - App state initial value is strictly `'welcome'` and `currentDeck` starts as `null`.
+  - Kept demo deck strictly as an optional developer helper behind `Settings → Advanced → Load demo deck`.
+- **Explicit App State System**:
+  - Introduced explicit `appState = 'welcome' | 'deck' | 'board'`.
+  - Transitions to `'deck'` only when user selects a file (Open Deck button, Drag & Drop, or OS `launchQueue`).
+  - Transitions to `'board'` only when Board is toggled. Closing Board returns to `'deck'` if a deck is loaded, or back to `'welcome'` if not.
+- **Persistent Welcome Home Screen**:
+  - Welcome screen no longer auto-dismisses after 2.8s and no longer skips on stray taps or keys.
+  - Replaced "Tap to start" with touch-friendly primary button **"डेक खोलें / Open Deck"** (min 64px touch target) and drop zone text **"PDF / PPTX यहाँ खींचकर छोड़ें / drag & drop a file here"**.
+  - Smooth 300ms fade transition into slide 1 upon loading a deck; if loading fails, stays on welcome screen and displays a bilingual error toast.
+- **Strict Welcome State Inertness**:
+  - In `'welcome'` state, arrow keys, space, swipes, edge clicks, and drawing input are completely inert and do not draw or change state.
+  - Allowed commands in welcome state: Voice commands *"board/बोर्ड"*, *"open/खोलो"*, and *"fullscreen/फुलस्क्रीन"*, plus top header buttons (Open Deck, Board, Zen Fullscreen).
+  - Slide counter, slide title, navigation chevrons, drawing toolbar, and bottom caption are cleanly hidden.
+- **Return to Home & Close Deck**:
+  - Added "Close Deck" (✕) button in top bar and inside Settings Panel.
+  - Prompts for confirmation if uncommitted annotations exist, resets zoom, clears pinned lenses, clears media windows, and cleanly returns to the welcome home screen.
+- **Settings & Compact Mode**:
+  - "Show welcome screen" toggle: when turned off, displays compact clean home screen (logo, app name, Open Deck button, no animation) without opening any deck.
+  - Bumped version to `v1.1.1` and PWA cacheId to `ssiro-smart-studio-v1.1.1`.
+
 ## [1.1.0] — 2026-10-24 (SSIRO Classes Update)
 
 ### 🌟 Part B — Update 1: Fullscreen Welcome Screen ("Welcome to SSIRO Classes")

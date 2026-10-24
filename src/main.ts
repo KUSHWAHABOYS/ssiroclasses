@@ -53,15 +53,18 @@ if ('launchQueue' in window && 'files' in (window as any).LaunchParams.prototype
     for (const handle of fileHandles) {
       files.push(await handle.getFile());
     }
-    welcomeScreen.show(() => {
-      window.dispatchEvent(new CustomEvent('app-open-files', { detail: { files } }));
-    });
+    // WELCOME-FIX: Directly dispatch app-open-files to load user deck
+    window.dispatchEvent(new CustomEvent('app-open-files', { detail: { files } }));
   });
 }
 
 class SmartStudioApp {
   init(): void {
     console.log('🚀 Initializing Smart Studio Presenter Pro (SSIRO Classes)...');
+
+    // WELCOME-FIX: Initial state is always 'welcome'
+    document.body.classList.remove('state-deck', 'state-board');
+    document.body.classList.add('state-welcome');
 
     // SSIRO-UPDATE: Launch Welcome Screen immediately
     welcomeScreen.show();
@@ -91,6 +94,12 @@ class SmartStudioApp {
       if (isZoomOrMag !== wasZoomOrMag) {
         layerManager.stageEl.style.touchAction = isZoomOrMag ? 'none' : '';
       }
+
+      // WELCOME-FIX: Sync body class with appState ('welcome' | 'deck' | 'board')
+      if (state.appState !== prev.appState) {
+        document.body.classList.remove('state-welcome', 'state-deck', 'state-board');
+        document.body.classList.add(`state-${state.appState}`);
+      }
     });
 
     this.wireGesturesAndShortcuts();
@@ -107,6 +116,9 @@ class SmartStudioApp {
 
     // Touch swipe navigation
     inputCoordinator.onSwipe((detail) => {
+      const state = store.getState();
+      // WELCOME-FIX: Swipe navigation is inert in welcome and board states
+      if (state.appState !== 'deck') return;
       if (detail.direction === 'right') {
         navigationController.nextPage();
       } else {
@@ -117,6 +129,8 @@ class SmartStudioApp {
     // Double-tap anywhere to toggle toolbar visibility in Zen mode
     inputCoordinator.onDoubleTap(() => {
       const state = store.getState();
+      // WELCOME-FIX: Double-tap is inert in welcome state
+      if (state.appState !== 'deck') return;
       if (state.isZen) {
         store.setState({ isToolbarVisibleInZen: !state.isToolbarVisibleInZen });
       }

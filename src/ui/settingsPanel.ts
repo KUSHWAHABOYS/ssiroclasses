@@ -1,5 +1,7 @@
 import { store } from '../state/store';
 import { keyVault } from '../ai/keyVault';
+// WELCOME-FIX: Import slideView for closing deck & developer demo deck
+import { slideView } from '../presenter/slideView';
 
 export class SettingsPanel {
   private modalEl!: HTMLElement;
@@ -65,6 +67,17 @@ export class SettingsPanel {
               <span class="setting-desc">हर स्लाइड के लिए अलग ड्राइंग याद रखें</span>
             </div>
             <input type="checkbox" id="settingKeepPerSlide" ${s.keepAnnotationsPerSlide ? 'checked' : ''} style="width:20px; height:20px; accent-color:var(--primary-accent);" />
+          </div>
+
+          <!-- WELCOME-FIX: Close Deck option inside settings -->
+          <div class="setting-item">
+            <div class="setting-label">
+              <span class="setting-name">डेक बंद करें (Close Current Deck)</span>
+              <span class="setting-desc">वर्तमान प्रस्तुति बंद करें और मुख्य स्वागत स्क्रीन पर वापस लौटें</span>
+            </div>
+            <button class="header-btn" id="btnSettingsCloseDeck" style="background:rgba(239,68,68,0.18); color:#fca5a5; border-color:rgba(239,68,68,0.5);">
+              ✕ डेक बंद करें (Close Deck)
+            </button>
           </div>
         </div>
 
@@ -247,10 +260,24 @@ export class SettingsPanel {
           <div style="display:flex; align-items:center; gap:16px; padding:8px 0;">
             <img src="/assets/brand/logo.svg" alt="SSIRO Logo" style="width:64px; height:64px; border-radius:14px; box-shadow:var(--shadow-lg);" />
             <div>
-              <div style="font-weight:700; font-size:15px; color:#ffffff;">Smart Studio Presenter Pro v1.1.0</div>
+              <div style="font-weight:700; font-size:15px; color:#ffffff;">Smart Studio Presenter Pro v1.1.1</div>
               <div style="font-size:12px; color:var(--primary-accent); margin-top:2px;">SSIRO Classes Edition</div>
               <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">4K Teaching & Presentation Studio • 100% Client-Side</div>
             </div>
+          </div>
+        </div>
+
+        <!-- WELCOME-FIX: Advanced Developer Helper (Hidden/Manual Only) -->
+        <div class="settings-section">
+          <div class="settings-section-title">उन्नत डेवलपर विकल्प (Advanced)</div>
+          <div class="setting-item">
+            <div class="setting-label">
+              <span class="setting-name">डेमो डेक लोड करें (Load Demo Deck)</span>
+              <span class="setting-desc">वैकल्पिक डेवलपर परीक्षण डेक लोड करें (कदापि स्वचालित नहीं)</span>
+            </div>
+            <button class="header-btn" id="btnLoadDemoDeck">
+              Load demo deck
+            </button>
           </div>
         </div>
       </div>
@@ -260,6 +287,17 @@ export class SettingsPanel {
   private bindEvents(): void {
     this.modalEl.querySelector('#btnSettingsClose')?.addEventListener('click', () => {
       this.close();
+    });
+
+    // WELCOME-FIX: Wire Close Deck and Load Demo Deck buttons
+    this.modalEl.querySelector('#btnSettingsCloseDeck')?.addEventListener('click', () => {
+      this.close();
+      slideView.closeDeck();
+    });
+
+    this.modalEl.querySelector('#btnLoadDemoDeck')?.addEventListener('click', () => {
+      this.close();
+      slideView.loadInitialDeck();
     });
 
     // Fit Mode

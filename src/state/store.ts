@@ -21,7 +21,11 @@ export interface DeckInfo {
   pages: DeckPage[];
 }
 
+// WELCOME-FIX: Explicit top-level app state
+export type ViewState = 'welcome' | 'deck' | 'board';
+
 export interface AppState {
+  appState: ViewState;
   currentDeck: DeckInfo | null;
   currentPage: number;
   totalPages: number;
@@ -56,6 +60,8 @@ class Store {
   constructor() {
     const settings = loadSettings();
     this.state = {
+      // WELCOME-FIX: Initial app state is always 'welcome'
+      appState: 'welcome',
       currentDeck: null,
       currentPage: 1,
       totalPages: 1,

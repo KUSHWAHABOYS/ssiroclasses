@@ -60,6 +60,23 @@ export class AnnotationStore {
     return true;
   }
 
+  // WELCOME-FIX: Check if any slide or current canvas contains annotations
+  hasAnnotations(): boolean {
+    if (this.strokes.length > 0) return true;
+    for (const list of this.perSlideStorage.values()) {
+      if (list && list.length > 0) return true;
+    }
+    return false;
+  }
+
+  // WELCOME-FIX: Reset all annotations and slide history
+  resetAll(): void {
+    this.strokes = [];
+    this.undoStack = [];
+    this.perSlideStorage.clear();
+    this.clearCanvases();
+  }
+
   clearAll(): void {
     if (this.strokes.length > 0) {
       this.saveSnapshot();

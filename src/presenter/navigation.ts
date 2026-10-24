@@ -10,6 +10,8 @@ export class NavigationController {
 
   async goToPage(targetPage: number): Promise<void> {
     const state = store.getState();
+    // WELCOME-FIX: Navigation is inert if not in 'deck' state
+    if (state.appState !== 'deck') return;
     const deck = state.currentDeck;
     if (!deck || this.isNavigating) return;
 
@@ -45,6 +47,7 @@ export class NavigationController {
 
   nextPage(): void {
     const state = store.getState();
+    if (state.appState !== 'deck' || !state.currentDeck) return;
     if (state.currentPage < state.totalPages) {
       this.goToPage(state.currentPage + 1);
     }
@@ -52,17 +55,21 @@ export class NavigationController {
 
   prevPage(): void {
     const state = store.getState();
+    if (state.appState !== 'deck' || !state.currentDeck) return;
     if (state.currentPage > 1) {
       this.goToPage(state.currentPage - 1);
     }
   }
 
   firstPage(): void {
+    const state = store.getState();
+    if (state.appState !== 'deck' || !state.currentDeck) return;
     this.goToPage(1);
   }
 
   lastPage(): void {
     const state = store.getState();
+    if (state.appState !== 'deck' || !state.currentDeck) return;
     this.goToPage(state.totalPages);
   }
 }
