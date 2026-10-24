@@ -67,6 +67,7 @@ export class SlideView {
     const btnLeft = document.getElementById('chevronLeft');
     const btnRight = document.getElementById('chevronRight');
 
+    // ECON: Only explicit clicks directly on the chevron buttons move slides
     btnLeft?.addEventListener('click', (e) => {
       e.stopPropagation();
       navigationController.prevPage();
@@ -75,23 +76,6 @@ export class SlideView {
     btnRight?.addEventListener('click', (e) => {
       e.stopPropagation();
       navigationController.nextPage();
-    });
-
-    // Outer 8% edge zone clicks (for mouse users per B4.2)
-    const zoneLeft = document.getElementById('navLeftZone');
-    const zoneRight = document.getElementById('navRightZone');
-
-    zoneLeft?.addEventListener('click', (e) => {
-      // If clicking directly on zone (outside chevron), still navigate
-      if (e.target === zoneLeft) {
-        navigationController.prevPage();
-      }
-    });
-
-    zoneRight?.addEventListener('click', (e) => {
-      if (e.target === zoneRight) {
-        navigationController.nextPage();
-      }
     });
   }
 
