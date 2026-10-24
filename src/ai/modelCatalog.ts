@@ -1,7 +1,9 @@
 // MIC-AI: Task Profiles, Provider Tier Rankings, and Best Model Selection Engine
+// ECON: Economy Model Preference, Quota Cooldown Awareness, and Upgrades
 import { AITask, ModelInfo, QualityPreference } from './providers/types';
+import { quotaManager } from './quotaManager';
 
-export type ModelTier = 'flagship' | 'balanced' | 'fast';
+export type ModelTier = 'flagship' | 'balanced' | 'fast' | 'economy';
 
 export interface TaskProfile {
   task: AITask;
@@ -16,41 +18,45 @@ export const TASK_PROFILES: Record<AITask, TaskProfile> = {
     task: 'chat',
     requiresVision: false,
     defaultTemperature: 0.7,
-    defaultMaxTokens: 2048,
+    defaultMaxTokens: 600, // ECON: default concise answers
     tierForQuality: {
+      economy: 'economy',
       best: 'flagship',
-      balanced: 'flagship',
-      fast: 'balanced'
+      balanced: 'balanced',
+      fast: 'fast'
     }
   },
   'slide-explain': {
     task: 'slide-explain',
     requiresVision: true,
-    defaultTemperature: 0.4,
-    defaultMaxTokens: 1500,
+    defaultTemperature: 0.3,
+    defaultMaxTokens: 800,
     tierForQuality: {
+      economy: 'economy',
       best: 'flagship',
-      balanced: 'flagship',
-      fast: 'balanced'
+      balanced: 'balanced',
+      fast: 'fast'
     }
   },
   'handwriting-ocr': {
     task: 'handwriting-ocr',
     requiresVision: true,
     defaultTemperature: 0.0,
-    defaultMaxTokens: 100,
+    defaultMaxTokens: 80, // ECON: tiny maxOutputTokens for handwriting
     tierForQuality: {
+      economy: 'economy',
       best: 'balanced',
-      balanced: 'balanced', // Balanced/fast prioritized for low latency in frequent classroom ink actions
+      balanced: 'fast',
       fast: 'fast'
     }
   },
   'text-fix': {
     task: 'text-fix',
     requiresVision: false,
-    defaultTemperature: 0.1,
-    defaultMaxTokens: 500,
+    defaultTemperature: 0.0,
+    defaultMaxTokens: 120,
     tierForQuality: {
+      economy: 'economy',
       best: 'balanced',
       balanced: 'fast',
       fast: 'fast'
@@ -60,20 +66,22 @@ export const TASK_PROFILES: Record<AITask, TaskProfile> = {
     task: 'quick-answer',
     requiresVision: false,
     defaultTemperature: 0.3,
-    defaultMaxTokens: 300,
+    defaultMaxTokens: 250,
     tierForQuality: {
+      economy: 'economy',
       best: 'balanced',
       balanced: 'fast',
       fast: 'fast'
     }
   },
-  // INKFIX: Shape classification task profile per Part D3
+  // INKFIX: Shape classification task profile
   'shape-classify': {
     task: 'shape-classify',
     requiresVision: true,
     defaultTemperature: 0.0,
     defaultMaxTokens: 40,
     tierForQuality: {
+      economy: 'economy',
       best: 'fast',
       balanced: 'fast',
       fast: 'fast'
@@ -81,20 +89,28 @@ export const TASK_PROFILES: Record<AITask, TaskProfile> = {
   }
 };
 
-export const PROVIDER_TIER_RANKINGS: Record<string, Record<ModelTier, string[]>> = {
+export const PROVIDER_TIER_RANKINGS: Record<string, Partial<Record<ModelTier, string[]>>> = {
   gemini: {
+    // ECON: Economy tier prefers Flash-Lite, then Flash-8b, then standard Flash (highest free quota & lowest cost)
+    economy: [
+      'gemini-2.0-flash-lite',
+      'gemini-2.0-flash-lite-preview',
+      'gemini-1.5-flash-8b',
+      'gemini-2.0-flash',
+      'gemini-1.5-flash'
+    ],
     flagship: [
       'gemini-2.0-flash',
-      'gemini-2.0-flash-exp',
       'gemini-1.5-pro',
-      'gemini-1.5-pro-latest',
-      'gemini-exp-1206'
+      'gemini-1.5-pro-latest'
     ],
     balanced: [
+      'gemini-2.0-flash',
       'gemini-1.5-flash',
-      'gemini-1.5-flash-latest'
+      'gemini-2.0-flash-lite'
     ],
     fast: [
+      'gemini-2.0-flash-lite',
       'gemini-1.5-flash-8b',
       'gemini-1.5-flash'
     ]
@@ -231,16 +247,20 @@ export function pickBestModel(
   // Filter 1: Capability match
   let candidates = availableModels.filter((m) => {
     if (m.deprecated) return false;
-    if (profile.requiresVision && !m.supportsVision) return false;
-    if (!profile.requiresVision && !m.supportsText) return false;
+    const hasVision = m.supportsVision ?? (m as any).supportedTasks?.includes('vision') ?? true;
+    const hasText = m.supportsText ?? (m as any).supportedTasks?.includes('chat') ?? true;
+    if (profile.requiresVision && !hasVision) return false;
+    if (!profile.requiresVision && !hasText) return false;
     return true;
   });
 
   // If all non-deprecated candidates failed, check if deprecated ones exist
   if (candidates.length === 0) {
     candidates = availableModels.filter((m) => {
-      if (profile.requiresVision && !m.supportsVision) return false;
-      if (!profile.requiresVision && !m.supportsText) return false;
+      const hasVision = m.supportsVision ?? (m as any).supportedTasks?.includes('vision') ?? true;
+      const hasText = m.supportsText ?? (m as any).supportedTasks?.includes('chat') ?? true;
+      if (profile.requiresVision && !hasVision) return false;
+      if (!profile.requiresVision && !hasText) return false;
       return true;
     });
   }
@@ -258,19 +278,27 @@ export function pickBestModel(
   }
 
   // Tier search order based on target
-  let tierOrder: ModelTier[] = ['flagship', 'balanced', 'fast'];
-  if (targetTier === 'fast') {
-    tierOrder = ['fast', 'balanced', 'flagship'];
+  let tierOrder: ModelTier[] = ['economy', 'fast', 'balanced', 'flagship'];
+  if (targetTier === 'economy') {
+    tierOrder = ['economy', 'fast', 'balanced', 'flagship'];
+  } else if (targetTier === 'fast') {
+    tierOrder = ['fast', 'economy', 'balanced', 'flagship'];
   } else if (targetTier === 'balanced') {
-    tierOrder = ['balanced', 'flagship', 'fast'];
+    tierOrder = ['balanced', 'flagship', 'economy', 'fast'];
+  } else if (targetTier === 'flagship') {
+    tierOrder = ['flagship', 'balanced', 'economy', 'fast'];
   }
+
+  // ECON: Prefer models not currently in cooldown
+  const nonCooldownCandidates = candidates.filter((m) => quotaManager.isModelAvailable(providerId, m.id));
+  const activeCandidates = nonCooldownCandidates.length > 0 ? nonCooldownCandidates : candidates;
 
   // Look for ranked pattern matches in tier order
   for (const tier of tierOrder) {
     const patterns = tierRankings[tier] || [];
     for (const pat of patterns) {
       const patNorm = pat.toLowerCase();
-      const matched = candidates.find((m) => {
+      const matched = activeCandidates.find((m) => {
         const idNorm = normalizeId(m.id);
         return idNorm === patNorm || idNorm.includes(patNorm);
       });
@@ -281,5 +309,118 @@ export function pickBestModel(
   }
 
   // Fallback to first capable candidate
-  return candidates[0];
+  return activeCandidates[0];
 }
+
+/**
+ * ECON: Returns the next stronger model for the "बेहतर जवाब / Better answer" button (Part C1.4)
+ */
+export function getNextStrongerModel(
+  availableModels: ModelInfo[],
+  currentModelId: string,
+  providerId = 'gemini'
+): ModelInfo | null {
+  const normCurrent = normalizeId(currentModelId);
+  const tierRankings = PROVIDER_TIER_RANKINGS[providerId];
+  if (!tierRankings) return null;
+
+  // Progression: economy -> balanced -> flagship
+  let upgradeOrder: string[] = [];
+  if (normCurrent.includes('lite') || normCurrent.includes('8b')) {
+    upgradeOrder = [
+      ...(tierRankings.balanced || []),
+      ...(tierRankings.flagship || [])
+    ];
+  } else {
+    upgradeOrder = [
+      ...(tierRankings.flagship || [])
+    ];
+  }
+
+  for (const modelName of upgradeOrder) {
+    const norm = normalizeId(modelName);
+    if (norm !== normCurrent) {
+      const found = availableModels.find((m) => {
+        const idNorm = normalizeId(m.id);
+        return idNorm === norm && quotaManager.isModelAvailable(providerId, m.id);
+      });
+      if (found) {
+        return found;
+      }
+    }
+  }
+
+  return null;
+}
+
+/**
+ * ECON: Filters and ranks capable non-deprecated models for a task
+ */
+export function rankModels(
+  availableModels: ModelInfo[],
+  providerId: string,
+  task: AITask = 'chat',
+  _preference: QualityPreference = 'economy'
+): ModelInfo[] {
+  const profile = TASK_PROFILES[task] || TASK_PROFILES.chat;
+  return availableModels.filter((m) => {
+    if (m.deprecated || m.id.toLowerCase().includes('deprecated') || m.name?.toLowerCase().includes('deprecated')) return false;
+    const hasVision = m.supportsVision ?? (m as any).supportedTasks?.includes('vision') ?? true;
+    const hasText = m.supportsText ?? (m as any).supportedTasks?.includes('chat') ?? true;
+    if (profile.requiresVision && !hasVision) return false;
+    if (!profile.requiresVision && !hasText) return false;
+    return true;
+  });
+}
+
+// ECON: Grouped export for modelCatalog
+export const modelCatalog = {
+  pickBestModel: (
+    providerOrModels: any,
+    modelsOrProvider: any,
+    taskOrPref: any,
+    prefOrTask?: any
+  ): any => {
+    if (Array.isArray(providerOrModels)) {
+      const res = pickBestModel(providerOrModels, modelsOrProvider, taskOrPref, prefOrTask);
+      return res;
+    } else {
+      const res = pickBestModel(modelsOrProvider, providerOrModels, prefOrTask || 'chat', taskOrPref || 'economy');
+      return res ? res.id : null;
+    }
+  },
+  rankModels: (
+    providerOrModels: any,
+    modelsOrProvider: any,
+    taskOrPref?: any,
+    prefOrTask?: any
+  ): any => {
+    if (Array.isArray(providerOrModels)) {
+      return rankModels(providerOrModels, modelsOrProvider, taskOrPref, prefOrTask);
+    } else {
+      return rankModels(modelsOrProvider, providerOrModels, prefOrTask || 'chat', taskOrPref || 'economy');
+    }
+  },
+  getNextStrongerModel: (
+    modelsOrProvider: any,
+    currentOrModels: any,
+    maybeProvider?: string
+  ): any => {
+    if (Array.isArray(modelsOrProvider)) {
+      return getNextStrongerModel(modelsOrProvider, currentOrModels, maybeProvider);
+    } else {
+      const defaultGeminiModels = [
+        { id: 'gemini-2.5-pro', name: 'Gemini 2.5 Pro', supportsText: true, supportsVision: true },
+        { id: 'gemini-1.5-pro', name: 'Gemini 1.5 Pro', supportsText: true, supportsVision: true },
+        { id: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash', supportsText: true, supportsVision: true },
+        { id: 'gemini-1.5-flash', name: 'Gemini 1.5 Flash', supportsText: true, supportsVision: true },
+        { id: 'gemini-2.0-flash-lite', name: 'Gemini 2.0 Flash-Lite', supportsText: true, supportsVision: true }
+      ] as ModelInfo[];
+      const res = getNextStrongerModel(defaultGeminiModels, currentOrModels, modelsOrProvider);
+      return res ? res.id : null;
+    }
+  },
+  TASK_PROFILES,
+  PROVIDER_TIER_RANKINGS
+};
+

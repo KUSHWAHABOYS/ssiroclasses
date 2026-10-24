@@ -3,6 +3,7 @@ import { AIProvider } from './types';
 import { geminiProvider } from './gemini';
 import { anthropicProvider } from './anthropic';
 import { OpenAICompatProvider } from './openaiCompat';
+import { chromeBuiltInProvider } from './chromeBuiltIn';
 
 export interface ProviderMetadata {
   id: string;
@@ -181,6 +182,17 @@ export const PROVIDERS_REGISTRY: Record<string, ProviderMetadata> = {
     allowsBrowserCors: false,
     docUrl: 'https://platform.deepseek.com/api_keys',
     adapter: deepseekProvider
+  },
+  chrome_ai: {
+    id: 'chrome_ai',
+    name: 'Chrome built-in AI (on-device, free)',
+    baseUrl: 'chrome://on-device',
+    expectedHost: 'on-device',
+    keyPrefixes: [],
+    keyHint: 'No key needed',
+    allowsBrowserCors: true,
+    docUrl: 'https://developer.chrome.com/docs/ai/built-in',
+    adapter: chromeBuiltInProvider
   }
 };
 

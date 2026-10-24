@@ -1,44 +1,24 @@
 // MIC-AI: Voice Navigation & Command Service with explicit MicController integration
+// ECON: Local Grammar First, Extended Ordinals (1-50), Filler Stripping, Icon-Only Feedback (Part E)
 import { store } from '../state/store';
 import { navigationController } from '../presenter/navigation';
 import { annotationStore } from '../draw/annotationStore';
 import { blackboardStudio } from '../board/board';
 import { fullscreenService } from '../core/fullscreen';
-// SSIRO-UPDATE: Import zoomController for voice zoom commands
 import { zoomController } from '../zoom/zoomController';
-// MIC-AI: Import micController
 import { micController } from './micController';
-// INKFIX: Import voiceWriteManager
 import { voiceWriteManager } from './writeCommand';
+import { FILLER_WORDS, NUMBER_WORDS, COMMANDS_REGISTRY, VoiceCommandDef } from './commandsDict';
 
 export class VoiceCommandService {
   private recognition: any = null;
   private isListening = false;
   private shouldRestart = false;
 
-  // Number word dictionary for Hindi & English
-  private numberWords: Record<string, number> = {
-    'one': 1, 'एक': 1, '1': 1,
-    'two': 2, 'दो': 2, '2': 2,
-    'three': 3, 'तीन': 3, '3': 3,
-    'four': 4, 'चार': 4, '4': 4,
-    'five': 5, 'पाँच': 5, 'पांच': 5, '5': 5,
-    'six': 6, 'छह': 6, 'छः': 6, '6': 6,
-    'seven': 7, 'सात': 7, '7': 7,
-    'eight': 8, 'आठ': 8, '8': 8,
-    'nine': 9, 'नौ': 9, '9': 9,
-    'ten': 10, 'दस': 10, '10': 10
-  };
-
   init(): void {
-    // MIC-AI: Do NOT start listening automatically on app launch.
-    // Mic is strictly off until user explicitly turns it on.
-    console.log('🎙️ VoiceCommandService initialized (mic is OFF by default).');
+    console.log('🎙️ VoiceCommandService initialized (mic is OFF by default, local grammar active).');
   }
 
-  /**
-   * Called only when user explicitly activates the mic
-   */
   startListening(): Promise<boolean> {
     const SpeechRec = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SpeechRec) {
@@ -64,52 +44,35 @@ export class VoiceCommandService {
         rec.interimResults = false;
         rec.lang = store.getState().settings.voiceLang || 'hi-IN';
 
-        rec.onaudiostart = () => {
-          micController.setInputLevel(1);
-        };
-
-        rec.onsoundstart = () => {
-          micController.setInputLevel(2);
-        };
-
-        rec.onspeechstart = () => {
-          micController.setInputLevel(3);
-        };
-
-        rec.onspeechend = () => {
-          micController.setInputLevel(1);
-        };
-
-        rec.onsoundend = () => {
-          micController.setInputLevel(0);
-        };
+        rec.onaudiostart = () => micController.setInputLevel(1);
+        rec.onsoundstart = () => micController.setInputLevel(2);
+        rec.onspeechstart = () => micController.setInputLevel(3);
+        rec.onspeechend = () => micController.setInputLevel(1);
+        rec.onsoundend = () => micController.setInputLevel(0);
 
         rec.onresult = (event: any) => {
           micController.setInputLevel(2);
           micController.reportActivity();
           const last = event.results.length - 1;
-          const transcript = event.results[last][0].transcript.trim().toLowerCase();
+          const transcript = event.results[last][0].transcript.trim();
           this.processVoiceCommand(transcript);
           setTimeout(() => micController.setInputLevel(0), 400);
         };
 
         rec.onerror = (e: any) => {
-          console.warn('Speech recognition error:', e.error);
           micController.setInputLevel(0);
           if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
             this.shouldRestart = false;
             this.stopListening();
-            micController.reportError('माइक अनुमति अवरुद्ध है — ब्राउज़र/ऐप सेटिंग्स में अनुमति दें (Microphone blocked — allow it in browser/app settings)');
+            micController.reportError('माइक अनुमति अवरुद्ध है — सेटिंग्स में अनुमति दें (Microphone blocked)');
             resolve(false);
           } else if (e.error !== 'no-speech') {
-            // Transient error
             micController.reportActivity();
           }
         };
 
         rec.onend = () => {
           micController.setInputLevel(0);
-          // Only restart if micController still wants listening active
           if (this.shouldRestart && this.isListening && micController.getState() === 'listening') {
             try {
               rec.start();
@@ -132,9 +95,6 @@ export class VoiceCommandService {
     });
   }
 
-  /**
-   * Truly release the microphone hardware and stop all callbacks
-   */
   stopListening(): void {
     this.shouldRestart = false;
     this.isListening = false;
@@ -154,131 +114,227 @@ export class VoiceCommandService {
     }
   }
 
-  private processVoiceCommand(phrase: string): void {
-    // Only process if mic is actively listening
-    if (micController.getState() !== 'listening') return;
+  /**
+   * ECON: Strips conversational fillers and normalizes text
+   */
+  private cleanTranscript(phrase: string): string {
+    let clean = phrase.toLowerCase().replace(/[।.,!?]/g, ' ').trim();
+    for (const f of FILLER_WORDS) {
+      const reg = new RegExp(`\\b${f}\\b`, 'gi');
+      clean = clean.replace(reg, ' ');
+    }
+    return clean.replace(/\s+/g, ' ').trim();
+  }
 
-    // INKFIX: Check Voice Write Command first (Part G: raw spoken command is never toasted or stored)
+  /**
+   * Icon-only feedback per Part E (no transcripts on screen or in storage)
+   */
+  private showIconFeedback(icon: string): void {
+    window.dispatchEvent(
+      new CustomEvent('app-toast', {
+        detail: { message: `🎙️ ${icon}` }
+      })
+    );
+  }
+
+  public processVoiceCommand(phrase: string): boolean {
+    if (micController.getState() !== 'listening') return false;
+
+    // 1. Check Voice Write Command first (pure local grammar + anchor logic)
     const writeCmd = voiceWriteManager.parseCommand(phrase);
     if (writeCmd) {
       voiceWriteManager.execute(writeCmd);
-      return;
+      this.showIconFeedback('✍️');
+      return true;
     }
 
-    console.log('Voice Command received:', phrase);
+    const clean = this.cleanTranscript(phrase);
+    if (!clean) return false;
 
-    // Feedback toast
-    window.dispatchEvent(
-      new CustomEvent('app-toast', {
-        detail: { message: `🎙️ आवाज आदेश: "${phrase}"` }
-      })
-    );
-
-    // MIC-AI: Stop listening voice command ("stop listening / माइक बंद")
-    if (/stop\s*listening|माइक\s*बंद|माइक\s*ऑफ|म्यूट/i.test(phrase)) {
+    // 2. Stop listening command
+    if (/stop\s*listening|माइक\s*बंद|माइक\s*ऑफ|म्यूट|chup\s*raho/i.test(clean)) {
+      this.showIconFeedback('🎙️✕');
       micController.turnOff();
-      return;
+      return true;
     }
 
-    // WELCOME-FIX: In welcome state, voice navigation and tools are inert.
-    // Only board, open, and fullscreen commands are allowed.
     const state = store.getState();
+
+    // Welcome state restrictions
     if (state.appState === 'welcome') {
-      if (/board|ब्लैकबोर्ड|बोर्ड/i.test(phrase)) {
+      if (/board|ब्लैकबोर्ड|बोर्ड/i.test(clean)) {
+        this.showIconFeedback('📋');
         blackboardStudio.toggleBoard();
-        return;
+        return true;
       }
-      if (/open|खोलो|खोलें/i.test(phrase)) {
+      if (/open|खोलो|खोलें/i.test(clean)) {
+        this.showIconFeedback('📂');
         const fileInput = document.getElementById('fileInputDeck') as HTMLInputElement;
         fileInput?.click();
-        return;
+        return true;
       }
-      if (/fullscreen|फुलस्क्रीन|पूर्ण स्क्रीन/i.test(phrase)) {
+      if (/fullscreen|फुलस्क्रीन|पूर्ण स्क्रीन/i.test(clean)) {
+        this.showIconFeedback('⛶');
         fullscreenService.toggleZen();
-        return;
+        return true;
       }
-      return; // All other voice navigation/drawing commands inert in welcome state
+      return false; // ignore other commands silently
     }
 
-    // Open Deck
-    if (/open|खोलो|खोलें/i.test(phrase)) {
-      const fileInput = document.getElementById('fileInputDeck') as HTMLInputElement;
-      fileInput?.click();
-      return;
-    }
+    // 3. Navigation: Slide jumps with ordinals / numbers up to 50
+    // Examples: "तीसरी स्लाइड पर चलो", "स्लाइड पाँच", "slide 7", "पांचवी स्लाइड"
+    const slideJumpMatch = clean.match(
+      /(?:स्लाइड|slide|page|पृष्ठ|नंबर|number)?\s*([^\s]+)\s*(?:स्लाइड|slide|page|पृष्ठ)?\s*(?:पर चलो|खोलो|दिखाओ|par chalo)?/i
+    );
 
-    // Next slide
-    if (/next|अगला|आगे|नेक्स्ट/i.test(phrase)) {
-      navigationController.nextPage();
-      return;
-    }
-
-    // Previous slide
-    if (/back|पीछे|पिछला|बैक/i.test(phrase)) {
-      navigationController.prevPage();
-      return;
-    }
-
-    // Jump to slide (e.g. "slide 3", "स्लाइड पाँच", "page 2")
-    const slideMatch = phrase.match(/(?:slide|page|स्लाइड|पृष्ठ)\s*([\w\d]+)/i);
-    if (slideMatch && slideMatch[1]) {
-      const targetStr = slideMatch[1];
-      const parsedNum = this.numberWords[targetStr] || parseInt(targetStr, 10);
-      if (!isNaN(parsedNum) && parsedNum > 0) {
-        navigationController.goToPage(parsedNum);
-        return;
+    // Check tokens for number words / ordinals
+    const tokens = clean.split(/\s+/);
+    for (const tok of tokens) {
+      if (NUMBER_WORDS[tok] !== undefined) {
+        const pageNum = NUMBER_WORDS[tok];
+        if (clean.includes('स्लाइड') || clean.includes('slide') || clean.includes('page') || clean.includes('चलो')) {
+          this.showIconFeedback(`📄 ${pageNum}`);
+          navigationController.goToPage(pageNum);
+          return true;
+        }
       }
     }
 
-    // Clear ink
-    if (/clear|साफ़|साफ|मिटाओ/i.test(phrase)) {
-      annotationStore.clearAll();
-      return;
+    // Direct digit check (e.g. "slide 12" or "12")
+    const digitMatch = clean.match(/\b([1-9]|[1-4][0-9]|50)\b/);
+    if (digitMatch && (clean.includes('slide') || clean.includes('स्लाइड') || clean.includes('page'))) {
+      const num = parseInt(digitMatch[1], 10);
+      this.showIconFeedback(`📄 ${num}`);
+      navigationController.goToPage(num);
+      return true;
     }
 
-    // Blackboard
-    if (/board|ब्लैकबोर्ड|बोर्ड/i.test(phrase)) {
-      blackboardStudio.toggleBoard();
-      return;
+    // 4. Match against COMMANDS_REGISTRY
+    for (const cmd of COMMANDS_REGISTRY) {
+      for (const syn of cmd.synonyms) {
+        if (clean === syn || clean.includes(syn)) {
+          this.executeAction(cmd.action, cmd.icon);
+          return true;
+        }
+      }
     }
 
-    // Close overlays
-    if (/close|बंद|हटाओ/i.test(phrase)) {
-      const s = store.getState();
-      if (s.isBoardMode) blackboardStudio.closeBoard();
-      window.dispatchEvent(new CustomEvent('close-all-overlays'));
-      return;
-    }
+    // Unmatched speech ignored silently per Part E
+    return false;
+  }
 
-    // Fullscreen
-    if (/fullscreen|फुलस्क्रीन|पूर्ण स्क्रीन/i.test(phrase)) {
-      fullscreenService.toggleZen();
-      return;
-    }
+  private executeAction(action: string, icon: string): void {
+    this.showIconFeedback(icon);
 
-    // Tools
-    if (/pen|पेन/i.test(phrase)) {
-      store.setState({ activeTool: 'pen' });
-    } else if (/highlighter|marker|हाइलाइटर/i.test(phrase)) {
-      store.setState({ activeTool: 'highlighter' });
-    } else if (/eraser|रबर|इरेज़र/i.test(phrase)) {
-      store.setState({ activeTool: 'eraser' });
-    } else if (/magnifier|मैग्नीफ़ायर|मैग्नीफायर|लेंस/i.test(phrase)) {
-      // SSIRO-UPDATE: Magnifier Voice Command
-      store.setState({ activeTool: 'magnifier' });
-    } else if (/zoom\s*in|झूम\s*इन|बड़ा\s*करो/i.test(phrase)) {
-      // SSIRO-UPDATE: Zoom In Voice Command
-      zoomController.animateZoom(zoomController.getScale() * 1.5);
-    } else if (/zoom\s*out|झूम\s*आउट|छोटा\s*करो/i.test(phrase)) {
-      // SSIRO-UPDATE: Zoom Out Voice Command
-      zoomController.animateZoom(zoomController.getScale() / 1.5);
-    } else if (/reset\s*zoom|झूम\s*हटाओ|रीसेट\s*झूम/i.test(phrase)) {
-      // SSIRO-UPDATE: Reset Zoom Voice Command
-      zoomController.resetZoom();
-    } else if (/spotlight|स्पॉटलाइट/i.test(phrase)) {
-      // SSIRO-UPDATE: Spotlight Voice Command
-      const cur = store.getState().settings.magnifierSpotlight;
-      store.updateSettings({ magnifierSpotlight: !cur });
+    switch (action) {
+      case 'next':
+        navigationController.nextPage();
+        break;
+
+      case 'prev':
+        navigationController.prevPage();
+        break;
+
+      case 'first_slide':
+        navigationController.goToPage(1);
+        break;
+
+      case 'last_slide':
+        navigationController.goToPage(store.getState().totalPages || 1);
+        break;
+
+      case 'pen':
+        store.setState({ activeTool: 'pen' });
+        break;
+
+      case 'marker':
+        store.setState({ activeTool: 'highlighter' });
+        break;
+
+      case 'eraser':
+        store.setState({ activeTool: 'eraser' });
+        break;
+
+      case 'clear':
+        annotationStore.clearAll();
+        break;
+
+      case 'undo':
+        annotationStore.undo();
+        break;
+
+      case 'board':
+        blackboardStudio.toggleBoard();
+        break;
+
+      case 'magnifier':
+        store.setState({ activeTool: 'magnifier' });
+        break;
+
+      case 'zoom_in':
+        zoomController.animateZoom(zoomController.getScale() * 1.5);
+        break;
+
+      case 'zoom_out':
+        zoomController.animateZoom(zoomController.getScale() / 1.5);
+        break;
+
+      case 'zoom_reset':
+        zoomController.resetZoom();
+        break;
+
+      case 'spotlight':
+        const cur = store.getState().settings.magnifierSpotlight;
+        store.updateSettings({ magnifierSpotlight: !cur });
+        break;
+
+      case 'fullscreen':
+        fullscreenService.toggleZen();
+        break;
+
+      case 'close':
+        const s = store.getState();
+        if (s.isBoardMode) blackboardStudio.closeBoard();
+        window.dispatchEvent(new CustomEvent('close-all-overlays'));
+        break;
+
+      case 'mic_off':
+        micController.turnOff();
+        break;
+
+      case 'color_red':
+        store.setState({ activeColor: '#ef4444' });
+        break;
+
+      case 'color_blue':
+        store.setState({ activeColor: '#3b82f6' });
+        break;
+
+      case 'color_green':
+        store.setState({ activeColor: '#10b981' });
+        break;
+
+      case 'color_yellow':
+        store.setState({ activeColor: '#f59e0b' });
+        break;
+
+      case 'color_white':
+        store.setState({ activeColor: '#ffffff' });
+        break;
+
+      case 'size_thicker':
+        store.setState({
+          penSize: Math.min(24, store.getState().penSize + 4),
+          highlighterWidth: Math.min(64, store.getState().highlighterWidth + 8)
+        });
+        break;
+
+      case 'size_thinner':
+        store.setState({
+          penSize: Math.max(2, store.getState().penSize - 2),
+          highlighterWidth: Math.max(16, store.getState().highlighterWidth - 8)
+        });
+        break;
     }
   }
 }

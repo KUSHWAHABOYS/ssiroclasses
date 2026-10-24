@@ -30,6 +30,8 @@ export interface Stroke {
   extraPoints?: Point[]; // Polygon vertices for triangle, diamond, quad
   isUnderline?: boolean;
   attachedTextId?: string;
+  // ECON: Blend mode for highlighters by slide brightness (multiply on light, screen on dark)
+  blendMode?: GlobalCompositeOperation;
 }
 
 export class AnnotationStore {
@@ -248,12 +250,16 @@ export class AnnotationStore {
   renderStroke(ctx: CanvasRenderingContext2D, stroke: Stroke): void {
     ctx.save();
 
+    const isBoard = store.getState().isBoardMode;
+    const defaultHighlighterBlend: GlobalCompositeOperation = isBoard ? 'screen' : 'multiply';
+    const defaultHighlighterAlpha = isBoard ? 0.35 : 0.32;
+
     if (stroke.tool === 'highlighter') {
-      ctx.globalAlpha = stroke.alpha || 0.25;
-      ctx.globalCompositeOperation = 'multiply';
+      ctx.globalAlpha = stroke.alpha || defaultHighlighterAlpha;
+      ctx.globalCompositeOperation = stroke.blendMode || defaultHighlighterBlend;
       ctx.strokeStyle = stroke.color;
       ctx.lineWidth = stroke.size;
-      ctx.lineCap = 'butt'; // Marker look per B6.2
+      ctx.lineCap = 'butt'; // Marker flat look per Part D1.1
       ctx.lineJoin = 'round';
     } else if (stroke.tool === 'pen') {
       ctx.globalAlpha = stroke.alpha || 1.0;
@@ -265,12 +271,21 @@ export class AnnotationStore {
     }
 
     if (stroke.shapeType) {
-      ctx.globalAlpha = stroke.alpha || 1.0;
-      ctx.globalCompositeOperation = 'source-over';
-      ctx.strokeStyle = stroke.color;
-      ctx.lineWidth = stroke.size;
-      ctx.lineCap = 'round';
-      ctx.lineJoin = 'round';
+      if (stroke.tool === 'highlighter') {
+        ctx.globalAlpha = stroke.alpha || defaultHighlighterAlpha;
+        ctx.globalCompositeOperation = stroke.blendMode || defaultHighlighterBlend;
+        ctx.strokeStyle = stroke.color;
+        ctx.lineWidth = stroke.size;
+        ctx.lineCap = 'butt';
+        ctx.lineJoin = 'round';
+      } else {
+        ctx.globalAlpha = stroke.alpha || 1.0;
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.strokeStyle = stroke.color;
+        ctx.lineWidth = stroke.size;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+      }
       this.drawShape(ctx, stroke.shapeType, stroke.startPoint!, stroke.endPoint!, stroke.extraPoints);
       ctx.restore();
       return;

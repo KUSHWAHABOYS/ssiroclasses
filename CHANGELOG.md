@@ -2,6 +2,71 @@
 
 All notable changes to "Smart Studio Presenter Pro" are documented in this file.
 
+## [1.4.0] — 2026-10-24 (Economy AI Mode, Quota Safe Fallback, Code-First Ink & Resizable Panel)
+
+### 🤖 Part B & C — Principle: Code First, API Only When Needed & Economy AI
+- **No-API Audit & Deterministic Execution**:
+  - Audited all AI calls across the codebase; removed unnecessary API triggers. Highlighting, line straightening, geometric shape recognition, slide navigation, and glossary normalization now run 100% in deterministic code without requiring an API key, quota, or network connection.
+  - Shape recognition defaults to pure geometry (`smartInkAiAssist: false`); Smart Text handwriting OCR (`✍→Aa`) defaults to OFF at launch.
+  - Zero pre-warm or background API calls on app startup or slide change.
+- **Dynamic Model Catalog (`src/ai/modelCatalog.ts`)**:
+  - Dynamically discovers and ranks models without hardcoded assumptions.
+  - Default mode is **Economy**: prefers `gemini-2.0-flash-lite`, then `gemini-1.5-flash-8b`, then standard Flash. Automatically excludes retired/deprecated models (e.g. `gemini-1.0-pro`, `text-bison`).
+  - Added Quality Preference setting: **Economy (Default)**, **Balanced**, and **Best**.
+  - Added *"बेहतर जवाब / Better answer"* button under assistant replies to re-ask questions with the next stronger tier on-demand.
+- **Quota Cooldown Manager & Friendly Errors (`src/ai/quotaManager.ts`)**:
+  - Structured HTTP 429 parser distinguishing per-minute rate limits (brief backoff) from daily free quota limits (persisted lockout until stated reset time).
+  - Persisted cooldown map (`ssiro_model_cooldown_v1`) in localStorage prevents repeated failing calls.
+  - Automatic within-provider model fallback chain: switches smoothly from exhausted model to next economy model with non-blocking toast.
+  - Friendly Hindi/English error cards replace raw JSON/URL dumps; sensitive keys (`AIza***[MASKED]`, `sk-***[MASKED]`) masked in technical details.
+  - Full word wrapping (`overflow-wrap: anywhere`) eliminates horizontal scrollbars.
+- **Token Minimization & 24h Response Cache (`src/ai/responseCache.ts`)**:
+  - Short system prompts (<60 tokens) and configurable Answer Length (*Short* ~300 / *Normal* ~600 / *Detailed* ~1500 tokens).
+  - Disabled hidden thinking tokens (`thinkingBudget: 0`) on Gemini 2.0+ models.
+  - Text-before-pixels for *"Explain this slide"*: sends extracted PDF text layer; downscales image to $\le 1024$px JPEG quality 0.8 only when no text layer exists.
+  - Trimmed chat history to last 4 turns / 1500 tokens, truncating earlier assistant replies to 200 characters.
+  - 24-hour IndexedDB response cache serves identical queries instantly with zero token consumption and a *"✓ cached"* badge.
+  - Real-time usage meter in panel footer and Settings ➔ AI (calls today, tokens in/out from provider metadata, active model).
+
+### 🖥️ Part C6 — Resizable & Dockable Assistant Panel UI (`src/ui/geminiPanel.ts`)
+- **Interactive Sizing & Docking**:
+  - Drag handles on edges and corners for fluid resizing (width 280px–85vw, height 240px–100vh).
+  - Dock modes: **Right (Default)**, **Left**, **Bottom**, and **Floating**, persisted per device.
+  - Dedicated Maximize button for full-screen answers, Minimize button for collapsed bar that never obstructs drawing, and Esc key shortcut.
+  - Typography controls: $A-$ / $A+$ buttons to dynamically scale font size.
+  - Quick action chips above input: *"स्लाइड का सार"*, *"मुख्य बिंदु"*, *"सरल हिंदी में समझाओ"*, *"5 क्विज़ प्रश्न"*, *"यहाँ क्या स्पष्ट नहीं है"*.
+  - Per-message Copy button and *"स्लाइड पर लिखें / Put on slide"* button to insert responses as editable text objects.
+  - Chrome omnibar Ask Gemini footnote guide.
+
+### 🎨 Part D — Ink by Code (Highlighter, Underlines, Shapes)
+- **Highlighter Clean Band <= 0.15s (`src/smartink/smartInkController.ts`)**:
+  - Purely in code: calculates principal stroke axis and converts freehand highlighter sweeps into clean horizontal bands with flat butt caps within 150ms.
+  - Snaps to text lines using the PDF text layer or pixel profiles with 2px padding and word boundary alignment.
+  - Brightness-aware blend modes: `multiply` at alpha 0.32–0.35 on light slides; `screen` at alpha 0.35 on dark blackboard slides to preserve text legibility.
+- **Underline Straightening <= 0.3s**:
+  - Forgiving tolerance ($\le 6\%$ RMS deviation, $\le 8\%$ max deviation, $\ge 60$px length) with 12° horizontal/vertical snap.
+  - Snaps under slide text at baseline $+ 0.12 \times \text{lineHeight}$.
+- **Geometric Shapes <= 0.45s**:
+  - Fast offline recognition for lines, circles, ellipses, rectangles, squares, triangles, diamonds, and single/multi-stroke arrows.
+  - Text-vs-shape guard protects Devanagari characters, matras, and small handwriting from false conversions.
+  - Transactional invariant: raw ink is never deleted until clean geometry commits; rollback restores raw ink on any error.
+
+### 🎙️ Part E — Local Voice Commands Dictionary (`src/voice/commandsDict.ts`)
+- **Expanded Hindi & English Grammar**:
+  - Support for ordinals up to 50 (*पहली*, *दूसरी*, *तीसरी* ... *पचासवीं*), Devanagari digits (*१* - *५०*), Hindi number words, and English numbers.
+  - Full synonym registry covering navigation, tools (pen, marker, eraser, lens), colors, board toggle, zoom, fullscreen, and mic mute.
+  - Automatic conversational filler word stripping (*भैया*, *यार*, *ज़रा*, *कृपया*, *प्लीज*, etc.).
+  - Icon-only visual feedback (e.g. 🎙️ ➡️, 🎙️ ✏️); zero spoken transcripts displayed or stored.
+  - Local "Write here" anchor resolution without AI.
+
+### 🌐 Part C5 & F — Optional Chrome Built-in AI & WebMCP Layers
+- **Chrome On-Device AI (`src/ai/providers/chromeBuiltIn.ts`)**:
+  - Added optional on-device provider utilizing `window.ai.languageModel` (Gemini Nano in desktop Chrome), disabled by default with diagnostic test in Settings.
+- **WebMCP Tool Integration (`src/ai/webMcp.ts`)**:
+  - Experimental agent layer registering presentation tools (`next_slide`, `previous_slide`, `goto_slide`, `toggle_board`, `clear_slide`, `write_text`) with destructive confirmation safety guards.
+
+---
+
 ## [1.3.0] — 2026-10-24 (Smart Ink Repair, Transactional Conversions & Voice Write Commands)
 
 ### ✍️ Part B — Transactional Conversions & Invariant Guarantees (Ink Never Vanishes)

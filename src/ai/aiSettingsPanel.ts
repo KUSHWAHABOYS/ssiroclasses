@@ -5,6 +5,7 @@ import { PROVIDERS_REGISTRY, detectProviderFromKeyShape, probeCandidateProviders
 import { discoverModels, clearModelCache, getCachedModels } from './modelDiscovery';
 import { aiRouter } from './aiRouter';
 import { AITask, QualityPreference } from './providers/types';
+import { chromeBuiltInProvider } from './providers/chromeBuiltIn';
 
 export class AISettingsPanel {
   private containerEl: HTMLElement | null = null;
@@ -115,12 +116,25 @@ export class AISettingsPanel {
           <div class="setting-item">
             <div class="setting-label">
               <span class="setting-name">गुणवत्ता प्राथमिकता (Quality Preference)</span>
-              <span class="setting-desc">कार्य के अनुसार फ्लैगशिप बनाम द्रुत मॉडल चयन</span>
+              <span class="setting-desc">किफ़ायती (Economy) में Flash-Lite मॉडल डिफ़ॉल्ट रहता है</span>
             </div>
             <select id="settingAiQuality" class="header-btn" style="background:#111;">
-              <option value="balanced" ${s.aiQualityPreference === 'balanced' ? 'selected' : ''}>संतुलित / Balanced (चैट: फ्लैगशिप, इंक: तीव्र)</option>
+              <option value="economy" ${s.aiQualityPreference === 'economy' || !s.aiQualityPreference ? 'selected' : ''}>किफ़ायती / Economy (Flash-Lite — अनुशंसित व न्यूनतम टोकन)</option>
+              <option value="balanced" ${s.aiQualityPreference === 'balanced' ? 'selected' : ''}>संतुलित / Balanced (चैट: स्टैंडर्ड Flash, इंक: तीव्र)</option>
               <option value="best" ${s.aiQualityPreference === 'best' ? 'selected' : ''}>सर्वोत्तम गुणवत्ता / Best Quality (हमेशा सर्वश्रेष्ठ तर्क)</option>
-              <option value="fast" ${s.aiQualityPreference === 'fast' ? 'selected' : ''}>तीव्र व किफ़ायती / Fastest & Cheapest</option>
+            </select>
+          </div>
+
+          <!-- ECON: Answer Length Setting (Part C2.1) -->
+          <div class="setting-item">
+            <div class="setting-label">
+              <span class="setting-name">उत्तर की लंबाई (Answer Length)</span>
+              <span class="setting-desc">टोकन खपत को नियंत्रित करने के लिए आउटपुट सीमा</span>
+            </div>
+            <select id="settingAiAnswerLength" class="header-btn" style="background:#111;">
+              <option value="short" ${s.aiAnswerLength === 'short' ? 'selected' : ''}>संक्षिप्त / Short (~300 टोकन)</option>
+              <option value="normal" ${s.aiAnswerLength === 'normal' || !s.aiAnswerLength ? 'selected' : ''}>सामान्य / Normal (~600 टोकन — डिफ़ॉल्ट)</option>
+              <option value="detailed" ${s.aiAnswerLength === 'detailed' ? 'selected' : ''}>विस्तृत / Detailed (~1500 टोकन)</option>
             </select>
           </div>
 
@@ -133,6 +147,27 @@ export class AISettingsPanel {
               <input type="number" id="settingAiWarnCalls" min="0" max="500" step="5" value="${s.aiWarnAfterCalls || 0}" class="gemini-input" style="width:80px; text-align:center;" />
               <span style="font-size:11px; color:var(--text-muted);">(0 = बंद, सत्र में अब तक: ${sessionCalls})</span>
             </div>
+          </div>
+
+          <!-- ECON: Optional Chrome Built-in AI (Part C5) -->
+          <div class="setting-item" style="border-top:1px solid rgba(255,255,255,0.08); padding-top:10px;">
+            <div class="setting-label">
+              <span class="setting-name">Chrome ऑन-डिवाइस AI (Chrome Built-in AI)</span>
+              <span class="setting-desc">डेस्कटॉप क्रोम में ऑन-डिवाइस जेमिनी नैनो (मुफ़्त, अंग्रेज़ी हेतु)</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <button class="header-btn" id="btnTestChromeAi" style="font-size:12px; padding:4px 10px;">जांचें (Test)</button>
+              <span id="chromeAiStatusLabel" style="font-size:11px; color:var(--text-muted);">जांच लंबित</span>
+            </div>
+          </div>
+
+          <!-- ECON: Optional WebMCP browser AI agents toggle (Part F) -->
+          <div class="setting-item">
+            <div class="setting-label">
+              <span class="setting-name">ब्राउज़र AI एजेंट नियंत्रण (Allow browser AI agents - WebMCP)</span>
+              <span class="setting-desc">प्रयोगात्मक: क्रोम एजेंट को स्लाइड नियंत्रण की अनुमति दें</span>
+            </div>
+            <input type="checkbox" id="settingWebMcp" ${s.webMcpEnabled ? 'checked' : ''} />
           </div>
         </div>
 
@@ -345,6 +380,61 @@ export class AISettingsPanel {
     warnInput?.addEventListener('change', () => {
       const val = Math.max(0, parseInt(warnInput.value, 10) || 0);
       store.updateSettings({ aiWarnAfterCalls: val });
+    });
+
+    // ECON: Answer Length change listener (Part C2.1)
+    const answerLenSelect = container.querySelector('#settingAiAnswerLength') as HTMLSelectElement;
+    answerLenSelect?.addEventListener('change', () => {
+      store.updateSettings({ aiAnswerLength: answerLenSelect.value as any });
+      window.dispatchEvent(
+        new CustomEvent('app-toast', {
+          detail: { message: `AI उत्तर सीमा: ${answerLenSelect.value}` }
+        })
+      );
+    });
+
+    // ECON: WebMCP toggle listener (Part F)
+    const webMcpCheckbox = container.querySelector('#settingWebMcp') as HTMLInputElement;
+    webMcpCheckbox?.addEventListener('change', () => {
+      store.updateSettings({ webMcpEnabled: webMcpCheckbox.checked });
+      window.dispatchEvent(
+        new CustomEvent('app-toast', {
+          detail: { message: `WebMCP एजेंट: ${webMcpCheckbox.checked ? 'सक्रिय' : 'निष्क्रिय'}` }
+        })
+      );
+    });
+
+    // ECON: Chrome Built-in AI test listener (Part C5)
+    const btnTestChrome = container.querySelector('#btnTestChromeAi');
+    const chromeStatusLabel = container.querySelector('#chromeAiStatusLabel');
+    btnTestChrome?.addEventListener('click', async () => {
+      if (chromeStatusLabel) chromeStatusLabel.textContent = 'परीक्षण जारी...';
+      const status = await chromeBuiltInProvider.getStatus();
+      if (!status.available) {
+        if (chromeStatusLabel) chromeStatusLabel.textContent = status.statusText;
+        window.dispatchEvent(
+          new CustomEvent('app-toast', {
+            detail: { message: `Chrome AI: ${status.statusText}`, isError: true }
+          })
+        );
+        return;
+      }
+      try {
+        const testRes = await chromeBuiltInProvider.testPrompt();
+        if (chromeStatusLabel) chromeStatusLabel.textContent = `सफल (${status.statusText})`;
+        window.dispatchEvent(
+          new CustomEvent('app-toast', {
+            detail: { message: `Chrome AI उत्तर: "${testRes}"` }
+          })
+        );
+      } catch (e: any) {
+        if (chromeStatusLabel) chromeStatusLabel.textContent = 'त्रुटि';
+        window.dispatchEvent(
+          new CustomEvent('app-toast', {
+            detail: { message: `Chrome AI परीक्षण त्रुटि: ${e?.message || 'Failed'}`, isError: true }
+          })
+        );
+      }
     });
 
     // Re-detect models button

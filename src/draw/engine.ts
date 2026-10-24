@@ -297,8 +297,8 @@ export class DrawingEngine {
 
         annotationStore.addStroke(stroke);
 
-        // INKFIX: Notify Smart Ink / handwriting group collector for pen or highlighter
-        if (state.isHandwritingEnabled && (state.activeTool === 'pen' || state.activeTool === 'highlighter')) {
+        // ECON: Notify Smart Ink for pen or highlighter when smartInkEnabled is true (pure code features work offline)
+        if (state.settings.smartInkEnabled && (state.activeTool === 'pen' || state.activeTool === 'highlighter')) {
           for (const cb of this.onStrokeFinishedCallbacks) {
             cb(stroke);
           }

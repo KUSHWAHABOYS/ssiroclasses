@@ -70,9 +70,10 @@ class Store {
       boardTheme: settings.boardDefaultTheme,
       activeTool: 'select',
       activeShape: 'rect',
-      activeColor: '#f59e0b', // Decoding Indology saffron gold
-      isHandwritingEnabled: settings.smartInkEnabled ?? true, // INKFIX: Enable Smart Ink by default
+      activeColor: '#ef4444',
       isTier2Expanded: false,
+      // ECON: Smart Text (✍→Aa) defaults to OFF at every launch per Part B
+      isHandwritingEnabled: false,
       isToolbarVisibleInZen: true,
       isWebOverlayOpen: false,
       isGeminiOpen: false,

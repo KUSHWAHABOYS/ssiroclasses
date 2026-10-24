@@ -299,7 +299,7 @@ export class SettingsPanel {
           <div style="display:flex; align-items:center; gap:16px; padding:8px 0;">
             <img src="/assets/brand/logo.svg" alt="SSIRO Logo" style="width:64px; height:64px; border-radius:14px; box-shadow:var(--shadow-lg);" />
             <div>
-              <div style="font-weight:700; font-size:15px; color:#ffffff;">Smart Studio Presenter Pro v1.3.0</div>
+              <div style="font-weight:700; font-size:15px; color:#ffffff;">Smart Studio Presenter Pro v1.4.0</div>
               <div style="font-size:12px; color:var(--primary-accent); margin-top:2px;">SSIRO Classes Edition</div>
               <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">4K Teaching & Presentation Studio • 100% Client-Side</div>
             </div>

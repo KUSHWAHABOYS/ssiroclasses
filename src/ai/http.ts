@@ -14,13 +14,15 @@ export class AIRequestError extends Error {
   code: AIErrorCode;
   status?: number;
   providerId?: string;
+  details?: any; // ECON: structured error details (e.g. google.rpc.QuotaFailure)
 
-  constructor(message: string, code: AIErrorCode, status?: number, providerId?: string) {
+  constructor(message: string, code: AIErrorCode, status?: number, providerId?: string, details?: any) {
     super(message);
     this.name = 'AIRequestError';
     this.code = code;
     this.status = status;
     this.providerId = providerId;
+    this.details = details;
   }
 }
 
@@ -212,7 +214,8 @@ export class HttpClient {
         `अमान्य या अनधिकृत API कुंजी (${providerId}): ${errorMsg}`,
         'invalid_key',
         status,
-        providerId
+        providerId,
+        data
       );
     }
 
@@ -221,7 +224,8 @@ export class HttpClient {
         `कोटा सीमा समाप्त या रेट लिमिट (${providerId}): ${errorMsg}`,
         'quota_exceeded',
         status,
-        providerId
+        providerId,
+        data
       );
     }
 
@@ -230,7 +234,8 @@ export class HttpClient {
         `मॉडल या एंडपॉइंट नहीं मिला (${providerId}): ${errorMsg}`,
         'model_not_found',
         status,
-        providerId
+        providerId,
+        data
       );
     }
 
@@ -238,7 +243,8 @@ export class HttpClient {
       `प्रदाता त्रुटि [${status}] (${providerId}): ${errorMsg}`,
       'other',
       status,
-      providerId
+      providerId,
+      data
     );
   }
 }

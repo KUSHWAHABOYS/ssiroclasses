@@ -209,6 +209,35 @@ export class TextLineDetector {
 
     return words;
   }
+
+  /**
+   * ECON: Finds all text lines covered by a stroke bounding box for Highlighter band snapping (Part D1.2)
+   */
+  findLinesCovered(box: { x: number; y: number; width: number; height: number }): TextLineCandidate[] {
+    const candidates = this.getCandidates();
+    const covered: TextLineCandidate[] = [];
+    const bTop = box.y;
+    const bBottom = box.y + box.height;
+    const bLeft = box.x;
+    const bRight = box.x + box.width;
+
+    for (const c of candidates) {
+      const cTop = c.box.y;
+      const cBottom = c.box.y + c.box.height;
+      const cLeft = c.box.x;
+      const cRight = c.box.x + c.box.width;
+
+      const vOverlap = Math.max(0, Math.min(bBottom, cBottom) - Math.max(bTop, cTop));
+      const hOverlap = Math.max(0, Math.min(bRight, cRight) - Math.max(bLeft, cLeft));
+
+      // Threshold: at least 30% vertical overlap of the line box and some horizontal overlap
+      if (vOverlap >= Math.min(c.box.height * 0.3, box.height * 0.25) && hOverlap >= 20) {
+        covered.push(c);
+      }
+    }
+
+    return covered.sort((a, b) => a.box.y - b.box.y);
+  }
 }
 
 export const textLineDetector = new TextLineDetector();

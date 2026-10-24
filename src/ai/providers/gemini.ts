@@ -41,16 +41,25 @@ export class GeminiProvider implements AIProvider {
     const modelsRaw = res.data?.models || [];
     const models: ModelInfo[] = [];
 
+    // ECON: Filter out retired/deprecated models (older Gemini models shut down)
+    const retiredModels = ['gemini-1.0-pro', 'gemini-pro', 'text-bison', 'gemini-pro-vision', 'chat-bison'];
+
     for (const m of modelsRaw) {
       const id = m.name?.replace(/^models\//, '') || m.name;
+      const lowerId = id.toLowerCase();
+
+      if (retiredModels.some((r) => lowerId === r || lowerId.startsWith(`${r}-`))) {
+        continue;
+      }
+
       // Filter for models supporting generateContent
       const methods: string[] = m.supportedGenerationMethods || [];
       if (methods.includes('generateContent') || methods.includes('generateAnswer')) {
         const isVision =
-          id.includes('gemini') ||
-          id.includes('vision') ||
-          id.includes('flash') ||
-          id.includes('pro');
+          lowerId.includes('gemini') ||
+          lowerId.includes('vision') ||
+          lowerId.includes('flash') ||
+          lowerId.includes('pro');
 
         models.push({
           id,
@@ -60,7 +69,7 @@ export class GeminiProvider implements AIProvider {
           contextWindow: m.inputTokenLimit || 32000,
           supportsVision: isVision,
           supportsText: true,
-          deprecated: id.includes('001') || id.includes('legacy')
+          deprecated: lowerId.includes('001') || lowerId.includes('legacy')
         });
       }
     }
@@ -68,8 +77,11 @@ export class GeminiProvider implements AIProvider {
     return models;
   }
 
+  // ECON: Track last usage metadata for usage meter
+  public lastUsage: { promptTokens?: number; completionTokens?: number; totalTokens?: number } | null = null;
+
   async chat(apiKey: string, payload: ChatPayload): Promise<string> {
-    const model = payload.model || 'gemini-1.5-flash';
+    const model = payload.model || 'gemini-2.0-flash-lite';
     const cleanModel = model.replace(/^models\//, '');
     const url = `${this.baseUrl}/v1beta/models/${cleanModel}:generateContent`;
 
@@ -78,12 +90,22 @@ export class GeminiProvider implements AIProvider {
       parts: [{ text: m.content }]
     }));
 
+    const genConfig: any = {
+      temperature: payload.temperature ?? 0.7,
+      maxOutputTokens: payload.maxTokens ?? 600
+    };
+
+    // ECON: Disable thinking tokens by default (thinkingBudget: 0) for Gemini 2.0+ models
+    // Thinking tokens count as output quota; only "Better answer" may use higher thinking (Part C2.2)
+    if (cleanModel.includes('2.0') || cleanModel.includes('2.5') || payload.thinkingBudget !== undefined) {
+      genConfig.thinkingConfig = {
+        thinkingBudget: payload.thinkingBudget ?? 0
+      };
+    }
+
     const body: any = {
       contents,
-      generationConfig: {
-        temperature: payload.temperature ?? 0.7,
-        maxOutputTokens: payload.maxTokens ?? 2048
-      }
+      generationConfig: genConfig
     };
 
     const res = await httpClient.request({
@@ -97,6 +119,15 @@ export class GeminiProvider implements AIProvider {
       expectedHost: this.expectedHost,
       providerId: this.id
     });
+
+    // ECON: Extract usage metadata
+    if (res.data?.usageMetadata) {
+      this.lastUsage = {
+        promptTokens: res.data.usageMetadata.promptTokenCount,
+        completionTokens: res.data.usageMetadata.candidatesTokenCount,
+        totalTokens: res.data.usageMetadata.totalTokenCount
+      };
+    }
 
     const candidate = res.data?.candidates?.[0];
     const text = candidate?.content?.parts?.[0]?.text;
@@ -112,7 +143,7 @@ export class GeminiProvider implements AIProvider {
   }
 
   async vision(apiKey: string, payload: VisionPayload): Promise<string> {
-    const model = payload.model || 'gemini-1.5-flash';
+    const model = payload.model || 'gemini-2.0-flash-lite';
     const cleanModel = model.replace(/^models\//, '');
     const url = `${this.baseUrl}/v1beta/models/${cleanModel}:generateContent`;
 
@@ -144,12 +175,20 @@ export class GeminiProvider implements AIProvider {
       }
     ];
 
+    const genConfig: any = {
+      temperature: payload.temperature ?? 0.2,
+      maxOutputTokens: payload.maxTokens ?? 800
+    };
+
+    if (cleanModel.includes('2.0') || cleanModel.includes('2.5') || payload.thinkingBudget !== undefined) {
+      genConfig.thinkingConfig = {
+        thinkingBudget: payload.thinkingBudget ?? 0
+      };
+    }
+
     const body: any = {
       contents,
-      generationConfig: {
-        temperature: payload.temperature ?? 0.2,
-        maxOutputTokens: payload.maxTokens ?? 1024
-      }
+      generationConfig: genConfig
     };
 
     const res = await httpClient.request({
@@ -163,6 +202,14 @@ export class GeminiProvider implements AIProvider {
       expectedHost: this.expectedHost,
       providerId: this.id
     });
+
+    if (res.data?.usageMetadata) {
+      this.lastUsage = {
+        promptTokens: res.data.usageMetadata.promptTokenCount,
+        completionTokens: res.data.usageMetadata.candidatesTokenCount,
+        totalTokens: res.data.usageMetadata.totalTokenCount
+      };
+    }
 
     const candidate = res.data?.candidates?.[0];
     const text = candidate?.content?.parts?.[0]?.text;

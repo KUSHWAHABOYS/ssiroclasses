@@ -95,8 +95,8 @@ export class SmartInkController {
 
     if (!isPen && !isHighlighter) return;
 
-    // Check if Smart Ink / Handwriting is active
-    if (!s.isHandwritingEnabled) return;
+    // ECON: Check if Smart Ink is enabled (Part B: pure code features work offline)
+    if (!s.settings.smartInkEnabled) return;
 
     window.clearTimeout(this.idleTimer);
     this.pendingStrokes.push(stroke);
@@ -111,27 +111,30 @@ export class SmartInkController {
       return;
     }
 
-    // Speculative recognition after 500ms idle (Part E2)
-    const speculativeDelay = 500;
-    setTimeout(() => {
-      if (this.pendingStrokes.length > 0 && !this.speculativeController) {
-        this.launchSpeculativeRecognition();
-      }
-    }, speculativeDelay);
+    // ECON: Speculative recognition ONLY when Smart Text toggle (✍→Aa) is explicitly ON (Part B / D4)
+    if (s.isHandwritingEnabled) {
+      const speculativeDelay = 500;
+      setTimeout(() => {
+        if (this.pendingStrokes.length > 0 && !this.speculativeController) {
+          this.launchSpeculativeRecognition();
+        }
+      }, speculativeDelay);
+    }
 
     // Sync thresholds with user sensitivity setting
     shapeFitter.setThresholds(getThresholds(s.settings.smartInkSensitivity || 'normal'));
 
-    // Standard timer delay: shape delay 0.45s, highlighter 0.25s, text 1.0s (Part E1)
+    // Standard timer delay: shape delay 0.45s, highlighter 0.15s, text 1.0s (Part D)
     const classification = inkClassifier.classifyStroke(stroke, this.pendingStrokes);
 
     let delayMs = s.settings.smartInkTextDelayMs || 1000;
     if (s.settings.smartInkConvertText === 'line') {
-      delayMs = 2000; // Whole line after a longer pause (2.0s) per Part F5
+      delayMs = 2000;
     }
 
     if (isHighlighter) {
-      delayMs = s.settings.smartInkHighlighterDelayMs || 250;
+      // ECON: Highlighter delay default 0.15s (150ms) per Part D1
+      delayMs = s.settings.smartInkHighlighterDelayMs || 150;
     } else if (classification.inkClass === 'shape' || classification.inkClass === 'underline' || classification.inkClass === 'line') {
       delayMs = s.settings.smartInkShapeDelayMs || 450;
     }
@@ -155,7 +158,14 @@ export class SmartInkController {
     const latestStroke = strokes[strokes.length - 1];
     const classification = inkClassifier.classifyStroke(latestStroke, strokes);
 
-    // --- Branch 1: Underline Snap (Part C) ---
+    // --- Branch 0: Highlighter Straighten & Snap (Part D1) ---
+    if (latestStroke.tool === 'highlighter') {
+      await this.processHighlighter(latestStroke, startTime);
+      this.isProcessing = false;
+      return;
+    }
+
+    // --- Branch 1: Underline Snap (Part D2) ---
     if (classification.inkClass === 'underline' && classification.fitResult) {
       const transaction = new InkTransaction([latestStroke]);
       await transaction.execute(async () => {
@@ -208,16 +218,16 @@ export class SmartInkController {
       return;
     }
 
-    // --- Branch 2: Freehand Geometric Shape (Part D) ---
+    // --- Branch 2: Freehand Geometric Shape (Part D3) ---
     if ((classification.inkClass === 'shape' || classification.inkClass === 'line') && classification.fitResult) {
       const fit = classification.fitResult;
 
-      // Check if local confidence is high (>= 0.6)
+      // Purely geometric recognition by default; AI second-opinion only if smartInkAiAssist is explicitly enabled
       let finalFit: FitResult | null = fit;
       let aiUsed = false;
+      const s = store.getState();
 
-      // AI-assisted classification second opinion for uncertain strokes (0.35 - 0.6) (Part D3)
-      if (fit.confidence >= 0.35 && fit.confidence < 0.6 && keyVault.hasAnyKey()) {
+      if (s.settings.smartInkAiAssist && fit.confidence >= 0.35 && fit.confidence < 0.6 && keyVault.hasAnyKey()) {
         try {
           aiUsed = true;
           finalFit = await this.queryShapeClassifyAI(latestStroke, fit);
@@ -264,12 +274,134 @@ export class SmartInkController {
       }
     }
 
-    // --- Branch 3: Word-Level Handwriting-to-Text (Part F) ---
+    // --- Branch 3: Word-Level Handwriting-to-Text (Part D4) ---
     if (classification.inkClass === 'text' || classification.inkClass === 'shirorekha') {
-      await this.processWordClusters(strokes, startTime);
+      if (store.getState().isHandwritingEnabled) {
+        await this.processWordClusters(strokes, startTime);
+      } else {
+        // Pure code: Smart Text toggle is OFF, leave handwriting raw untouched
+        smartInkInspector.recordDecision({
+          tool: latestStroke.tool,
+          strokeCount: strokes.length,
+          features: {},
+          classScores: { text: 0.9 },
+          branchTaken: 'text_raw_preserved',
+          aiCalled: false,
+          latencyMs: Date.now() - startTime,
+          result: 'left_as_drawn',
+          reason: 'Smart Text toggle (✍→Aa) is OFF; ink preserved untouched'
+        });
+      }
     }
 
     this.isProcessing = false;
+  }
+
+  /**
+   * Computes bounding box of stroke points
+   */
+  private getStrokeBounds(stroke: Stroke): { minX: number; maxX: number; minY: number; maxY: number } {
+    if (!stroke.points || stroke.points.length === 0) {
+      return { minX: 0, maxX: 0, minY: 0, maxY: 0 };
+    }
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    for (const p of stroke.points) {
+      if (p.x < minX) minX = p.x;
+      if (p.x > maxX) maxX = p.x;
+      if (p.y < minY) minY = p.y;
+      if (p.y > maxY) maxY = p.y;
+    }
+    return { minX, maxX, minY, maxY };
+  }
+
+  /**
+   * ECON: Highlighter clean band & text line snapping within 0.15s purely by code (Part D1)
+   */
+  private async processHighlighter(stroke: Stroke, startTime: number): Promise<void> {
+    const s = store.getState();
+    const isBoard = s.isBoardMode;
+    const blendMode: GlobalCompositeOperation = isBoard ? 'screen' : 'multiply';
+    const alpha = isBoard ? 0.35 : 0.32;
+    const box = this.getStrokeBounds(stroke);
+
+    // Snap to text lines if available
+    const coveredLines = textLineDetector.findLinesCovered({
+      x: box.minX,
+      y: box.minY,
+      width: Math.max(1, box.maxX - box.minX),
+      height: Math.max(1, box.maxY - box.minY)
+    });
+
+    const transaction = new InkTransaction([stroke]);
+    await transaction.execute(async () => {
+      if (coveredLines.length > 0) {
+        // Snap one clean horizontal band per covered text line
+        const bands: Stroke[] = [];
+        for (const line of coveredLines) {
+          const height = Math.max(stroke.size, line.box.height + 2);
+          const minX = Math.max(box.minX, line.box.x);
+          const maxX = Math.min(box.maxX, line.box.x + line.box.width);
+          const midY = line.box.y + line.box.height / 2;
+
+          bands.push({
+            id: `hl-band-${Date.now()}-${Math.random()}`,
+            tool: 'highlighter',
+            color: stroke.color,
+            size: height,
+            alpha,
+            blendMode,
+            shapeType: 'line',
+            startPoint: { x: minX, y: midY },
+            endPoint: { x: maxX, y: midY },
+            points: [{ x: minX, y: midY }, { x: maxX, y: midY }],
+            timestamp: Date.now()
+          });
+        }
+        return bands;
+      }
+
+      // If no text line found, straighten the drawn stroke
+      const pts = stroke.points;
+      const start = { ...pts[0] };
+      const end = { ...pts[pts.length - 1] };
+      const dx = end.x - start.x;
+      const dy = end.y - start.y;
+      const angleDeg = Math.abs(Math.atan2(dy, dx) * (180 / Math.PI));
+
+      // If within 10° of horizontal, snap to perfectly horizontal
+      if (angleDeg <= 10 || angleDeg >= 170) {
+        const midY = (start.y + end.y) / 2;
+        start.y = midY;
+        end.y = midY;
+      }
+
+      const repStroke: Stroke = {
+        id: `hl-straight-${Date.now()}`,
+        tool: 'highlighter',
+        color: stroke.color,
+        size: stroke.size,
+        alpha,
+        blendMode,
+        shapeType: 'line',
+        startPoint: start,
+        endPoint: end,
+        points: [start, end],
+        timestamp: Date.now()
+      };
+      return [repStroke];
+    });
+
+    smartInkInspector.recordDecision({
+      tool: stroke.tool,
+      strokeCount: 1,
+      features: { isHighlighter: true, coveredLines: coveredLines.length },
+      classScores: { highlighter: 0.95 },
+      branchTaken: 'highlighter_band_snap',
+      aiCalled: false,
+      latencyMs: Date.now() - startTime,
+      result: 'converted',
+      reason: coveredLines.length > 0 ? `Snapped to ${coveredLines.length} text lines` : 'Straightened highlighter band'
+    });
   }
 
   /**
@@ -330,79 +462,101 @@ export class SmartInkController {
 
     // Perform OCR via AI Router
     const transaction = new InkTransaction(strokes);
-    await transaction.execute(async () => {
-      // Render strokes to offscreen cropped canvas
-      const crop = this.renderStrokesToPng(strokes);
+    try {
+      await transaction.execute(async () => {
+        // Render strokes to offscreen cropped canvas
+        const crop = this.renderStrokesToPng(strokes);
 
-      // Prompt per spec
-      const prompt =
-        'Transcribe the handwritten words in this image exactly. Return only the typeset words separated by single spaces. Preserve Devanagari matras and shirorekha. No markdown, no explanation.';
+        // Prompt per spec
+        const prompt =
+          'Transcribe the handwritten words in this image exactly. Return only the typeset words separated by single spaces. Preserve Devanagari matras and shirorekha. No markdown, no explanation.';
 
-      let transcription = '';
-      if (this.speculativePromise) {
-        transcription = await this.speculativePromise;
-      } else {
-        const result = await aiRouter.run('handwriting-ocr', {
-          image: crop.base64Png,
-          prompt,
-          temperature: 0.0,
-          maxTokens: 60
-        });
-        transcription = result.text.trim();
-      }
+        let transcription = '';
+        if (this.speculativePromise) {
+          transcription = await this.speculativePromise;
+        } else {
+          const result = await aiRouter.run('handwriting-ocr', {
+            image: crop.base64Png,
+            prompt,
+            temperature: 0.0,
+            maxTokens: 60
+          });
+          transcription = result.text.trim();
+        }
 
-      this.speculativePromise = null;
-      if (!transcription) {
-        throw new Error('AI returned empty transcription');
-      }
+        this.speculativePromise = null;
+        if (!transcription) {
+          throw new Error('AI returned empty transcription');
+        }
 
-      const words = transcription.split(/\s+/).filter(Boolean);
-      const repStrokes: Stroke[] = [];
+        const words = transcription.split(/\s+/).filter(Boolean);
+        const repStrokes: Stroke[] = [];
 
-      // Calculate width per word
-      const totalBox = crop.box;
-      const avgCharWidth = totalBox.width / Math.max(1, transcription.length);
-      let currX = totalBox.x;
+        // Calculate width per word
+        const totalBox = crop.box;
+        const avgCharWidth = totalBox.width / Math.max(1, transcription.length);
+        let currX = totalBox.x;
 
-      for (let i = 0; i < words.length; i++) {
-        const w = words[i];
-        const wWidth = Math.max(20, w.length * avgCharWidth);
+        for (let i = 0; i < words.length; i++) {
+          const w = words[i];
+          const wWidth = Math.max(20, w.length * avgCharWidth);
 
-        repStrokes.push({
-          id: `typeset-word-${Date.now()}-${i}`,
-          tool: 'text',
-          color: strokes[0].color,
-          size: Math.max(20, Math.round(totalBox.height * 0.82)),
-          alpha: 1.0,
-          points: [{ x: currX, y: totalBox.y }],
-          text: w,
-          box: {
-            x: currX,
-            y: totalBox.y,
-            width: wWidth,
-            height: totalBox.height
-          },
-          timestamp: Date.now()
-        });
+          repStrokes.push({
+            id: `typeset-word-${Date.now()}-${i}`,
+            tool: 'text',
+            color: strokes[0].color,
+            size: Math.max(20, Math.round(totalBox.height * 0.82)),
+            alpha: 1.0,
+            points: [{ x: currX, y: totalBox.y }],
+            text: w,
+            box: {
+              x: currX,
+              y: totalBox.y,
+              width: wWidth,
+              height: totalBox.height
+            },
+            timestamp: Date.now()
+          });
 
-        currX += wWidth + avgCharWidth * 0.8; // Space between words
-      }
+          currX += wWidth + avgCharWidth * 0.8; // Space between words
+        }
 
-      return repStrokes;
-    });
+        return repStrokes;
+      });
 
-    smartInkInspector.recordDecision({
-      tool: strokes[0]?.tool || 'pen',
-      strokeCount: strokes.length,
-      features: { clusterCount: completeClusters.length },
-      classScores: { text: 0.9 },
-      branchTaken: 'word_typeset_ocr',
-      aiCalled: true,
-      aiTask: 'handwriting-ocr',
-      latencyMs: Date.now() - startTime,
-      result: 'converted',
-      reason: 'Converted to typeset word objects'
-    });
+      smartInkInspector.recordDecision({
+        tool: strokes[0]?.tool || 'pen',
+        strokeCount: strokes.length,
+        features: { clusterCount: completeClusters.length },
+        classScores: { text: 0.9 },
+        branchTaken: 'word_typeset_ocr',
+        aiCalled: true,
+        aiTask: 'handwriting-ocr',
+        latencyMs: Date.now() - startTime,
+        result: 'converted',
+        reason: 'Converted to typeset word objects'
+      });
+    } catch (err: any) {
+      // ECON: If out of quota or AI fails, raw ink is kept intact with short note (Part D4)
+      window.dispatchEvent(
+        new CustomEvent('app-toast', {
+          detail: {
+            message: 'हस्तलेखन रूपांतरण सीमा या त्रुटि: लिखावट सुरक्षित रखी गई (Handwriting preserved untouched)'
+          }
+        })
+      );
+      smartInkInspector.recordDecision({
+        tool: strokes[0]?.tool || 'pen',
+        strokeCount: strokes.length,
+        features: {},
+        classScores: { text: 0.9 },
+        branchTaken: 'ocr_error_rollback',
+        aiCalled: true,
+        latencyMs: Date.now() - startTime,
+        result: 'left_as_drawn',
+        reason: `AI conversion failed (${err?.message || 'error'}), raw ink restored transactionally`
+      });
+    }
   }
 
   /**

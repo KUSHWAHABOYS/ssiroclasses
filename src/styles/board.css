@@ -307,14 +307,16 @@
   color: var(--text-secondary);
 }
 
-/* Gemini AI Chat Panel */
+/* ECON: Resizable & Dockable Gemini AI Chat Panel (Part C6) */
 .gemini-panel {
   position: absolute;
   top: 0;
   right: 0;
   bottom: 0;
-  width: 400px;
-  max-width: 90vw;
+  width: 380px;
+  min-width: 280px;
+  max-width: 85vw;
+  min-height: 240px;
   background: var(--bg-surface-elevated);
   backdrop-filter: var(--backdrop-blur);
   -webkit-backdrop-filter: var(--backdrop-blur);
@@ -322,16 +324,95 @@
   box-shadow: var(--shadow-lg);
   display: flex;
   flex-direction: column;
-  z-index: 70;
+  z-index: 45; /* ECON: Toolbar (z-index 50) stays above panel permanently */
+  transition: box-shadow 0.2s ease;
+}
+
+.gemini-panel.dock-left {
+  border-left: none;
+  border-right: 1px solid var(--border-glass);
+}
+
+.gemini-panel.dock-bottom {
+  border-left: none;
+  border-top: 1px solid var(--border-glass);
+}
+
+.gemini-panel.dock-floating {
+  border: 1px solid var(--border-glass);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.gemini-panel.maximized {
+  z-index: 85 !important;
+  border: none;
+  border-radius: 0;
+}
+
+.gemini-panel.minimized {
+  height: auto !important;
+  border: 1px solid var(--border-glass);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+/* Resize Handles */
+.panel-resize-handle {
+  position: absolute;
+  z-index: 50;
+  touch-action: none;
+}
+
+.panel-resize-handle.edge-left {
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 10px;
+  cursor: ew-resize;
+}
+
+.panel-resize-handle.edge-right {
+  top: 0;
+  bottom: 0;
+  right: 0;
+  width: 10px;
+  cursor: ew-resize;
+}
+
+.panel-resize-handle.edge-top {
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 10px;
+  cursor: ns-resize;
+}
+
+.panel-resize-handle.corner-top-left {
+  top: 0;
+  left: 0;
+  width: 16px;
+  height: 16px;
+  cursor: nwse-resize;
+}
+
+.panel-resize-handle.corner-bottom-left {
+  bottom: 0;
+  left: 0;
+  width: 16px;
+  height: 16px;
+  cursor: nesw-resize;
 }
 
 .gemini-header {
-  height: 56px;
-  padding: 0 16px;
+  height: 54px;
+  padding: 0 12px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   border-bottom: 1px solid var(--border-glass);
+  user-select: none;
 }
 
 .gemini-title {
@@ -346,18 +427,21 @@
 .gemini-messages {
   flex: 1;
   overflow-y: auto;
-  padding: 16px;
+  overflow-x: hidden;
+  padding: 12px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
+/* Chat bubble styling with full word-wrapping */
 .chat-bubble {
-  max-width: 85%;
+  max-width: 90%;
   padding: 10px 14px;
   border-radius: 12px;
-  font-size: 14px;
   line-height: 1.5;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .chat-bubble.user {
@@ -372,6 +456,30 @@
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.12);
   color: var(--text-primary);
+}
+
+/* Quick Action Chips */
+.quick-chip {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: #e2e8f0;
+  border-radius: 14px;
+  padding: 4px 10px;
+  font-size: 11px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.quick-chip:hover {
+  background: rgba(245, 158, 11, 0.22);
+  border-color: rgba(245, 158, 11, 0.5);
+  color: #ffffff;
+}
+
+.quick-chip:active {
+  transform: scale(0.96);
 }
 
 .gemini-vision-action {

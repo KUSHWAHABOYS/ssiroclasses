@@ -43,10 +43,14 @@ export interface AppSettings {
   pushToTalk: boolean;
   showMicDotInZen: boolean;
   // MIC-AI: AI Router settings
-  aiQualityPreference: 'best' | 'balanced' | 'fast';
+  aiQualityPreference: 'economy' | 'balanced' | 'best' | 'fast';
   aiWarnAfterCalls: number;
   aiTaskPinnedModels: Record<string, { provider: string; model: string }>;
   aiProviderPriority: string[];
+  // ECON: Token minimization & Provider settings
+  aiAnswerLength?: 'short' | 'normal' | 'detailed';
+  chromeAiEnabled?: boolean;
+  webMcpEnabled?: boolean;
   // INKFIX: Smart Ink settings
   smartInkEnabled: boolean;
   smartInkSensitivity: 'normal' | 'strict' | 'forgiving';
@@ -58,6 +62,8 @@ export interface AppSettings {
   smartInkAiAssist: boolean;
   smartInkCorrectionLevel: 'light' | 'none' | 'full';
   smartInkInspectorEnabled: boolean;
+  // ECON: Highlighter blend mode
+  smartInkHighlighterBlend?: 'auto' | 'multiply' | 'screen';
 }
 
 const SETTINGS_STORAGE_KEY = 'smart_studio_settings_v1';
@@ -107,21 +113,29 @@ export const DEFAULT_SETTINGS: AppSettings = {
   pushToTalk: false,
   showMicDotInZen: true,
   // MIC-AI: AI Router defaults
-  aiQualityPreference: 'balanced',
+  // ECON: Economy mode default (Part C1)
+  aiQualityPreference: 'economy',
   aiWarnAfterCalls: 0,
   aiTaskPinnedModels: {},
   aiProviderPriority: ['gemini', 'anthropic', 'openai', 'grok', 'groq', 'deepseek', 'mistral', 'openrouter', 'perplexity', 'custom'],
+  // ECON: Token minimization defaults
+  aiAnswerLength: 'normal',
+  chromeAiEnabled: false,
+  webMcpEnabled: false,
   // INKFIX: Smart Ink defaults
   smartInkEnabled: true,
   smartInkSensitivity: 'normal',
   smartInkHoldToSnap: true,
   smartInkShapeDelayMs: 450,
-  smartInkHighlighterDelayMs: 250,
+  // ECON: Smart highlighter delay 0.15s per Part D1
+  smartInkHighlighterDelayMs: 150,
   smartInkTextDelayMs: 1000,
   smartInkConvertText: 'word',
-  smartInkAiAssist: true,
+  // ECON: AI shape assistance defaults to OFF (Part B / D3)
+  smartInkAiAssist: false,
   smartInkCorrectionLevel: 'light',
-  smartInkInspectorEnabled: false
+  smartInkInspectorEnabled: false,
+  smartInkHighlighterBlend: 'auto'
 };
 
 export function loadSettings(): AppSettings {

@@ -378,6 +378,98 @@ Generated assets:
 - `public/favicon-32.png`: 32×32 PNG favicon.
 - `public/favicon.ico`: Standard multi-resolution Windows ICO (16, 32, 48 px).
 
-> **Note on Windows PC Taskbar Icons**:  
-> When updating an already-installed PWA on Windows, Chrome/Edge caches application shortcuts in the Windows shell. The in-app window, splash screen, and browser tabs update immediately via the new Service Worker cache (`ssiro-smart-studio-v1.1.0`). To force Windows Explorer to refresh the taskbar shortcut icon immediately, simply uninstall the PWA via Chrome (*Settings ➔ Apps ➔ Manage Apps*) and re-install.
+---
+
+## 🤖 AI Economy Mode (New in v1.4.0)
+
+Smart Studio Presenter Pro features an intelligent, cost-minimizing AI architecture designed to run on the highest free-quota model tier by default, prevent quota burnouts, and eliminate raw error dumps.
+
+### 1. Dynamic Economy Model Selection
+- **Dynamic Catalog Ranking (`src/ai/modelCatalog.ts`)**: Models are never hardcoded. After your Gemini API key validates, the model list is retrieved and ranked dynamically against official Google AI Studio rate-limit guidelines.
+- **Flash-Lite Default Tier**: Prefers `gemini-2.0-flash-lite`, then `gemini-1.5-flash-8b`, before ever touching standard Flash models. Older deprecated models (`gemini-1.0-pro`, `text-bison`) are automatically skipped.
+- **Quality Modes (Settings ➔ AI)**:
+  - **Economy (Default)**: Uses the cheapest, highest-quota model for every query.
+  - **Balanced**: Uses the standard Flash tier for chat and reasoning.
+  - **Best**: Uses the strongest available flagship tier (e.g., `gemini-2.5-pro`).
+- **"बेहतर जवाब / Better answer" Button**: Under every assistant answer, a single-click upgrade button re-asks the question once with the next stronger model tier (e.g. stepping from Flash-Lite to standard Flash, or Flash to Pro), giving you premium quality when needed without burning tokens on simple queries.
+
+### 2. Quota Cooldown Manager & Friendly Errors
+- **Structured 429 Parser (`src/ai/quotaManager.ts`)**: Distinguishes per-minute rate limits (brief backoff and retry) from daily free quota limits (persisted lockout until stated reset time).
+- **Persistent Cooldown Map**: Stored in `localStorage` under `ssiro_model_cooldown_v1`. If a model hits its daily quota, it is temporarily marked unavailable so the app does not waste requests repeatedly failing on dead models.
+- **Automatic Fallback Chain**:
+  $$\text{Flash-Lite} \longrightarrow \text{Flash-8B} \longrightarrow \text{Standard Flash} \longrightarrow \text{Other Configured Providers} \longrightarrow \text{Chrome Built-in AI}$$
+  Shows a non-blocking toast: *"⚡ कोटा ख़त्म — अब <model> पर चल रहा है"* and continues smoothly.
+- **Friendly Hindi/English Cards**: Raw Google JSON dumps and URLs are replaced with clean, wrapped Hindi error cards explaining the exact daily reset time. All API keys (`AIza***[MASKED]`, `sk-***[MASKED]`) are safely masked in collapsible technical details.
+
+### 3. Token-Minimizing Rules
+- **Concise System Prompts**: Fixed prompts under ~60 tokens per task with zero boilerplate.
+- **Configurable Answer Length**: Settings ➔ AI provides **Short** (~300 tokens), **Normal** (~600 tokens, default), and **Detailed** (~1500 tokens).
+- **Disabled Thinking Tokens**: Sets `thinkingBudget: 0` for Gemini 2.0+ models to eliminate hidden reasoning tokens from billing.
+- **Text Before Pixels**: "Explain this slide" extracts text from the PDF text layer. Slides with text send zero images; image-only slides send a compressed JPEG ($\le 1024$px, quality 0.8).
+- **Chat History Truncation**: Keeps only the last 4 turns / 1500 tokens; earlier assistant replies are summarized to 200 characters.
+- **24-Hour IndexedDB Cache (`src/ai/responseCache.ts`)**: Identical queries on the same slide return instantly from cache with a *"✓ cached"* badge and zero API calls.
+- **Real-Time Usage Meter**: Header and footer display session calls, today's calls, tokens in/out from provider metadata, and active model status.
+
+### 4. Resizable & Dockable Assistant Panel UI (`src/ui/geminiPanel.ts`)
+- **Fluid Resizing**: Drag handles on edges and corners (width 280px–85vw, height 240px–100vh).
+- **Dock Positions**: Right (default), Left, Bottom, or Floating, persisted per device.
+- **Maximize & Minimize**: Fullscreen expansion for long answers; minimized collapsed bar that never obstructs slide drawing.
+- **Typography Scaling**: $A-$ and $A+$ buttons to dynamically scale font size for smart boards.
+- **Quick Action Chips**: One-tap pre-cached prompts including current slide context: *"स्लाइड का सार"*, *"मुख्य बिंदु"*, *"सरल हिंदी में समझाओ"*, *"5 क्विज़ प्रश्न"*, *"यहाँ क्या स्पष्ट नहीं है"*.
+- **Slide Integration**: Copy response to clipboard or click *"स्लाइड पर लिखें / Put on slide"* to insert response text as an editable canvas annotation.
+
+---
+
+## ✍️ Ink Without AI (Pure Code First)
+
+Smart Studio Presenter Pro implements a strict **Code First** rule: no feature may call an external AI API if deterministic code can do the job.
+
+### 1. Highlighting & Underlining (100% Offline)
+- **Highlighter Clean Band ($\le 0.15$s)**: Freehand marker sweeps compute principal stroke axis within 150ms and convert to a flat, straight band with constant user-selected thickness and flat butt caps. Multi-line sweeps over text automatically snap to individual text lines with 2px padding.
+- **Slide Brightness Blend Modes**: Highlighters automatically use `multiply` composite mode (alpha 0.32–0.35) on light slides and `screen` mode (alpha 0.35) on dark blackboard slides to preserve maximum text readability.
+- **Underline Straightening ($\le 0.3$s)**: Tolerant line detection ($\le 6\%$ RMS lateral deviation, aspect $\ge 8:1$, $\ge 60$px length) snaps to horizontal within 12° and aligns under typeset or handwriting text at baseline $+ 0.12 \times \text{lineHeight}$.
+- **Shirorekha Guard**: Differentiates Devanagari headline strokes (*shirorekha*) from underlines: strokes with hanging glyphs remain part of the word text.
+
+### 2. Geometric Shapes ($\le 0.45$s)
+- **Pure Geometric Recognition**: Recognizes lines, rectangles, squares, circles, ellipses, triangles, diamonds/rhombuses, and single/multi-stroke arrows purely in client-side code without sending pixels or data to any API.
+- **Text-vs-Shape Guard**: Groups of small strokes on a baseline or Devanagari characters (*र*, *।* danda, matras) are protected from accidental shape conversion.
+- **Transactional Invariant (Ink Never Vanishes)**: Raw strokes are kept hidden in memory and only replaced after clean geometry successfully commits. Any failure immediately restores raw ink exactly as drawn.
+
+### 3. Smart Text (Handwriting ➔ Typeset Font)
+- **Explicit User Control**: Smart Text handwriting conversion runs **only** when the toolbar's `✍→Aa` toggle is switched ON (defaults to OFF at every launch).
+- **Batch Processing**: Handwriting is grouped into full words after a pause and batched into a single request with temperature 0.0 and minimal output tokens (~60–120 tokens).
+
+---
+
+## 🎙️ Voice Commands (Local Grammar First)
+
+The microphone in Smart Studio Presenter Pro is completely user-controlled, strictly OFF by default, and powered by an extensive local Hindi & English grammar dictionary requiring **zero AI API calls**.
+
+### 1. Privacy & Visual Safety
+- **No Transcripts Stored or Displayed**: Voice commands provide instantaneous icon-only visual feedback (e.g., 🎙️ ➡️, 🎙️ ✏️, 🎙️ 🔴). Spoken sentences are never toasted or stored on canvas, keeping OBS Studio and YouTube recordings completely clean.
+- **User-Gated Microphone**: The mic stays OFF until explicitly clicked or activated via key `V`. Spoken words cannot turn the mic on.
+
+### 2. Comprehensive Vocabulary & Ordinals
+- **Slide Navigation**:
+  - Next / Previous: *"अगली स्लाइड"*, *"आगे चलो"*, *"next slide"*, *"पिछली स्लाइड"*, *"पीछे चलो"*, *"back"*.
+  - First / Last: *"पहली स्लाइड"*, *"पहला पेज"*, *"first slide"*, *"आख़िरी स्लाइड"*, *"last slide"*.
+  - Ordinals up to 50: *"दूसरी"*, *"तीसरी"*, *"चौथी"*, *"पाँचवी"* ... *"पंद्रहवीं"* ... *"पचासवीं स्लाइड"*.
+  - Number words & digits: *"स्लाइड 5"*, *"slide five"*, *"स्लाइड १०"*, supporting Devanagari digits (*१* - *५०*) and English numbers.
+- **Tool Selection**:
+  - Pen: *"पेन चालू करो"*, *"pen"*, *"कलम"*.
+  - Marker: *"मार्कर"*, *"marker"*, *"हाईलाइटर"*.
+  - Eraser: *"इरेज़र"*, *"eraser"*, *"रबर"*.
+  - Lens: *"मैग्नीफ़ायर"*, *"lens tool"*, *"आवर्धक लेंस"*.
+- **Colors**:
+  - *"लाल रंग"* / *"red"*, *"नीला रंग"* / *"blue"*, *"हरा रंग"* / *"green"*, *"पीला रंग"* / *"yellow"*, *"सफ़ेद रंग"* / *"white"*, *"काला रंग"* / *"black"*.
+- **Studio & Actions**:
+  - Board: *"बोर्ड खोलो"*, *"blackboard"*, *"श्वेतपट्ट"*.
+  - Zoom: *"ज़ूम इन"*, *"zoom in"*, *"ज़ूम आउट"*, *"zoom out"*, *"ज़ूम रीसेट"*.
+  - Fullscreen: *"फुलस्क्रीन"*, *"fullscreen"*.
+  - Spotlight: *"स्पॉटलाइट"*.
+  - Undo / Clear: *"वापस लो"*, *"undo"*, *"साफ़ करो"*, *"clear all"*.
+  - Mute Mic: *"माइक बंद करो"*, *"माइक ऑफ"*, *"stop listening"*, *"mute mic"*.
+- **Filler Word Stripping**: Conversational fillers (*भैया*, *यार*, *ज़रा*, *कृपया*, *प्लीज*, *सुनो*) are automatically stripped before command matching.
+- **"Write Here" Local Anchoring**: Commands like *"आगे विष्णु लिखो"*, *"इसके अंदर लिखो"*, *"शीर्षक लिखो"* place text objects relative to the latest arrow, shape, or pointer position using local geometry and glossary normalization without calling external APIs.
+
 

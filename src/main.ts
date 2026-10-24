@@ -25,6 +25,8 @@ import { micController } from './voice/micController';
 // INKFIX: Import Smart Ink and Voice Write controllers
 import { smartInkController } from './smartink/smartInkController';
 import { voiceWriteManager } from './voice/writeCommand';
+// ECON: Import optional WebMCP agent manager
+import { webMcpManager } from './ai/webMcp';
 
 // PWA auto-updater
 if ('serviceWorker' in navigator) {
@@ -91,6 +93,8 @@ class SmartStudioApp {
     // INKFIX: Initialize Smart Ink and Voice Write controllers
     smartInkController.init();
     voiceWriteManager.init();
+    // ECON: Initialize optional WebMCP agent layer
+    webMcpManager.init();
 
     // SSIRO-UPDATE: Initialize Zoom and Magnifier subsystems
     zoomController.init();

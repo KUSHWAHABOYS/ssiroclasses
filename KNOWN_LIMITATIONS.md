@@ -89,12 +89,37 @@ As part of our commitment to transparent engineering, this document details any 
   - **Speculative Recognition**: Background recognition begins after 500ms of idle time, cutting perceived conversion delay down to approximately 1.0s.
   - **Local Shape Bypass**: Freehand shapes and underlines with high geometric confidence ($\ge 0.6$) snap completely locally in $<20$ms without making any AI network call.
 
----
-
 ### 10. Web Speech Recognition Variations in Voice Writing (आवाज लेखन सीमाएं)
 - **Technical Constraint**: The browser's `SpeechRecognition` API transcribes spoken words based on the device's selected language (`hi-IN` or `en-IN`). Educational terminology and Sanskrit proper nouns (e.g. *Vishnu*, *Aryabhata*) can be transcribed with slight regional spelling variations.
 - **Implemented Behavior**:
   - **Phonetic & Glossary Normalization**: Dictated words are cross-referenced with a curated Indology and mathematics glossary, snapping variations automatically to standard forms (e.g., *Vishnu* $\rightarrow$ *विष्णु*).
   - **Zero Spoken Transcript Exposure**: The raw spoken sentence is never toasted or stored on the slide, ensuring video recordings for YouTube or live streams are never cluttered with interim transcripts.
+
+---
+
+### 11. AI Provider Free-Tier Limits & Dynamic Quota Changes (मुफ़्त सीमा व कोटा परिवर्तन)
+- **Technical Constraint & Platform Reality**: Free-tier rate limits and daily request quotas for cloud AI providers (especially Google AI Studio / Gemini API) are established per project/account, vary significantly by model tier, and change over time without prior notice. For example, standard Flash models may enforce a limit of 20 requests per day (RPD) on free keys, while Flash-Lite models offer substantially higher daily allowances.
+- **Implemented Architecture (Economy AI Mode v1.4.0)**:
+  - **Dynamic Model Catalog**: Models are never hardcoded. After API key validation, available models are queried and ranked dynamically in `modelCatalog.ts`.
+  - **Flash-Lite Default Priority**: Economy mode prioritizes `gemini-2.0-flash-lite`, followed by `gemini-1.5-flash-8b`, before ever touching standard Flash models.
+  - **Structured 429 Cooldown & Graceful Fallback**: When an HTTP 429 error occurs, `quotaManager` parses structured error payloads, extracts retry delays or daily reset times, and records an active cooldown. The AI router automatically falls back to the next available economy model without crashing or interrupting the user.
+  - **Token Minimization**: Concise system prompts (<60 tokens), disabling of hidden thinking tokens (`thinkingBudget: 0`), text layer extraction before pixels for slide explanations, chat history truncation to the last 4 turns / 200 characters, and a 24-hour IndexedDB response cache reduce token consumption by up to 80%.
+
+---
+
+### 12. Chrome's Own "Ask Gemini" Browser Button Integration
+- **Technical Constraint**: Google Chrome provides a native "Ask Gemini" button in the browser omnibar/toolbar on supported desktop builds. However, web security sandboxing strictly prohibits web pages or web applications from opening, inspecting, or embedding browser-native omnibar features or side panels via JavaScript.
+- **Implemented Solution**:
+  - The in-app AI Assistant panel displays a non-intrusive hint when running in Chrome: *"दूसरा तरीका: Chrome के ऊपरी Ask Gemini बटन से भी पूछ सकते हैं"* (Alternative: You can also ask via Chrome's top Ask Gemini button).
+  - The in-app assistant remains 100% self-contained, dockable, resizable, and context-aware of slide text and annotations.
+
+---
+
+### 13. Chrome Built-in AI (On-Device Gemini Nano) Runtimes & Languages
+- **Technical Constraint**: The browser on-device Prompt API (`window.ai.languageModel`) is an experimental capability currently restricted to Desktop Google Chrome. It is not supported in the Android WebView / Capacitor APK, mobile browsers, or other desktop browsers. Furthermore, Google's documented on-device Nano models focus primarily on English, Japanese, and Spanish, with limited Hindi comprehension.
+- **Implemented Architecture**:
+  - **Strict Feature Detection**: Disabled by default. Only enabled when `window.ai.languageModel` is detected and reports ready availability.
+  - **Safe Diagnostic Check**: Settings ➔ AI includes a *"जांचें (Test)"* button that verifies on-device model status and execution safely.
+  - **Graceful Fallback**: If on-device AI is absent or fails for Hindi tasks, the router smoothly skips to the next cloud provider without blocking presentation workflows.
 
 

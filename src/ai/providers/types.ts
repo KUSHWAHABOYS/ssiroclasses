@@ -4,7 +4,13 @@ export type AITask = 'chat' | 'slide-explain' | 'handwriting-ocr' | 'text-fix' |
 
 export type AICapability = 'text' | 'vision' | 'streaming';
 
-export type QualityPreference = 'best' | 'balanced' | 'fast';
+export type QualityPreference = 'economy' | 'balanced' | 'best' | 'fast';
+
+export interface AIUsageMetadata {
+  promptTokens?: number;
+  completionTokens?: number;
+  totalTokens?: number;
+}
 
 export interface ModelInfo {
   id: string;
@@ -27,6 +33,7 @@ export interface ChatPayload {
   model?: string;
   temperature?: number;
   maxTokens?: number;
+  thinkingBudget?: number; // ECON: 0 disables thinking tokens on supported models (e.g. Gemini 2.0)
   signal?: AbortSignal;
   onStreamChunk?: (chunk: string) => void;
 }
@@ -38,6 +45,7 @@ export interface VisionPayload {
   model?: string;
   temperature?: number;
   maxTokens?: number;
+  thinkingBudget?: number; // ECON: 0 disables thinking tokens on supported models
   signal?: AbortSignal;
 }
 
