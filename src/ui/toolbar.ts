@@ -815,7 +815,7 @@ export class Toolbar {
     store.subscribe((state, prev) => {
       // Active tool and shape update
       if (state.activeTool !== prev.activeTool || state.activeShape !== prev.activeShape) {
-        const toolBtns = this.containerEl.querySelectorAll<HTMLButtonElement>('[data-tool]');
+        const toolBtns = this.contentEl.querySelectorAll<HTMLButtonElement>('[data-tool]');
         toolBtns.forEach((btn) => {
           const t = btn.getAttribute('data-tool');
           const sh = btn.getAttribute('data-shape');
@@ -824,6 +824,14 @@ export class Toolbar {
           } else {
             btn.classList.toggle('active', t === state.activeTool);
           }
+        });
+      }
+
+      // Active color swatch synchronization
+      if (state.activeColor !== prev.activeColor) {
+        const swatches = this.contentEl.querySelectorAll<HTMLElement>('.color-swatch');
+        swatches.forEach((sw) => {
+          sw.classList.toggle('active', sw.getAttribute('data-color') === state.activeColor);
         });
       }
 
@@ -846,11 +854,18 @@ export class Toolbar {
         }
       }
 
-      // Board mode: hide floating toolbar because bottom dock is used
+      // Board mode: seamlessly mount unified toolbar inside bottom board dock
       if (state.isBoardMode !== prev.isBoardMode) {
         if (state.isBoardMode) {
+          const boardCenter = document.getElementById('boardDockCenter');
+          if (boardCenter && this.contentEl) {
+            boardCenter.appendChild(this.contentEl);
+          }
           this.containerEl.classList.add('hidden');
         } else {
+          if (this.containerEl && this.contentEl) {
+            this.containerEl.appendChild(this.contentEl);
+          }
           this.containerEl.classList.remove('hidden');
         }
       }

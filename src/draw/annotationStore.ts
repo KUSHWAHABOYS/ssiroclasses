@@ -38,6 +38,35 @@ export class AnnotationStore {
   private strokes: Stroke[] = [];
   private undoStack: Stroke[][] = [];
   private perSlideStorage: Map<number, Stroke[]> = new Map();
+  private boardStrokes: Stroke[] = [];
+  private boardUndoStack: Stroke[][] = [];
+  private slideStrokesTemp: Stroke[] = [];
+  private slideUndoStackTemp: Stroke[][] = [];
+
+  constructor() {
+    // Retain drawn strokes on stage resize / orientation changes
+    layerManager.onResize(() => {
+      this.redrawAll();
+    });
+  }
+
+  switchToBoard(): void {
+    this.slideStrokesTemp = [...this.strokes];
+    this.slideUndoStackTemp = [...this.undoStack];
+    this.strokes = [...this.boardStrokes];
+    this.undoStack = [...this.boardUndoStack];
+    this.clearCanvases();
+    this.redrawAll();
+  }
+
+  switchToDeck(): void {
+    this.boardStrokes = [...this.strokes];
+    this.boardUndoStack = [...this.undoStack];
+    this.strokes = [...this.slideStrokesTemp];
+    this.undoStack = [...this.slideUndoStackTemp];
+    this.clearCanvases();
+    this.redrawAll();
+  }
 
   getStrokes(): Stroke[] {
     return this.strokes.filter((s) => !s.replacedBy);

@@ -95,3 +95,4 @@ test.describe('In-App Browser Embed & Toolbar Direct Pan Verification', () => {
     expect(activeTool).toBe('pen');
   });
 });
+

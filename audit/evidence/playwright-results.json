@@ -4,9 +4,12 @@
       "C:\\Program Files\\nodejs\\node.exe",
       "C:\\Users\\rnran\\.gemini\\antigravity-ide\\scratch\\smart-studio\\node_modules\\@playwright\\test\\cli.js",
       "test",
+      "tests/e2e/03_toolbar_drawing.spec.ts",
+      "tests/e2e/04_board_magnifier_media.spec.ts",
       "tests/e2e/08_voice_browser_fix.spec.ts",
       "tests/e2e/09_magnifier_freeform.spec.ts",
-      "tests/e2e/10_browser_embed_toolbar_pan.spec.ts"
+      "tests/e2e/10_browser_embed_toolbar_pan.spec.ts",
+      "tests/e2e/11_board_drawing_toolbar_unification.spec.ts"
     ],
     "configFile": "C:\\Users\\rnran\\.gemini\\antigravity-ide\\scratch\\smart-studio\\playwright.config.ts",
     "rootDir": "C:/Users/rnran/.gemini/antigravity-ide/scratch/smart-studio/tests/e2e",
@@ -100,6 +103,448 @@
   },
   "suites": [
     {
+      "title": "03_toolbar_drawing.spec.ts",
+      "file": "03_toolbar_drawing.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Section 5 & 6: Toolbar & Drawing Tools (TB-1 to TB-7, DRW-1 to DRW-7)",
+          "file": "03_toolbar_drawing.spec.ts",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TB-1 & TB-4: Toolbar draggable, clamped on-screen, resizable scale 0.5x-2.5x",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1092,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-28T10:52:40.410Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "ed9d9f6b3693a063784a-9b38f5cfec89046ea238",
+              "file": "03_toolbar_drawing.spec.ts",
+              "line": 10,
+              "column": 3
+            },
+            {
+              "title": "TB-2: Ghost mode dims to ~20%, mic button stays >= 60% visible when listening",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1030,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-28T10:52:41.602Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "ed9d9f6b3693a063784a-0d09ace9c7b603616925",
+              "file": "03_toolbar_drawing.spec.ts",
+              "line": 49,
+              "column": 3
+            },
+            {
+              "title": "TB-3 & TB-6: Two tiers attach to same bar, only one tool active at a time",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1358,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-28T10:52:42.646Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "ed9d9f6b3693a063784a-14862e08644b97898055",
+              "file": "03_toolbar_drawing.spec.ts",
+              "line": 84,
+              "column": 3
+            },
+            {
+              "title": "DRW-1 & DRW-2: Pen and Marker drawing, single-path stroke without dark overlap",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1396,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-28T10:52:44.015Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "ed9d9f6b3693a063784a-7e60fea137c1eeda7319",
+              "file": "03_toolbar_drawing.spec.ts",
+              "line": 117,
+              "column": 3
+            },
+            {
+              "title": "DRW-3: Eraser mode with cursor ring and size popover",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 928,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-28T10:52:45.425Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "ed9d9f6b3693a063784a-d43b59749a81c433bad0",
+              "file": "03_toolbar_drawing.spec.ts",
+              "line": 152,
+              "column": 3
+            },
+            {
+              "title": "DRW-4: Shape tool creates Box, Circle, Ellipse, Line, Triangle and Arrow",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 757,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-28T10:52:46.366Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "ed9d9f6b3693a063784a-5c98b5a178433f752015",
+              "file": "03_toolbar_drawing.spec.ts",
+              "line": 164,
+              "column": 3
+            },
+            {
+              "title": "DRW-6 & TB-7: Undo/Redo across drawing and clear actions",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1091,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-28T10:52:47.142Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "ed9d9f6b3693a063784a-26e24b7f54fdf57b0822",
+              "file": "03_toolbar_drawing.spec.ts",
+              "line": 183,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "04_board_magnifier_media.spec.ts",
+      "file": "04_board_magnifier_media.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Section 9, 10, 11 & 12: Blackboard, Media, Magnifier & Browser (BRD-1 to BRD-3, MAG-1 to MAG-4, MED-1 to MED-3, BRW-1)",
+          "file": "04_board_magnifier_media.spec.ts",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "BRD-1 & BRD-2: Blackboard opens at 100% display, themes, and exact Pure Chroma Green #00FF00 pixel check",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 751,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-28T10:52:48.287Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2e328534b87a7fc0b85a-2af033a5f628b0547201",
+              "file": "04_board_magnifier_media.spec.ts",
+              "line": 10,
+              "column": 3
+            },
+            {
+              "title": "MAG-1 & MAG-2: Magnifier lens follow, size 120-600px and magnification 1.5-8x",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1171,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-28T10:52:49.053Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2e328534b87a7fc0b85a-8f72fe3836db2c258cda",
+              "file": "04_board_magnifier_media.spec.ts",
+              "line": 54,
+              "column": 3
+            },
+            {
+              "title": "MAG-4: Whole-slide zoom: 2.5x tap zoom, zoom in/out, and 1x reset chip",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1178,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-28T10:52:50.257Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2e328534b87a7fc0b85a-c16f9a582605a4e4bb72",
+              "file": "04_board_magnifier_media.spec.ts",
+              "line": 84,
+              "column": 3
+            },
+            {
+              "title": "MED-1 & MED-2: Media overlay windows management and compare tiling",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 742,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-28T10:52:51.445Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2e328534b87a7fc0b85a-afa02b013c3ae726e1d3",
+              "file": "04_board_magnifier_media.spec.ts",
+              "line": 107,
+              "column": 3
+            },
+            {
+              "title": "BRW-1: Browser overlay fallback card on web",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 702,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-28T10:52:52.197Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2e328534b87a7fc0b85a-fef1f435b3314b320de8",
+              "file": "04_board_magnifier_media.spec.ts",
+              "line": 124,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
       "title": "08_voice_browser_fix.spec.ts",
       "file": "08_voice_browser_fix.spec.ts",
       "column": 0,
@@ -128,12 +573,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 4063,
+                      "duration": 3606,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-28T10:26:02.224Z",
+                      "startTime": "2026-10-28T10:52:52.931Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -162,12 +607,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1275,
+                      "duration": 1162,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-28T10:26:06.389Z",
+                      "startTime": "2026-10-28T10:52:56.547Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -213,12 +658,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 2249,
+                      "duration": 4729,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-28T10:26:07.691Z",
+                      "startTime": "2026-10-28T10:52:57.738Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -247,12 +692,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1442,
+                      "duration": 1374,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-28T10:26:09.952Z",
+                      "startTime": "2026-10-28T10:53:02.476Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -281,12 +726,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1027,
+                      "duration": 961,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-28T10:26:11.408Z",
+                      "startTime": "2026-10-28T10:53:03.859Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -332,12 +777,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1496,
+                      "duration": 1384,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-28T10:26:12.467Z",
+                      "startTime": "2026-10-28T10:53:04.846Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -366,12 +811,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1260,
+                      "duration": 1161,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-28T10:26:13.978Z",
+                      "startTime": "2026-10-28T10:53:06.239Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -387,13 +832,98 @@
           ]
         }
       ]
+    },
+    {
+      "title": "11_board_drawing_toolbar_unification.spec.ts",
+      "file": "11_board_drawing_toolbar_unification.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Board Canvas Drawing Engine & Toolbar Unification Verification",
+          "file": "11_board_drawing_toolbar_unification.spec.ts",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "1. Board Mode: Freehand pen writing stays smooth, strokes do not disappear, and no auto-line/shape snapping",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2508,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-28T10:53:07.430Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "db45a31c9910f0f52548-0f66496cca0c363af36f",
+              "file": "11_board_drawing_toolbar_unification.spec.ts",
+              "line": 10,
+              "column": 3
+            },
+            {
+              "title": "2. 100% Unified Toolbar: All PPT tools available, identical swatches & properties persist across modes",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2354,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-28T10:53:09.948Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "db45a31c9910f0f52548-45ee6ef0d19b21ca5e3a",
+              "file": "11_board_drawing_toolbar_unification.spec.ts",
+              "line": 79,
+              "column": 3
+            }
+          ]
+        }
+      ]
     }
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-10-28T10:26:00.820Z",
-    "duration": 14700.842,
-    "expected": 7,
+    "startTime": "2026-10-28T10:52:39.863Z",
+    "duration": 32532.486999999997,
+    "expected": 21,
     "skipped": 0,
     "unexpected": 0,
     "flaky": 0

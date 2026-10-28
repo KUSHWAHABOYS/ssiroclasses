@@ -20,6 +20,11 @@
   width: 100%;
   height: 100%;
   display: block;
+  touch-action: none;
+}
+
+#annotationCanvas, #previewCanvas, #slideCanvas {
+  touch-action: none;
 }
 
 /* z-index mapping */

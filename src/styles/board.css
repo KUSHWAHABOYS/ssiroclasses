@@ -14,22 +14,50 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 24px;
+  padding: 0 16px;
   z-index: 50;
   transition: transform var(--trans-normal);
+  box-sizing: border-box;
 }
 
 @media (min-width: 1800px) {
   .board-dock {
     height: 84px;
-    padding: 0 32px;
+    padding: 0 24px;
   }
 }
 
-.board-dock-left, .board-dock-center, .board-dock-right {
+.board-dock-left {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-shrink: 0;
+}
+
+.board-dock-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  padding: 0 8px;
+}
+
+.board-dock-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.board-dock #dragHandle,
+.board-dock #btnBoard {
+  display: none !important;
+}
+
+.board-dock .toolbar-content {
+  max-width: 100%;
 }
 
 .theme-selector {

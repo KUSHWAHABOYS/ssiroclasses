@@ -22,13 +22,13 @@ export class DrawingEngine {
 
   init(): void {
     const canvas = layerManager.annotationCanvas;
+    canvas.style.touchAction = 'none';
 
     canvas.addEventListener('pointerdown', (e) => this.handlePointerDown(e));
     canvas.addEventListener('pointermove', (e) => this.handlePointerMove(e));
     canvas.addEventListener('pointerup', (e) => this.handlePointerUp(e));
     canvas.addEventListener('pointercancel', (e) => this.handlePointerCancel(e));
-    // AUDIT-FIX: BUG-006 - lostpointercapture & contextmenu gesture cleanup
-    canvas.addEventListener('lostpointercapture', () => this.cancelCurrentStroke());
+    // NOTE: Do not cancel in-progress drawing on lostpointercapture as Blink dispatches it prior to pointerup
     canvas.addEventListener('contextmenu', (e) => {
       e.preventDefault();
       this.cancelCurrentStroke();
@@ -127,7 +127,9 @@ export class DrawingEngine {
 
     this.isDrawing = true;
     this.activePointerId = e.pointerId;
-    layerManager.annotationCanvas.setPointerCapture(e.pointerId);
+    try {
+      layerManager.annotationCanvas.setPointerCapture(e.pointerId);
+    } catch {}
     // AUDIT-FIX: BUG-006 - Register drawing gesture with watchdog
     gestureWatchdog.registerGesture('drawing', () => this.cancelCurrentStroke(), e.pointerId);
 
@@ -252,16 +254,35 @@ export class DrawingEngine {
       return;
     }
 
-    if (!this.isDrawing || e.pointerId !== this.activePointerId) return;
+    if (!this.isDrawing || (this.activePointerId !== null && e.pointerId !== this.activePointerId)) return;
+    this.finishCurrentStroke(e);
+  }
+
+  private handlePointerCancel(e: PointerEvent): void {
+    if (store.getState().activeTool === 'select') {
+      shapeSelector.handlePointerUp();
+      return;
+    }
+    // Retain drawn path coordinates if substantial stroke exists
+    if (this.isDrawing && this.currentStrokePoints.length >= 2) {
+      this.finishCurrentStroke(e);
+    } else {
+      this.cancelCurrentStroke();
+    }
+  }
+
+  private finishCurrentStroke(e?: PointerEvent): void {
+    const state = store.getState();
     this.isDrawing = false;
     this.activePointerId = null;
-    // AUDIT-FIX: BUG-006 - Unregister gesture from watchdog on pointerup
     gestureWatchdog.unregisterGesture('drawing');
     smartInkController.onPointerUp();
 
-    try {
-      layerManager.annotationCanvas.releasePointerCapture(e.pointerId);
-    } catch {}
+    if (e) {
+      try {
+        layerManager.annotationCanvas.releasePointerCapture(e.pointerId);
+      } catch {}
+    }
 
     const currentPt = this.currentStrokePoints[this.currentStrokePoints.length - 1];
 
@@ -269,6 +290,12 @@ export class DrawingEngine {
     layerManager.previewCanvas.style.opacity = '1';
     layerManager.previewCanvas.style.mixBlendMode = 'normal';
     layerManager.previewCtx.clearRect(0, 0, layerManager.previewCtx.canvas.width, layerManager.previewCtx.canvas.height);
+
+    if (!currentPt) {
+      this.currentStrokePoints = [];
+      this.startPoint = null;
+      return;
+    }
 
     if (state.activeTool === 'eraser') {
       // Finished eraser stroke
@@ -357,14 +384,6 @@ export class DrawingEngine {
 
     this.currentStrokePoints = [];
     this.startPoint = null;
-  }
-
-  private handlePointerCancel(e: PointerEvent): void {
-    if (store.getState().activeTool === 'select') {
-      shapeSelector.handlePointerUp();
-      return;
-    }
-    this.cancelCurrentStroke();
   }
 
   private cancelCurrentStroke(): void {

@@ -1,1 +1,1 @@
-PASS: 5,000 random pointer sequences completed with 0 exceptions; state cleanly returned to idle.
+PASS: Switching tools cleanly deactivates previous tool with explicit highlighting.

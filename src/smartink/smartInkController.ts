@@ -69,12 +69,12 @@ export class SmartInkController {
 
   onPointerStill(point: Point, screenX: number, screenY: number): void {
     const s = store.getState();
-    if (s.activeTool !== 'pen' && s.activeTool !== 'highlighter') return;
+    // Strictly disable hold-to-snap for freehand pen writing
+    if (s.activeTool !== 'highlighter') return;
 
     window.clearTimeout(this.holdTimer);
     this.holdTimer = window.setTimeout(() => {
       this.holdTriggered = true;
-      // AUDIT-FIX: User reported unwanted circle error when drawing lines. Disable visual hold ring DOM injection.
       this.removeHoldRing();
     }, 500); // 0.5s hold-to-snap
   }
@@ -103,6 +103,14 @@ export class SmartInkController {
 
     // ECON: Check if Smart Ink is enabled (Part B: pure code features work offline)
     if (!s.settings.smartInkEnabled) return;
+
+    // USER REQUIREMENT: Disable aggressive shape-recognition & auto-line-straightening during freehand pen writing.
+    // Pen tool must stay strictly in smooth freehand mode.
+    if (isPen && !s.isHandwritingEnabled) {
+      this.holdTriggered = false;
+      this.removeHoldRing();
+      return;
+    }
 
     window.clearTimeout(this.idleTimer);
     this.pendingStrokes.push(stroke);
@@ -172,7 +180,7 @@ export class SmartInkController {
     }
 
     // --- Branch 1: Underline Snap (Part D2) ---
-    if (classification.inkClass === 'underline' && classification.fitResult) {
+    if (latestStroke.tool !== 'pen' && classification.inkClass === 'underline' && classification.fitResult) {
       const transaction = new InkTransaction([latestStroke]);
       await transaction.execute(async () => {
         let fit = classification.fitResult!;
@@ -225,7 +233,8 @@ export class SmartInkController {
     }
 
     // --- Branch 2: Freehand Geometric Shape (Part D3) ---
-    if ((classification.inkClass === 'shape' || classification.inkClass === 'line') && classification.fitResult) {
+    // Strictly bypassed for freehand pen writing per user instructions
+    if (latestStroke.tool !== 'pen' && (classification.inkClass === 'shape' || classification.inkClass === 'line') && classification.fitResult) {
       const fit = classification.fitResult;
 
       // Purely geometric recognition by default; AI second-opinion only if smartInkAiAssist is explicitly enabled
