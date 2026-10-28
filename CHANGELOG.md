@@ -2,6 +2,25 @@
 
 All notable changes to "Smart Studio Presenter Pro" are documented in this file.
 
+## [1.4.2] — 2026-10-28 (Welcome Screen Cleanup & PWA Cache Update)
+
+### 🧹 Welcome Screen Simplification & Connect Removal
+- **Welcome Page Elements**:
+  - Completely removed secondary pill button "Android Board / Mobile पर चलाएं (Connect)" and "PDF / PPTX यहाँ खींचकर छोड़ें / drag & drop a file here" hint.
+  - The welcome screen now displays strictly the SSIRO Classes logo, the two text lines ("Welcome to" and "SSIRO Classes"), and the single primary "डेक खोलें / Open Deck" button.
+  - Re-centered remaining elements vertically with clean flexbox spacing, filling 100% of the viewport across desktop, tablet, and mobile orientations.
+- **Connect Feature Elimination**:
+  - Completely removed `ConnectModal`, QR code rendering, pairing UI, and associated styles (`connectModal.css`).
+  - Removed top-bar header button `#btnConnectBoardHeader` and Settings item `#btnSettingsOpenConnect`.
+  - Removed Vite `/api/network-info` plugin middleware and unused `qrcode` and `@types/qrcode` dependencies.
+- **Drag-and-Drop Cleanup**:
+  - Removed drop-zone listeners loading decks from `welcomeScreen.ts` and `slideView.ts`.
+  - Added minimal, invisible window-level guard preventing default browser navigation on accidental dragover/drop.
+  - Preserved standard file picker on "डेक खोलें / Open Deck" and OS `launchQueue` file-handler integration.
+- **Cache & Version Bump**:
+  - Bumped PWA service worker cache identifier to `ssiro-smart-studio-v1.4.2`.
+  - Bumped application package version to 1.4.2.
+
 ## [1.4.0] — 2026-10-24 (Economy AI Mode, Quota Safe Fallback, Code-First Ink & Resizable Panel)
 
 ### 🤖 Part B & C — Principle: Code First, API Only When Needed & Economy AI

@@ -422,16 +422,13 @@ export class SettingsPanel {
               `}
             </div>
             <div>
-              <div style="font-weight:700; font-size:15px; color:#ffffff;">Smart Studio Presenter Pro v1.4.1</div>
+              <!-- WELCOME-CLEANUP: Bump version display to v1.4.2 -->
+              <div style="font-weight:700; font-size:15px; color:#ffffff;">Smart Studio Presenter Pro v1.4.2</div>
               <div style="font-size:12px; color:var(--primary-accent); margin-top:2px;">SSIRO Classes Edition (Audit Verified)</div>
               <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">4K Teaching & Presentation Studio • 100% Client-Side</div>
             </div>
           </div>
-          <div class="setting-item">
-            <button class="header-btn" id="btnSettingsOpenConnect" style="background:rgba(255,215,106,0.18); color:#FFD76A; border-color:rgba(255,215,106,0.4); width:100%; justify-content:center;">
-              📱 बोर्ड कनेक्ट खोलें (Android Digital Board QR & IP)
-            </button>
-          </div>
+          <!-- WELCOME-CLEANUP: Removed btnSettingsOpenConnect -->
           <div class="setting-item">
             <button class="header-btn" id="btnResetAllToRecommended" style="background:rgba(255,255,255,0.08); color:#fff; border-color:rgba(255,255,255,0.2); width:100%; justify-content:center;">
               ↺ सभी सेटिंग्स अनुशंसित डिफ़ॉल्ट पर रीसेट करें (Reset All to Recommended)
@@ -475,13 +472,7 @@ export class SettingsPanel {
       slideView.closeDeck();
     });
 
-    // Connect Modal
-    this.modalEl.querySelector('#btnSettingsOpenConnect')?.addEventListener('click', () => {
-      this.close();
-      import('./connectModal').then(({ connectModal }) => {
-        connectModal.show();
-      });
-    });
+    // WELCOME-CLEANUP: Removed Connect Modal listener
 
     // Layout Report (ZEN-7)
     this.modalEl.querySelector('#btnViewLayoutReport')?.addEventListener('click', () => {

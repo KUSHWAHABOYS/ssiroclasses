@@ -62,13 +62,7 @@ export class SlideView {
       fullscreenService.toggleZen();
     });
 
-    // SSIRO-UPDATE: Android Board & Mobile Connect header button
-    const btnConnect = document.getElementById('btnConnectBoardHeader');
-    btnConnect?.addEventListener('click', () => {
-      import('../ui/connectModal').then(({ connectModal }) => {
-        connectModal.show();
-      });
-    });
+    // WELCOME-CLEANUP: Removed btnConnectBoardHeader listener
 
     // AUDIT-FIX: BUG-008 - Page counter click jump per NAV-1
     this.pageCounterEl?.addEventListener('click', () => {
@@ -124,20 +118,7 @@ export class SlideView {
   }
 
   private bindDropAndFilePicker(): void {
-    const stage = document.getElementById('stage')!;
-
-    // Drag-and-drop on PC
-    stage.addEventListener('dragover', (e) => {
-      e.preventDefault();
-      e.dataTransfer!.dropEffect = 'copy';
-    });
-
-    stage.addEventListener('drop', async (e) => {
-      e.preventDefault();
-      if (e.dataTransfer?.files && e.dataTransfer.files.length > 0) {
-        await this.handleIncomingFiles(Array.from(e.dataTransfer.files));
-      }
-    });
+    // WELCOME-CLEANUP: Removed stage drag-and-drop deck loading handlers; retained file input picker
 
     // File input picker
     this.fileInputDeck.addEventListener('change', async () => {

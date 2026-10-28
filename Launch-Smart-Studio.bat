@@ -8,17 +8,10 @@ echo ====================================================================
 echo           SMART STUDIO PRESENTER PRO (SSIRO CLASSES)
 echo ====================================================================
 echo.
-echo   [1] Local PC App Mode:
-echo       URL: http://localhost:5173/
+echo   Local PC App Mode:
+echo   URL: http://localhost:5173/
 echo.
-echo   [2] Android Digital Board ^& Mobile Phone Connect:
-echo       URL: http://192.168.31.18:5173/
-echo.
-echo   ⚠️  महत्वपूर्ण (Important):
-echo       Android Board में 'localhost' ना लिखें!
-echo       Digital Board के Browser में 'http://192.168.31.18:5173/' खोलें।
-echo       (सुनिश्चित करें कि PC और Board दोनों एक ही Wi-Fi से जुड़े हैं)
-echo.
+:: WELCOME-CLEANUP: Removed Android Board & Mobile Connect banner instructions
 echo ====================================================================
 echo.
 echo Starting Smart Studio App in Desktop Mode...

@@ -1,42 +1,9 @@
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
-import os from 'os';
-
-function networkInfoPlugin() {
-  const handler = (_req: any, res: any) => {
-    const interfaces = os.networkInterfaces();
-    const addresses: string[] = [];
-    for (const name of Object.keys(interfaces)) {
-      for (const net of interfaces[name] || []) {
-        if (net.family === 'IPv4' && !net.internal) {
-          addresses.push(net.address);
-        }
-      }
-    }
-    res.setHeader('Content-Type', 'application/json');
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.end(JSON.stringify({ 
-      ip: addresses[0] || 'localhost', 
-      addresses, 
-      port: 5173,
-      url: `http://${addresses[0] || 'localhost'}:5173`
-    }));
-  };
-
-  return {
-    name: 'network-info-plugin',
-    configureServer(server: any) {
-      server.middlewares.use('/api/network-info', handler);
-    },
-    configurePreviewServer(server: any) {
-      server.middlewares.use('/api/network-info', handler);
-    }
-  };
-}
+// WELCOME-CLEANUP: Removed os import and networkInfoPlugin (used only by removed connect modal)
 
 export default defineConfig({
   plugins: [
-    networkInfoPlugin(),
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'icons/*.png', 'fonts/*'],
@@ -70,7 +37,8 @@ export default defineConfig({
         ]
       },
       workbox: {
-        cacheId: 'ssiro-smart-studio-v1.4.1',
+        // WELCOME-CLEANUP: Bump service worker cache version to v1.4.2
+        cacheId: 'ssiro-smart-studio-v1.4.2',
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2,wasm}']
       }
     })

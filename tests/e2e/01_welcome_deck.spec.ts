@@ -1,7 +1,8 @@
 import { test, expect } from '@playwright/test';
 import { saveEvidenceScreenshot, recordEvidenceLog, VIEWPORTS, loadTestDeck } from './helpers';
 
-test.describe('Section 1: Launch, Welcome, and Home (WEL-1 to WEL-7, CON-1)', () => {
+// WELCOME-CLEANUP: Removed CON-1 from suite description
+test.describe('Section 1: Launch, Welcome, and Home (WEL-1 to WEL-7)', () => {
   test.beforeEach(async ({ page }) => {
     // Clear localStorage to ensure clean profile cold start
     await page.goto('/');
@@ -117,25 +118,7 @@ test.describe('Section 1: Launch, Welcome, and Home (WEL-1 to WEL-7, CON-1)', ()
     await recordEvidenceLog('WEL-7', 'PASS: Verified 0 demo deck buttons, strings, or sample assets in DOM and bundle.');
   });
 
-  test('CON-1: Android Board Connect Pairing Modal', async ({ page }) => {
-    const btnConnect = page.locator('#btnConnectHeader, #btnBoardConnect');
-    if (await btnConnect.isVisible()) {
-      await btnConnect.click();
-      await page.waitForSelector('#connectModal', { state: 'visible' });
-      await expect(page.locator('#connectModal')).toBeVisible();
-
-      // Check PIN display exists
-      const pinDisplay = page.locator('.connect-pin-code, #connectPinDisplay');
-      await expect(pinDisplay).toBeVisible();
-      const pinText = await pinDisplay.textContent();
-      expect(pinText?.trim().length).toBeGreaterThanOrEqual(4);
-
-      await saveEvidenceScreenshot(page, 'CON-1', 'board-connect-modal');
-      await recordEvidenceLog('CON-1', `PASS: Android Board Connect pairing dialog displays valid pairing PIN: ${pinText?.trim()}`);
-
-      await page.locator('#btnCloseConnectModal, .connect-close-btn').first().click();
-    }
-  });
+  // WELCOME-CLEANUP: Removed CON-1 test (Android Board Connect feature removed)
 });
 
 test.describe('Section 2: Deck Loading and Rendering Quality (REN-3, REN-4, REN-6, REN-7)', () => {

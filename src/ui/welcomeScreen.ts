@@ -66,30 +66,7 @@ export class WelcomeScreen {
       fileInput?.click();
     });
 
-    // SSIRO-UPDATE: Android Board & Mobile Connect button
-    const connectBtn = this.element.querySelector('#btnWelcomeConnect');
-    connectBtn?.addEventListener('click', (e) => {
-      e.stopPropagation();
-      import('./connectModal').then(({ connectModal }) => {
-        connectModal.show();
-      });
-    });
-
-    // Drag and drop onto the welcome screen
-    this.element.addEventListener('dragover', (e: DragEvent) => {
-      e.preventDefault();
-      if (e.dataTransfer) {
-        e.dataTransfer.dropEffect = 'copy';
-      }
-    });
-
-    this.element.addEventListener('drop', (e: DragEvent) => {
-      e.preventDefault();
-      if (e.dataTransfer?.files && e.dataTransfer.files.length > 0) {
-        const files = Array.from(e.dataTransfer.files);
-        window.dispatchEvent(new CustomEvent('app-open-files', { detail: { files } }));
-      }
-    });
+    // WELCOME-CLEANUP: Removed #btnWelcomeConnect and drag-and-drop deck loading handlers
 
     // Requirement 3 & 5: Stray taps and clicks on the welcome screen must do nothing
     this.element.addEventListener('pointerdown', (e: PointerEvent) => {

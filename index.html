@@ -20,7 +20,7 @@
   <link rel="stylesheet" href="/src/styles/toolbar.css" />
   <link rel="stylesheet" href="/src/styles/board.css" />
   <link rel="stylesheet" href="/src/styles/zoom.css" />
-  <link rel="stylesheet" href="/src/styles/connectModal.css" />
+  <!-- WELCOME-CLEANUP: Removed connectModal.css link -->
 
   <style>
     /* SSIRO-UPDATE: Critical inline CSS for zero-flash Welcome Screen */
@@ -143,14 +143,7 @@
     .welcome-open-btn:active {
       transform: translateY(1px) scale(0.98);
     }
-    .welcome-drop-hint {
-      margin: 0;
-      font-size: clamp(13px, 1.4vw, 15px);
-      color: rgba(255, 255, 255, 0.7);
-      letter-spacing: 0.4px;
-      font-weight: 500;
-      text-align: center;
-    }
+    /* WELCOME-CLEANUP: Removed .welcome-drop-hint CSS */
     /* WELCOME-FIX: Compact layout when "Show welcome screen" is off */
     .welcome-screen.is-compact .welcome-logo-container {
       width: clamp(64px, 10vh, 100px);
@@ -353,10 +346,7 @@
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
           <span class="btn-text">Board</span>
         </button>
-        <button id="btnConnectBoardHeader" class="header-btn btn-connect-header" title="Android Digital Board / Mobile Connect (📱)" aria-label="Connect Android Board or Mobile">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
-          <span class="btn-text">Board Connect</span>
-        </button>
+        <!-- WELCOME-CLEANUP: Removed btnConnectBoardHeader -->
         <!-- MIC-AI: Top Bar Mirror Mic Button -->
         <button id="btnMicHeader" class="header-btn btn-mic-header mic-off" title="माइक चालू / बंद (Mic ON/OFF • V)" aria-label="Toggle Microphone">
           <svg class="mic-icon-off" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -474,17 +464,12 @@
           <span class="welcome-line-2">SSIRO Classes</span>
         </h1>
         <div class="welcome-underline"></div>
-        <!-- WELCOME-FIX: Persistent Welcome Screen Action & Drop Zone -->
+        <!-- WELCOME-CLEANUP: Only single Open Deck button, removed connect button and drop hint -->
         <div class="welcome-actions">
           <button id="btnWelcomeOpenDeck" class="welcome-open-btn" aria-label="Open Presentation Deck">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
             <span>डेक खोलें / Open Deck</span>
           </button>
-          <button id="btnWelcomeConnect" class="welcome-connect-btn" title="Android Digital Board / Mobile Connect" aria-label="Connect Android Board or Mobile">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
-            <span>📱 Android Board / Mobile पर चलाएं (Connect)</span>
-          </button>
-          <p class="welcome-drop-hint">PDF / PPTX यहाँ खींचकर छोड़ें / drag & drop a file here</p>
         </div>
       </div>
     </div>

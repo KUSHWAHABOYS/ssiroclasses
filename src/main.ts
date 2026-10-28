@@ -70,6 +70,10 @@ if ('launchQueue' in window && 'files' in (window as any).LaunchParams.prototype
   });
 }
 
+// WELCOME-CLEANUP: Minimal invisible accidental drop guard preventing browser navigation
+window.addEventListener('dragover', (e: DragEvent) => e.preventDefault());
+window.addEventListener('drop', (e: DragEvent) => e.preventDefault());
+
 class SmartStudioApp {
   init(): void {
     console.log('🚀 Initializing Smart Studio Presenter Pro (SSIRO Classes)...');
