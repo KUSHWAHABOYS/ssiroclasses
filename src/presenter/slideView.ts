@@ -61,6 +61,14 @@ export class SlideView {
     btnZen?.addEventListener('click', () => {
       fullscreenService.toggleZen();
     });
+
+    // SSIRO-UPDATE: Android Board & Mobile Connect header button
+    const btnConnect = document.getElementById('btnConnectBoardHeader');
+    btnConnect?.addEventListener('click', () => {
+      import('../ui/connectModal').then(({ connectModal }) => {
+        connectModal.show();
+      });
+    });
   }
 
   private bindChevronsAndEdges(): void {

@@ -47,6 +47,15 @@ export class WelcomeScreen {
       fileInput?.click();
     });
 
+    // SSIRO-UPDATE: Android Board & Mobile Connect button
+    const connectBtn = this.element.querySelector('#btnWelcomeConnect');
+    connectBtn?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      import('./connectModal').then(({ connectModal }) => {
+        connectModal.show();
+      });
+    });
+
     // Drag and drop onto the welcome screen
     this.element.addEventListener('dragover', (e: DragEvent) => {
       e.preventDefault();

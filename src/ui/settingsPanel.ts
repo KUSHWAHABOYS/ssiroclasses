@@ -307,6 +307,20 @@ export class SettingsPanel {
           </div>
         </div>
 
+        <!-- SSIRO-UPDATE: Android Board & Mobile Connect Section -->
+        <div class="settings-section">
+          <div class="settings-section-title">📱 डिजिटल बोर्ड व मोबाइल (Android Board & Mobile)</div>
+          <div class="setting-item">
+            <div class="setting-label">
+              <span class="setting-name">कनेक्ट क्यूआर कोड व आईपी (Connect QR & IP)</span>
+              <span class="setting-desc">Android Digital Board या Phone पर चलाने के लिए निर्देश और QR कोड देखें</span>
+            </div>
+            <button class="header-btn" id="btnSettingsOpenConnect" style="background:rgba(255,215,106,0.18); color:#FFD76A; border-color:rgba(255,215,106,0.4);">
+              📱 बोर्ड कनेक्ट खोलें (Open Connect)
+            </button>
+          </div>
+        </div>
+
         <!-- SSIRO-UPDATE: About Section with App Logo -->
         <div class="settings-section">
           <div class="settings-section-title">के बारे में (About & Brand)</div>
@@ -346,6 +360,13 @@ export class SettingsPanel {
     this.modalEl.querySelector('#btnSettingsCloseDeck')?.addEventListener('click', () => {
       this.close();
       slideView.closeDeck();
+    });
+
+    this.modalEl.querySelector('#btnSettingsOpenConnect')?.addEventListener('click', () => {
+      this.close();
+      import('./connectModal').then(({ connectModal }) => {
+        connectModal.show();
+      });
     });
 
     this.modalEl.querySelector('#btnLoadDemoDeck')?.addEventListener('click', () => {
