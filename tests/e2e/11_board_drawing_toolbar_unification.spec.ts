@@ -197,4 +197,54 @@ test.describe('Board Canvas Drawing Engine & Toolbar Unification Verification', 
     expect(state.highlighterWidth).toBe(44);
     expect(state.penSize).toBe(8);
   });
+
+  test('3. Eraser Residual Circle Artifact Fix: Eraser cursor ring disappears cleanly after erasing and on tool switch', async ({ page }) => {
+    // 1. Draw a pen stroke on slide
+    const stage = page.locator('#stage');
+    const stageBox = await stage.boundingBox();
+    expect(stageBox).not.toBeNull();
+
+    await page.locator('#btnToolPen').click();
+    await page.mouse.move(stageBox!.x + 200, stageBox!.y + 200);
+    await page.mouse.down();
+    await page.mouse.move(stageBox!.x + 300, stageBox!.y + 200, { steps: 5 });
+    await page.mouse.up();
+    await page.waitForTimeout(200);
+
+    // 2. Switch to Eraser tool
+    await page.locator('#btnToolEraser').click();
+    await page.waitForTimeout(100);
+
+    // 3. Perform erase operation
+    await page.mouse.move(stageBox!.x + 250, stageBox!.y + 200);
+    await page.mouse.down();
+    await page.mouse.move(stageBox!.x + 260, stageBox!.y + 200, { steps: 3 });
+    await page.mouse.up();
+    await page.waitForTimeout(100);
+
+    // 4. Verify eraser cursor ring element is hidden after pointer up
+    const isRingHiddenAfterUp = await page.evaluate(() => {
+      const ring = document.getElementById('eraserCursorRing');
+      return !ring || ring.style.display === 'none' || getComputedStyle(ring).display === 'none';
+    });
+    expect(isRingHiddenAfterUp).toBe(true);
+
+    // 5. Switch to Select tool (as in the screenshot)
+    await page.locator('#btnToolSelect').click();
+    await page.waitForTimeout(100);
+
+    // 6. Verify eraser cursor ring is completely hidden when Select tool is active
+    const isRingHiddenOnSelect = await page.evaluate(() => {
+      const ring = document.getElementById('eraserCursorRing');
+      return !ring || ring.style.display === 'none' || getComputedStyle(ring).display === 'none';
+    });
+    expect(isRingHiddenOnSelect).toBe(true);
+
+    // 7. Verify NO circle or residual stroke is in annotationStore
+    const strokes = await page.evaluate(() => (window as any).__SMART_STUDIO_ANNOTATION_STORE__?.getStrokes());
+    for (const s of strokes) {
+      expect(s.shapeType).not.toBe('circle');
+    }
+  });
 });
+

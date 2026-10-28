@@ -28,6 +28,8 @@ export class DrawingEngine {
     canvas.addEventListener('pointermove', (e) => this.handlePointerMove(e));
     canvas.addEventListener('pointerup', (e) => this.handlePointerUp(e));
     canvas.addEventListener('pointercancel', (e) => this.handlePointerCancel(e));
+    canvas.addEventListener('pointerleave', () => this.updateEraserCursor(0, 0, 0, false));
+    canvas.addEventListener('pointerout', () => this.updateEraserCursor(0, 0, 0, false));
     // NOTE: Do not cancel in-progress drawing on lostpointercapture as Blink dispatches it prior to pointerup
     canvas.addEventListener('contextmenu', (e) => {
       e.preventDefault();
@@ -38,10 +40,17 @@ export class DrawingEngine {
     window.addEventListener('cancel-in-progress-drawing', () => {
       this.cancelCurrentStroke();
     });
+    window.addEventListener('blur', () => {
+      this.updateEraserCursor(0, 0, 0, false);
+    });
 
     store.subscribe((state, prev) => {
       if (state.activeTool !== 'select' && prev.activeTool === 'select') {
         shapeSelector.deselect();
+      }
+      // Ensure eraser cursor indicator is immediately hidden when not on eraser
+      if (state.activeTool !== 'eraser') {
+        this.updateEraserCursor(0, 0, 0, false);
       }
       // AUDIT-FIX: BUG-006 - Tool switch immediately cancels any active drawing stroke
       if (state.activeTool !== prev.activeTool && this.isDrawing) {
@@ -190,7 +199,11 @@ export class DrawingEngine {
     }
 
     if (state.activeTool === 'eraser') {
-      this.updateEraserCursor(e.clientX, e.clientY, state.eraserSize, true);
+      if (this.isDrawing || e.pointerType === 'mouse') {
+        this.updateEraserCursor(e.clientX, e.clientY, state.eraserSize, true);
+      } else {
+        this.updateEraserCursor(0, 0, 0, false);
+      }
     } else {
       this.updateEraserCursor(0, 0, 0, false);
     }
@@ -259,6 +272,7 @@ export class DrawingEngine {
   }
 
   private handlePointerCancel(e: PointerEvent): void {
+    this.updateEraserCursor(0, 0, 0, false);
     if (store.getState().activeTool === 'select') {
       shapeSelector.handlePointerUp();
       return;
@@ -277,6 +291,7 @@ export class DrawingEngine {
     this.activePointerId = null;
     gestureWatchdog.unregisterGesture('drawing');
     smartInkController.onPointerUp();
+    this.updateEraserCursor(0, 0, 0, false);
 
     if (e) {
       try {
@@ -298,7 +313,8 @@ export class DrawingEngine {
     }
 
     if (state.activeTool === 'eraser') {
-      // Finished eraser stroke
+      // Finished eraser stroke - guarantee residual cursor circle is removed
+      this.updateEraserCursor(0, 0, 0, false);
       this.currentStrokePoints = [];
       return;
     }
