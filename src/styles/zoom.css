@@ -30,7 +30,7 @@
   left: 0;
   z-index: 38;
   pointer-events: none;
-  filter: drop-shadow(0 12px 28px rgba(0, 0, 0, 0.65));
+  filter: drop-shadow(0 6px 18px rgba(0, 0, 0, 0.35));
 }
 
 /* Pinned Lens Controls & Ring Container */
@@ -41,11 +41,12 @@
   user-select: none;
   cursor: grab;
   border-radius: 50%;
-  box-shadow: 0 0 16px rgba(245, 158, 11, 0.4), inset 0 0 8px rgba(255, 255, 255, 0.3);
+  /* Sleek modern premium look: soft subtle glow, no dark smudges */
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18), 0 0 10px rgba(245, 158, 11, 0.28);
 }
 
 .pinned-lens-container.is-rect {
-  border-radius: 16px;
+  border-radius: 12px;
 }
 
 .pinned-lens-container:active {
@@ -57,6 +58,7 @@
   height: 100%;
   display: block;
   pointer-events: none;
+  border-radius: inherit;
 }
 
 .pinned-lens-controls {
@@ -158,17 +160,151 @@
   background: rgba(255, 255, 255, 0.25);
 }
 
-.pinned-lens-resize-handle {
+/* Freeform Resize Handles (Corners and Edges) with Touch & Stylus Optimization */
+.pinned-lens-handle {
   position: absolute;
-  bottom: 0;
-  right: 0;
-  width: 22px;
-  height: 22px;
-  background: var(--primary-accent);
-  border: 2px solid #ffffff;
+  z-index: 41;
+  touch-action: none;
+  user-select: none;
+  box-sizing: border-box;
+}
+
+/* Touch Hitbox Expansion: generous 44px+ hit area for fingers and stylus without visual clutter */
+.pinned-lens-handle::after {
+  content: '';
+  position: absolute;
+  inset: -14px;
+  pointer-events: auto;
+}
+
+/* Corner Handles: Sleek golden dots with crisp 2px white outline */
+.pinned-lens-handle.corner-handle {
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
+  background: linear-gradient(135deg, #FFD76A, #F59E0B);
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35), 0 0 6px rgba(245, 158, 11, 0.45);
+  transition: transform 120ms ease, box-shadow 120ms ease;
+}
+
+.pinned-lens-handle.corner-handle:hover,
+.pinned-lens-handle.corner-handle:active {
+  transform: scale(1.22);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.45), 0 0 10px rgba(245, 158, 11, 0.7);
+}
+
+.pinned-lens-handle.handle-se {
+  bottom: -9px;
+  right: -9px;
   cursor: nwse-resize;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+}
+
+.pinned-lens-handle.handle-sw {
+  bottom: -9px;
+  left: -9px;
+  cursor: nesw-resize;
+}
+
+.pinned-lens-handle.handle-ne {
+  top: -9px;
+  right: -9px;
+  cursor: nesw-resize;
+}
+
+.pinned-lens-handle.handle-nw {
+  top: -9px;
+  left: -9px;
+  cursor: nwse-resize;
+}
+
+/* Edge Handles: Sleek rounded pills for independent horizontal and vertical stretching */
+.pinned-lens-handle.edge-handle {
+  border-radius: 6px;
+  background: rgba(255, 215, 106, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.28);
+  transition: transform 120ms ease, background 120ms ease, box-shadow 120ms ease;
+}
+
+.pinned-lens-handle.edge-handle:hover,
+.pinned-lens-handle.edge-handle:active {
+  background: #FFAE19;
+  transform: scale(1.18);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4), 0 0 8px rgba(245, 158, 11, 0.6);
+}
+
+/* Right Edge Handle (width adjust) */
+.pinned-lens-handle.handle-e {
+  right: -6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 8px;
+  height: 28px;
+  cursor: ew-resize;
+}
+
+.pinned-lens-handle.handle-e:hover,
+.pinned-lens-handle.handle-e:active {
+  transform: translateY(-50%) scale(1.18);
+}
+
+/* Left Edge Handle (width adjust) */
+.pinned-lens-handle.handle-w {
+  left: -6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 8px;
+  height: 28px;
+  cursor: ew-resize;
+}
+
+.pinned-lens-handle.handle-w:hover,
+.pinned-lens-handle.handle-w:active {
+  transform: translateY(-50%) scale(1.18);
+}
+
+/* Bottom Edge Handle (height adjust / vertical banner) */
+.pinned-lens-handle.handle-s {
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 28px;
+  height: 8px;
+  cursor: ns-resize;
+}
+
+.pinned-lens-handle.handle-s:hover,
+.pinned-lens-handle.handle-s:active {
+  transform: translateX(-50%) scale(1.18);
+}
+
+/* Top Edge Handle (height adjust) */
+.pinned-lens-handle.handle-n {
+  top: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 28px;
+  height: 8px;
+  cursor: ns-resize;
+}
+
+.pinned-lens-handle.handle-n:hover,
+.pinned-lens-handle.handle-n:active {
+  transform: translateX(-50%) scale(1.18);
+}
+
+/* Backward compatibility alias */
+.pinned-lens-resize-handle {
+  /* inherits from .pinned-lens-handle.corner-handle.handle-se */
+}
+
+/* In Circle mode: only bottom-right handle is needed to resize symmetrically */
+.pinned-lens-container.is-circle .pinned-lens-handle.edge-handle,
+.pinned-lens-container.is-circle .pinned-lens-handle.handle-sw,
+.pinned-lens-container.is-circle .pinned-lens-handle.handle-ne,
+.pinned-lens-container.is-circle .pinned-lens-handle.handle-nw {
+  display: none !important;
 }
 
 /* Transient Zoom Level Indicator */

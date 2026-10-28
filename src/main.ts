@@ -140,6 +140,7 @@ class SmartStudioApp {
     w.__SMART_STUDIO_ANNOTATION_STORE__ = annotationStore;
     w.__SMART_STUDIO_BLACKBOARD__ = blackboardStudio;
     w.__SMART_STUDIO_ZOOM__ = zoomController;
+    w.__SMART_STUDIO_LENS__ = magnifierLensController;
     w.__SMART_STUDIO_MEDIA_MANAGER__ = overlayManager;
     w.__SMART_STUDIO_KEY_VAULT__ = keyVault;
     w.__SMART_STUDIO_MIC__ = micController;

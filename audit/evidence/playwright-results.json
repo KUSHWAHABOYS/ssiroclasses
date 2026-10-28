@@ -5,7 +5,7 @@
       "C:\\Users\\rnran\\.gemini\\antigravity-ide\\scratch\\smart-studio\\node_modules\\@playwright\\test\\cli.js",
       "test",
       "tests/e2e/08_voice_browser_fix.spec.ts",
-      "tests/e2e/07_welcome_cleanup.spec.ts"
+      "tests/e2e/04_board_magnifier_media.spec.ts"
     ],
     "configFile": "C:\\Users\\rnran\\.gemini\\antigravity-ide\\scratch\\smart-studio\\playwright.config.ts",
     "rootDir": "C:/Users/rnran/.gemini/antigravity-ide/scratch/smart-studio/tests/e2e",
@@ -99,20 +99,20 @@
   },
   "suites": [
     {
-      "title": "07_welcome_cleanup.spec.ts",
-      "file": "07_welcome_cleanup.spec.ts",
+      "title": "04_board_magnifier_media.spec.ts",
+      "file": "04_board_magnifier_media.spec.ts",
       "column": 0,
       "line": 0,
       "specs": [],
       "suites": [
         {
-          "title": "WELCOME-CLEANUP Verification Suite (Part B Requirements)",
-          "file": "07_welcome_cleanup.spec.ts",
+          "title": "Section 9, 10, 11 & 12: Blackboard, Media, Magnifier & Browser (BRD-1 to BRD-3, MAG-1 to MAG-4, MED-1 to MED-3, BRW-1)",
+          "file": "04_board_magnifier_media.spec.ts",
           "line": 4,
           "column": 6,
           "specs": [
             {
-              "title": "Test 3(a): Welcome page contains exactly logo, two text lines, and ONE button",
+              "title": "BRD-1 & BRD-2: Blackboard opens at 100% display, themes, and exact Pure Chroma Green #00FF00 pixel check",
               "ok": true,
               "tags": [],
               "tests": [
@@ -127,12 +127,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 764,
+                      "duration": 1149,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-28T09:22:08.875Z",
+                      "startTime": "2026-10-28T09:56:27.441Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -140,13 +140,13 @@
                   "status": "expected"
                 }
               ],
-              "id": "85fc3abb0be5d697c21d-f8ce4711be1106393322",
-              "file": "07_welcome_cleanup.spec.ts",
-              "line": 11,
+              "id": "2e328534b87a7fc0b85a-2af033a5f628b0547201",
+              "file": "04_board_magnifier_media.spec.ts",
+              "line": 10,
               "column": 3
             },
             {
-              "title": "Test 3(b): Clicking Open Deck triggers file picker and loading PDF transitions into slide 1",
+              "title": "MAG-1 & MAG-2: Magnifier lens follow, size 120-600px and magnification 1.5-8x",
               "ok": true,
               "tags": [],
               "tests": [
@@ -161,12 +161,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1022,
+                      "duration": 1204,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-28T09:22:09.750Z",
+                      "startTime": "2026-10-28T09:56:28.693Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -174,13 +174,13 @@
                   "status": "expected"
                 }
               ],
-              "id": "85fc3abb0be5d697c21d-a38822e7cfcf0353b842",
-              "file": "07_welcome_cleanup.spec.ts",
-              "line": 42,
+              "id": "2e328534b87a7fc0b85a-8f72fe3836db2c258cda",
+              "file": "04_board_magnifier_media.spec.ts",
+              "line": 54,
               "column": 3
             },
             {
-              "title": "Test 3(c): Dropping PDF onto welcome page does nothing, shows no overlay, and prevents navigation",
+              "title": "MAG-4: Whole-slide zoom: 2.5x tap zoom, zoom in/out, and 1x reset chip",
               "ok": true,
               "tags": [],
               "tests": [
@@ -195,12 +195,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 323,
+                      "duration": 1191,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-28T09:22:10.787Z",
+                      "startTime": "2026-10-28T09:56:29.910Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -208,13 +208,13 @@
                   "status": "expected"
                 }
               ],
-              "id": "85fc3abb0be5d697c21d-19b44ec9e84207404e60",
-              "file": "07_welcome_cleanup.spec.ts",
-              "line": 69,
+              "id": "2e328534b87a7fc0b85a-c16f9a582605a4e4bb72",
+              "file": "04_board_magnifier_media.spec.ts",
+              "line": 84,
               "column": 3
             },
             {
-              "title": "Test 3(d): Top-bar Open Deck still works once a deck is open",
+              "title": "MED-1 & MED-2: Media overlay windows management and compare tiling",
               "ok": true,
               "tags": [],
               "tests": [
@@ -229,12 +229,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 979,
+                      "duration": 815,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-28T09:22:11.130Z",
+                      "startTime": "2026-10-28T09:56:31.113Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -242,13 +242,13 @@
                   "status": "expected"
                 }
               ],
-              "id": "85fc3abb0be5d697c21d-e327a1877151ad565784",
-              "file": "07_welcome_cleanup.spec.ts",
-              "line": 109,
+              "id": "2e328534b87a7fc0b85a-afa02b013c3ae726e1d3",
+              "file": "04_board_magnifier_media.spec.ts",
+              "line": 107,
               "column": 3
             },
             {
-              "title": "Test 3(e): OS file-handler dispatch via app-open-files transitions from welcome into deck",
+              "title": "BRW-1: Browser overlay fallback card on web",
               "ok": true,
               "tags": [],
               "tests": [
@@ -263,12 +263,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 894,
+                      "duration": 760,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-28T09:22:12.134Z",
+                      "startTime": "2026-10-28T09:56:31.941Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -276,77 +276,9 @@
                   "status": "expected"
                 }
               ],
-              "id": "85fc3abb0be5d697c21d-931bd3cfac9652389f5b",
-              "file": "07_welcome_cleanup.spec.ts",
-              "line": 127,
-              "column": 3
-            },
-            {
-              "title": "Test 3(f): Zero console errors and zero connect network requests",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "",
-                  "projectName": "",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 1393,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-10-28T09:22:13.043Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "85fc3abb0be5d697c21d-3d0ae3a9defe9e353a50",
-              "file": "07_welcome_cleanup.spec.ts",
-              "line": 157,
-              "column": 3
-            },
-            {
-              "title": "Test 4: Smoke flow verification (welcome -> open PDF -> draw -> shapes -> zoom/magnifier -> blackboard -> Close deck -> welcome; mic off at start; AI panel opens)",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "",
-                  "projectName": "",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 2196,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-10-28T09:22:14.456Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "85fc3abb0be5d697c21d-6a03b0fafe610d50c255",
-              "file": "07_welcome_cleanup.spec.ts",
-              "line": 188,
+              "id": "2e328534b87a7fc0b85a-fef1f435b3314b320de8",
+              "file": "04_board_magnifier_media.spec.ts",
+              "line": 124,
               "column": 3
             }
           ]
@@ -382,12 +314,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 3646,
+                      "duration": 3622,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-28T09:22:16.688Z",
+                      "startTime": "2026-10-28T09:56:32.722Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -416,12 +348,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1284,
+                      "duration": 1228,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-28T09:22:20.348Z",
+                      "startTime": "2026-10-28T09:56:36.354Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -441,9 +373,9 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-10-28T09:22:07.522Z",
-    "duration": 14408.475,
-    "expected": 9,
+    "startTime": "2026-10-28T09:56:26.139Z",
+    "duration": 14372.831999999999,
+    "expected": 7,
     "skipped": 0,
     "unexpected": 0,
     "flaky": 0

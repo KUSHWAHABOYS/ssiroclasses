@@ -10,6 +10,8 @@ export interface PinnedLens {
   stageY: number;
   slideX: number;
   slideY: number;
+  width: number;
+  height: number;
   size: number;
   zoom: number;
   isCircle: boolean;
@@ -339,9 +341,13 @@ export class MagnifierLensController {
 
     const id = `lens_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`;
     const settings = store.getState().settings;
-    const size = this.getEffectiveSize();
+    const baseSize = this.getEffectiveSize();
     const zoom = settings.magnifierZoom || 3.0;
     const isCircle = (settings.magnifierShape || 'circle') === 'circle';
+
+    // Width & height: Circle is symmetric, Rectangle defaults to freeform aspect ratio
+    const width = isCircle ? baseSize : Math.round(baseSize * 1.25);
+    const height = isCircle ? baseSize : Math.round(baseSize * 0.85);
 
     // Slide coordinates for fixed mode
     const slideCoords = zoomController.toSlideCoords(
@@ -351,14 +357,14 @@ export class MagnifierLensController {
 
     const container = document.createElement('div');
     container.className = `pinned-lens-container ${isCircle ? 'is-circle' : 'is-rect'}`;
-    container.style.width = `${size}px`;
-    container.style.height = `${size}px`;
-    container.style.left = `${stageX - size / 2}px`;
-    container.style.top = `${stageY - size / 2}px`;
+    container.style.width = `${width}px`;
+    container.style.height = `${height}px`;
+    container.style.left = `${stageX - width / 2}px`;
+    container.style.top = `${stageY - height / 2}px`;
 
     const canvas = document.createElement('canvas');
-    canvas.width = size;
-    canvas.height = size;
+    canvas.width = width;
+    canvas.height = height;
     canvas.className = 'pinned-lens-canvas';
     container.appendChild(canvas);
 
@@ -375,10 +381,57 @@ export class MagnifierLensController {
     `;
     container.appendChild(controls);
 
-    // Corner resize handle
-    const resizeHandle = document.createElement('div');
-    resizeHandle.className = 'pinned-lens-resize-handle';
-    container.appendChild(resizeHandle);
+    // Freeform Resize Handles (Corners and Edges) with Touch & Stylus Optimization
+    // 1. Bottom-Right Corner (SE) - backward compatible alias 'pinned-lens-resize-handle'
+    const handleSE = document.createElement('div');
+    handleSE.className = 'pinned-lens-handle corner-handle handle-se pinned-lens-resize-handle';
+    handleSE.setAttribute('data-handle', 'se');
+    handleSE.title = 'Resize (आकार बदलें)';
+    container.appendChild(handleSE);
+
+    // 2. Bottom-Left Corner (SW)
+    const handleSW = document.createElement('div');
+    handleSW.className = 'pinned-lens-handle corner-handle handle-sw';
+    handleSW.setAttribute('data-handle', 'sw');
+    container.appendChild(handleSW);
+
+    // 3. Top-Right Corner (NE)
+    const handleNE = document.createElement('div');
+    handleNE.className = 'pinned-lens-handle corner-handle handle-ne';
+    handleNE.setAttribute('data-handle', 'ne');
+    container.appendChild(handleNE);
+
+    // 4. Top-Left Corner (NW)
+    const handleNW = document.createElement('div');
+    handleNW.className = 'pinned-lens-handle corner-handle handle-nw';
+    handleNW.setAttribute('data-handle', 'nw');
+    container.appendChild(handleNW);
+
+    // 5. Right Edge (E) - Horizontal width adjust
+    const handleE = document.createElement('div');
+    handleE.className = 'pinned-lens-handle edge-handle handle-e';
+    handleE.setAttribute('data-handle', 'e');
+    handleE.title = 'Width (चौड़ाई बदलें)';
+    container.appendChild(handleE);
+
+    // 6. Left Edge (W) - Horizontal width adjust
+    const handleW = document.createElement('div');
+    handleW.className = 'pinned-lens-handle edge-handle handle-w';
+    handleW.setAttribute('data-handle', 'w');
+    container.appendChild(handleW);
+
+    // 7. Bottom Edge (S) - Vertical height adjust (vertical banner)
+    const handleS = document.createElement('div');
+    handleS.className = 'pinned-lens-handle edge-handle handle-s';
+    handleS.setAttribute('data-handle', 's');
+    handleS.title = 'Height (लंबाई बदलें)';
+    container.appendChild(handleS);
+
+    // 8. Top Edge (N) - Vertical height adjust
+    const handleN = document.createElement('div');
+    handleN.className = 'pinned-lens-handle edge-handle handle-n';
+    handleN.setAttribute('data-handle', 'n');
+    container.appendChild(handleN);
 
     document.getElementById('stage')?.appendChild(container);
 
@@ -388,7 +441,9 @@ export class MagnifierLensController {
       stageY,
       slideX: slideCoords.x,
       slideY: slideCoords.y,
-      size,
+      width,
+      height,
+      size: Math.max(width, height),
       zoom,
       isCircle,
       mode: 'glass',
@@ -415,9 +470,21 @@ export class MagnifierLensController {
     let lensStartX = 0;
     let lensStartY = 0;
 
-    // Drag by ring
+    const updateControlsPlacement = () => {
+      const controls = container.querySelector('.pinned-lens-controls') as HTMLElement;
+      if (!controls) return;
+      if (lens.stageY - lens.height / 2 < 48) {
+        controls.style.top = 'auto';
+        controls.style.bottom = '-40px';
+      } else {
+        controls.style.top = '-40px';
+        controls.style.bottom = 'auto';
+      }
+    };
+
+    // 1. Move Dragging on container body
     container.addEventListener('pointerdown', (e: PointerEvent) => {
-      if ((e.target as HTMLElement).closest('.lens-ctrl-btn, .pinned-lens-resize-handle')) return;
+      if ((e.target as HTMLElement).closest('.lens-ctrl-btn, .pinned-lens-handle')) return;
       e.stopPropagation();
       isDragging = true;
       dragStartX = e.clientX;
@@ -434,8 +501,9 @@ export class MagnifierLensController {
       const dy = e.clientY - dragStartY;
       lens.stageX = lensStartX + dx;
       lens.stageY = lensStartY + dy;
-      container.style.left = `${lens.stageX - lens.size / 2}px`;
-      container.style.top = `${lens.stageY - lens.size / 2}px`;
+      container.style.left = `${lens.stageX - lens.width / 2}px`;
+      container.style.top = `${lens.stageY - lens.height / 2}px`;
+      updateControlsPlacement();
       this.needsRedraw = true;
     });
 
@@ -449,7 +517,7 @@ export class MagnifierLensController {
     container.addEventListener('pointerup', stopDrag);
     container.addEventListener('pointercancel', stopDrag);
 
-    // Controls
+    // 2. Controls buttons (Mode, Zoom In, Zoom Out, Close)
     const btnMode = container.querySelector('.btn-mode') as HTMLElement;
     btnMode?.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -478,52 +546,157 @@ export class MagnifierLensController {
       this.removePinnedLens(lens.id);
     });
 
-    // Resize handle
-    const resizeHandle = container.querySelector('.pinned-lens-resize-handle') as HTMLElement;
-    let isResizing = false;
-    let resizeStartDist = 0;
-    let initialLensSize = 0;
+    // 3. Freeform Resizing Handlers (for corners and edges)
+    const handles = container.querySelectorAll<HTMLElement>('.pinned-lens-handle');
+    handles.forEach((handle) => {
+      let isResizing = false;
+      let startW = 0;
+      let startH = 0;
+      let startX = 0;
+      let startY = 0;
+      let startClientX = 0;
+      let startClientY = 0;
+      const type = handle.getAttribute('data-handle') || 'se';
 
-    resizeHandle?.addEventListener('pointerdown', (e: PointerEvent) => {
-      e.stopPropagation();
-      isResizing = true;
-      resizeHandle.setPointerCapture(e.pointerId);
-      initialLensSize = lens.size;
-      const rect = container.getBoundingClientRect();
-      const centerX = rect.left + rect.width / 2;
-      const centerY = rect.top + rect.height / 2;
-      resizeStartDist = Math.hypot(e.clientX - centerX, e.clientY - centerY);
-    });
+      handle.addEventListener('pointerdown', (e: PointerEvent) => {
+        e.stopPropagation();
+        e.preventDefault();
+        isResizing = true;
+        handle.setPointerCapture(e.pointerId);
+        startW = lens.width;
+        startH = lens.height;
+        startX = lens.stageX;
+        startY = lens.stageY;
+        startClientX = e.clientX;
+        startClientY = e.clientY;
+      });
 
-    resizeHandle?.addEventListener('pointermove', (e: PointerEvent) => {
-      if (!isResizing) return;
-      e.stopPropagation();
-      const rect = container.getBoundingClientRect();
-      const centerX = rect.left + rect.width / 2;
-      const centerY = rect.top + rect.height / 2;
-      const currentDist = Math.hypot(e.clientX - centerX, e.clientY - centerY);
-      const ratio = currentDist / Math.max(1, resizeStartDist);
-      const newSize = Math.max(120, Math.min(600, Math.round(initialLensSize * ratio)));
+      handle.addEventListener('pointermove', (e: PointerEvent) => {
+        if (!isResizing) return;
+        e.stopPropagation();
+        e.preventDefault();
 
-      lens.size = newSize;
-      container.style.width = `${newSize}px`;
-      container.style.height = `${newSize}px`;
-      container.style.left = `${lens.stageX - newSize / 2}px`;
-      container.style.top = `${lens.stageY - newSize / 2}px`;
-      lens.canvasEl.width = newSize;
-      lens.canvasEl.height = newSize;
-      this.needsRedraw = true;
-    });
+        const dx = e.clientX - startClientX;
+        const dy = e.clientY - startClientY;
+        const minW = 100;
+        const minH = 70;
+        const dims = layerManager.getDimensions();
+        const maxW = dims.width - 24;
+        const maxH = dims.height - 24;
 
-    const stopResize = (e: PointerEvent) => {
-      if (isResizing) {
-        isResizing = false;
-        try { resizeHandle.releasePointerCapture(e.pointerId); } catch {}
+        let newW = startW;
+        let newH = startH;
+        let newStageX = startX;
+        let newStageY = startY;
+
+        if (lens.isCircle) {
+          // Circle keeps uniform 1:1 aspect ratio
+          let delta = 0;
+          if (type === 'se') delta = Math.max(dx, dy);
+          else if (type === 'sw') delta = Math.max(-dx, dy);
+          else if (type === 'ne') delta = Math.max(dx, -dy);
+          else if (type === 'nw') delta = Math.max(-dx, -dy);
+          else if (type === 'e' || type === 'w') delta = type === 'e' ? dx : -dx;
+          else if (type === 's' || type === 'n') delta = type === 's' ? dy : -dy;
+
+          const size = Math.max(100, Math.min(800, startW + delta));
+          newW = size;
+          newH = size;
+          if (type === 'se' || type === 'e' || type === 's') {
+            newStageX = startX + (size - startW) / 2;
+            newStageY = startY + (size - startH) / 2;
+          } else if (type === 'sw' || type === 'w') {
+            newStageX = startX - (size - startW) / 2;
+            newStageY = startY + (size - startH) / 2;
+          } else if (type === 'ne') {
+            newStageX = startX + (size - startW) / 2;
+            newStageY = startY - (size - startH) / 2;
+          } else if (type === 'nw' || type === 'n') {
+            newStageX = startX - (size - startW) / 2;
+            newStageY = startY - (size - startH) / 2;
+          }
+        } else {
+          // Freeform Rectangle: width and height adjust completely independently!
+          switch (type) {
+            case 'se': // Bottom-Right corner
+              newW = Math.max(minW, Math.min(maxW, startW + dx));
+              newH = Math.max(minH, Math.min(maxH, startH + dy));
+              newStageX = startX + (newW - startW) / 2;
+              newStageY = startY + (newH - startH) / 2;
+              break;
+
+            case 'sw': // Bottom-Left corner
+              newW = Math.max(minW, Math.min(maxW, startW - dx));
+              newH = Math.max(minH, Math.min(maxH, startH + dy));
+              newStageX = startX - (newW - startW) / 2;
+              newStageY = startY + (newH - startH) / 2;
+              break;
+
+            case 'ne': // Top-Right corner
+              newW = Math.max(minW, Math.min(maxW, startW + dx));
+              newH = Math.max(minH, Math.min(maxH, startH - dy));
+              newStageX = startX + (newW - startW) / 2;
+              newStageY = startY - (newH - startH) / 2;
+              break;
+
+            case 'nw': // Top-Left corner
+              newW = Math.max(minW, Math.min(maxW, startW - dx));
+              newH = Math.max(minH, Math.min(maxH, startH - dy));
+              newStageX = startX - (newW - startW) / 2;
+              newStageY = startY - (newH - startH) / 2;
+              break;
+
+            case 'e': // Right edge: horizontal width only
+              newW = Math.max(minW, Math.min(maxW, startW + dx));
+              newStageX = startX + (newW - startW) / 2;
+              break;
+
+            case 'w': // Left edge: horizontal width only
+              newW = Math.max(minW, Math.min(maxW, startW - dx));
+              newStageX = startX - (newW - startW) / 2;
+              break;
+
+            case 's': // Bottom edge: vertical height only (vertical banner)
+              newH = Math.max(minH, Math.min(maxH, startH + dy));
+              newStageY = startY + (newH - startH) / 2;
+              break;
+
+            case 'n': // Top edge: vertical height only
+              newH = Math.max(minH, Math.min(maxH, startH - dy));
+              newStageY = startY - (newH - startH) / 2;
+              break;
+          }
+        }
+
+        lens.width = newW;
+        lens.height = newH;
+        lens.size = Math.max(newW, newH);
+        lens.stageX = newStageX;
+        lens.stageY = newStageY;
+
+        container.style.width = `${newW}px`;
+        container.style.height = `${newH}px`;
+        container.style.left = `${newStageX - newW / 2}px`;
+        container.style.top = `${newStageY - newH / 2}px`;
+
+        lens.canvasEl.width = newW;
+        lens.canvasEl.height = newH;
+
+        updateControlsPlacement();
         this.needsRedraw = true;
-      }
-    };
-    resizeHandle?.addEventListener('pointerup', stopResize);
-    resizeHandle?.addEventListener('pointercancel', stopResize);
+      });
+
+      const stopHandleResize = (e: PointerEvent) => {
+        if (isResizing) {
+          isResizing = false;
+          try { handle.releasePointerCapture(e.pointerId); } catch {}
+          this.needsRedraw = true;
+        }
+      };
+
+      handle.addEventListener('pointerup', stopHandleResize);
+      handle.addEventListener('pointercancel', stopHandleResize);
+    });
   }
 
   removePinnedLens(id: string): void {
@@ -598,16 +771,20 @@ export class MagnifierLensController {
 
     // 2. Render pinned lenses
     for (const lens of this.pinnedLenses) {
+      lens.ctx.clearRect(0, 0, lens.canvasEl.width, lens.canvasEl.height);
       this.renderLensToContext(
         lens.ctx,
         lens.mode === 'fixed' ? lens.slideX : null,
         lens.mode === 'fixed' ? lens.slideY : null,
         lens.stageX,
         lens.stageY,
-        lens.size,
+        lens.width,
+        lens.height,
         lens.zoom,
         lens.isCircle,
-        1.0
+        1.0,
+        0,
+        0
       );
     }
 
@@ -616,9 +793,11 @@ export class MagnifierLensController {
       this.lensCtx.clearRect(0, 0, dims.width, dims.height);
 
       if (this.isFollowActive && this.isFollowVisible && this.followOpacity > 0.01) {
-        const size = this.getEffectiveSize();
-        const zoom = settings.magnifierZoom || 3.0;
         const isCircle = (settings.magnifierShape || 'circle') === 'circle';
+        const effSize = this.getEffectiveSize();
+        const width = isCircle ? effSize : Math.round(effSize * 1.25);
+        const height = isCircle ? effSize : Math.round(effSize * 0.85);
+        const zoom = settings.magnifierZoom || 3.0;
 
         this.lensCtx.save();
         this.lensCtx.translate(this.followDisplayX, this.followDisplayY);
@@ -631,12 +810,13 @@ export class MagnifierLensController {
           null,
           this.followTargetX,
           this.followTargetY,
-          size,
+          width,
+          height,
           zoom,
           isCircle,
           this.followScale,
-          -size / 2,
-          -size / 2
+          -width / 2,
+          -height / 2
         );
 
         this.lensCtx.restore();
@@ -652,33 +832,38 @@ export class MagnifierLensController {
     fixedSlideY: number | null,
     targetStageX: number,
     targetStageY: number,
-    size: number,
+    width: number,
+    height: number,
     zoom: number,
     isCircle: boolean,
     scaleAnim = 1.0,
     destOffsetX = 0,
     destOffsetY = 0
   ): void {
+    // 0. Clean slate to prevent ANY frame accumulation or shadow smudge
+    ctx.clearRect(destOffsetX, destOffsetY, width, height);
+
     ctx.save();
 
-    // 1. Clip path for lens shape
+    // 1. Clip path for lens shape (smooth rounded rectangle or circle)
     ctx.beginPath();
     if (isCircle) {
-      ctx.arc(destOffsetX + size / 2, destOffsetY + size / 2, size / 2 - 2, 0, Math.PI * 2);
+      const radius = Math.min(width, height) / 2;
+      ctx.arc(destOffsetX + width / 2, destOffsetY + height / 2, radius - 1, 0, Math.PI * 2);
     } else {
-      const radius = 16;
-      const x = destOffsetX + 2;
-      const y = destOffsetY + 2;
-      const w = size - 4;
-      const h = size - 4;
+      const radius = Math.min(12, width / 4, height / 4);
+      const x = destOffsetX + 1;
+      const y = destOffsetY + 1;
+      const w = width - 2;
+      const h = height - 2;
       ctx.roundRect ? ctx.roundRect(x, y, w, h, radius) : ctx.rect(x, y, w, h);
     }
     ctx.clip();
 
-    // 2. Fill background with dominant slide edge color
+    // 2. Fill background with dominant slide edge color (or crisp white for documents)
     const metrics = slideRenderer.getCurrentMetrics();
-    ctx.fillStyle = metrics.dominantColor || '#000000';
-    ctx.fillRect(destOffsetX, destOffsetY, size, size);
+    ctx.fillStyle = metrics.dominantColor || '#ffffff';
+    ctx.fillRect(destOffsetX, destOffsetY, width, height);
 
     // 3. Determine center point in slide space
     let centerSlideX = 0;
@@ -694,8 +879,8 @@ export class MagnifierLensController {
       centerSlideY = slidePt.y;
     }
 
-    const sw = size / zoom;
-    const sh = size / zoom;
+    const sw = width / zoom;
+    const sh = height / zoom;
     const sx = centerSlideX - sw / 2;
     const sy = centerSlideY - sh / 2;
 
@@ -708,7 +893,7 @@ export class MagnifierLensController {
       ctx.drawImage(
         layerManager.slideCanvas,
         sx, sy, sw, sh,
-        destOffsetX, destOffsetY, size, size
+        destOffsetX, destOffsetY, width, height
       );
     } else {
       const bitmap = slideRenderer.getCurrentBitmap();
@@ -726,7 +911,7 @@ export class MagnifierLensController {
         ctx.drawImage(
           bitmap,
           bitmapSx, bitmapSy, bitmapSw, bitmapSh,
-          destOffsetX, destOffsetY, size, size
+          destOffsetX, destOffsetY, width, height
         );
       }
     }
@@ -736,23 +921,23 @@ export class MagnifierLensController {
     ctx.drawImage(
       layerManager.annotationCanvas,
       sx * dpr, sy * dpr, sw * dpr, sh * dpr,
-      destOffsetX, destOffsetY, size, size
+      destOffsetX, destOffsetY, width, height
     );
 
-    // 6. Faint curved glass reflection arc (~12% opacity per spec C5)
+    // 6. Faint curved glass reflection arc (~12% opacity per spec C5) - circle only
     if (isCircle) {
       ctx.save();
-      const grad = ctx.createLinearGradient(destOffsetX, destOffsetY, destOffsetX + size, destOffsetY + size);
+      const grad = ctx.createLinearGradient(destOffsetX, destOffsetY, destOffsetX + width, destOffsetY + height);
       grad.addColorStop(0, 'rgba(255, 255, 255, 0.18)');
       grad.addColorStop(0.4, 'rgba(255, 255, 255, 0.05)');
       grad.addColorStop(1, 'rgba(255, 255, 255, 0.0)');
       ctx.fillStyle = grad;
       ctx.beginPath();
       ctx.ellipse(
-        destOffsetX + size * 0.35,
-        destOffsetY + size * 0.28,
-        size * 0.3,
-        size * 0.15,
+        destOffsetX + width * 0.35,
+        destOffsetY + height * 0.28,
+        Math.min(width, height) * 0.3,
+        Math.min(width, height) * 0.15,
         -Math.PI / 6,
         0,
         Math.PI * 2
@@ -761,31 +946,34 @@ export class MagnifierLensController {
       ctx.restore();
     }
 
-    ctx.restore();
+    ctx.restore(); // Restore clip
 
-    // 7. Gold Ring, Inner Highlight & Soft Glow Shadow (spec C5)
+    // 7. Clean, Modern 1.5px/2px Accent Border (NO black shadows/artifacts)
     ctx.save();
     const ringGrad = ctx.createLinearGradient(
       destOffsetX, destOffsetY,
-      destOffsetX + size, destOffsetY + size
+      destOffsetX + width, destOffsetY + height
     );
     ringGrad.addColorStop(0, '#FFD76A');
-    ringGrad.addColorStop(1, '#E8890C');
+    ringGrad.addColorStop(1, '#F59E0B');
 
     ctx.strokeStyle = ringGrad;
-    ctx.lineWidth = 4;
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.45)';
-    ctx.shadowBlur = 12;
+    ctx.lineWidth = 2; // Crisp, modern 2px solid accent border
+
+    // Soft warm golden glow - completely removes black corner smudges
+    ctx.shadowColor = 'rgba(245, 158, 11, 0.35)';
+    ctx.shadowBlur = 6;
 
     ctx.beginPath();
     if (isCircle) {
-      ctx.arc(destOffsetX + size / 2, destOffsetY + size / 2, size / 2 - 2, 0, Math.PI * 2);
+      const radius = Math.min(width, height) / 2;
+      ctx.arc(destOffsetX + width / 2, destOffsetY + height / 2, radius - 1, 0, Math.PI * 2);
     } else {
-      const radius = 16;
-      const x = destOffsetX + 2;
-      const y = destOffsetY + 2;
-      const w = size - 4;
-      const h = size - 4;
+      const radius = Math.min(12, width / 4, height / 4);
+      const x = destOffsetX + 1;
+      const y = destOffsetY + 1;
+      const w = width - 2;
+      const h = height - 2;
       ctx.roundRect ? ctx.roundRect(x, y, w, h, radius) : ctx.rect(x, y, w, h);
     }
     ctx.stroke();
@@ -805,14 +993,20 @@ export class MagnifierLensController {
     ctx.globalCompositeOperation = 'destination-out';
 
     if (this.isFollowActive && this.isFollowVisible && this.followOpacity > 0.05) {
-      const size = this.getEffectiveSize();
       const isCircle = (store.getState().settings.magnifierShape || 'circle') === 'circle';
+      const effSize = this.getEffectiveSize();
+      const w = (isCircle ? effSize : Math.round(effSize * 1.25)) * this.followScale;
+      const h = (isCircle ? effSize : Math.round(effSize * 0.85)) * this.followScale;
       ctx.beginPath();
       if (isCircle) {
-        ctx.arc(this.followDisplayX, this.followDisplayY, (size / 2) * this.followScale, 0, Math.PI * 2);
+        ctx.arc(this.followDisplayX, this.followDisplayY, Math.min(w, h) / 2, 0, Math.PI * 2);
       } else {
-        const half = (size / 2) * this.followScale;
-        ctx.rect(this.followDisplayX - half, this.followDisplayY - half, size * this.followScale, size * this.followScale);
+        const radius = Math.min(12, w / 4, h / 4);
+        if (ctx.roundRect) {
+          ctx.roundRect(this.followDisplayX - w / 2, this.followDisplayY - h / 2, w, h, radius);
+        } else {
+          ctx.rect(this.followDisplayX - w / 2, this.followDisplayY - h / 2, w, h);
+        }
       }
       ctx.fill();
     }
@@ -821,9 +1015,16 @@ export class MagnifierLensController {
     for (const lens of this.pinnedLenses) {
       ctx.beginPath();
       if (lens.isCircle) {
-        ctx.arc(lens.stageX, lens.stageY, lens.size / 2, 0, Math.PI * 2);
+        ctx.arc(lens.stageX, lens.stageY, Math.min(lens.width, lens.height) / 2, 0, Math.PI * 2);
       } else {
-        ctx.rect(lens.stageX - lens.size / 2, lens.stageY - lens.size / 2, lens.size, lens.size);
+        const radius = Math.min(12, lens.width / 4, lens.height / 4);
+        const x = lens.stageX - lens.width / 2;
+        const y = lens.stageY - lens.height / 2;
+        if (ctx.roundRect) {
+          ctx.roundRect(x, y, lens.width, lens.height, radius);
+        } else {
+          ctx.rect(x, y, lens.width, lens.height);
+        }
       }
       ctx.fill();
     }
@@ -839,3 +1040,7 @@ export class MagnifierLensController {
 }
 
 export const magnifierLensController = new MagnifierLensController();
+
+if (typeof window !== 'undefined') {
+  (window as any).__SMART_STUDIO_LENS__ = magnifierLensController;
+}
