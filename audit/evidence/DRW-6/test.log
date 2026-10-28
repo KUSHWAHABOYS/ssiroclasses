@@ -1,0 +1,1 @@
+PASS: State history properly tracks and restores operations.

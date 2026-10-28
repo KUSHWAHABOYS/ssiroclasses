@@ -29,6 +29,9 @@ import { voiceWriteManager } from './voice/writeCommand';
 import { webMcpManager } from './ai/webMcp';
 // AUDIT-FIX: BUG-006 - Import and init central gesture watchdog
 import { gestureWatchdog } from './core/gestureWatchdog';
+import { deckLoader } from './presenter/loader';
+import { annotationStore } from './draw/annotationStore';
+import { keyVault } from './ai/keyVault';
 
 // PWA auto-updater
 if ('serviceWorker' in navigator) {
@@ -122,6 +125,21 @@ class SmartStudioApp {
 
     this.wireGesturesAndShortcuts();
     this.wireToastSystem();
+
+    // AUDIT: Expose test globals for automated Playwright E2E verification
+    const w = window as any;
+    w.__SMART_STUDIO_STORE__ = store;
+    w.__SMART_STUDIO_SLIDE_VIEW__ = slideView;
+    w.__SMART_STUDIO_LOADER__ = deckLoader;
+    w.__SMART_STUDIO_SETTINGS_PANEL__ = settingsPanel;
+    w.__SMART_STUDIO_TOOLBAR__ = toolbar;
+    w.__SMART_STUDIO_ANNOTATION_STORE__ = annotationStore;
+    w.__SMART_STUDIO_BLACKBOARD__ = blackboardStudio;
+    w.__SMART_STUDIO_ZOOM__ = zoomController;
+    w.__SMART_STUDIO_MEDIA_MANAGER__ = overlayManager;
+    w.__SMART_STUDIO_KEY_VAULT__ = keyVault;
+    w.__SMART_STUDIO_MIC__ = micController;
+    w.__SMART_STUDIO_DRAW_ENGINE__ = drawingEngine;
 
     console.log('✅ Smart Studio Presenter Pro ready.');
   }

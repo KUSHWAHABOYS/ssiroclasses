@@ -1,0 +1,1 @@
+PASS: Key vault uses AES-GCM non-extractable key; raw keys never stored in localStorage.

@@ -1,7 +1,7 @@
 export const i18n = {
   hi: {
     appTitle: 'स्मार्ट स्टूडियो प्रस्तुतकर्ता प्रो',
-    channelName: 'Decoding Indology',
+    channelName: 'SSIRO Classes',
     openDeck: 'डेक खोलें',
     board: 'ब्लैकबोर्ड',
     fullscreen: 'फुलस्क्रीन (Zen)',
@@ -40,7 +40,7 @@ export const i18n = {
   },
   en: {
     appTitle: 'Smart Studio Presenter Pro',
-    channelName: 'Decoding Indology',
+    channelName: 'SSIRO Classes',
     openDeck: 'Open Deck',
     board: 'Blackboard',
     fullscreen: 'Fullscreen (Zen)',

@@ -103,7 +103,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   geminiModel: 'gemini-1.5-flash',
   boardDefaultTheme: 'slate',
   clearMediaOnSlideChange: false,
-  channelName: 'Decoding Indology',
+  channelName: 'SSIRO Classes',
   // SSIRO-UPDATE: Welcome screen defaults
   showWelcomeScreen: true,
   welcomeLine1: 'Welcome to',

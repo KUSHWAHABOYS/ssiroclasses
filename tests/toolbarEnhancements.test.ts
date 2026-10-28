@@ -208,15 +208,14 @@ describe('Toolbar Enhancements Suite', () => {
       expect(resizeHandle?.classList.contains('toolbar-resize-handle')).toBe(true);
     });
 
-    it('enforces scale bounds between 60% and 160%', () => {
-      store.updateSettings({ toolbarScale: 0.4 }); // below 0.6
-      const s = store.getState().settings;
+    it('enforces scale bounds between 50% and 250% per TB-4', () => {
+      store.updateSettings({ toolbarScale: 0.3 }); // below 0.5
       // Should be clamped or toolbar should clamp when applying
       const tb = document.getElementById('toolbarContainer');
-      expect(parseFloat(tb?.style.getPropertyValue('--toolbar-scale') || '1')).toBeGreaterThanOrEqual(0.6);
+      expect(parseFloat(tb?.style.getPropertyValue('--toolbar-scale') || '1')).toBeGreaterThanOrEqual(0.5);
 
-      store.updateSettings({ toolbarScale: 2.0 }); // above 1.6
-      expect(parseFloat(tb?.style.getPropertyValue('--toolbar-scale') || '1')).toBeLessThanOrEqual(1.6);
+      store.updateSettings({ toolbarScale: 3.0 }); // above 2.5
+      expect(parseFloat(tb?.style.getPropertyValue('--toolbar-scale') || '1')).toBeLessThanOrEqual(2.5);
     });
 
     it('integrates scale slider and reset in SettingsPanel', () => {

@@ -1,0 +1,19 @@
+PASS: Layout report generated accurately:
+=== SMART STUDIO 4K LAYOUT REPORT ===
+• Timestamp: 2026-10-28T04:19:11.980Z
+• Viewport: 1280 × 720 px
+• Device Pixel Ratio (DPR): 1
+• Physical Canvas Resolution: 1280 × 720 px
+• Aspect Ratio: 1.778
+• Fullscreen Active: NO
+• Stage Rect: 1280 × 720 px (left: 0, top: 0)
+• Stage Gutters / Padding: 0 px (100% full-frame fit)
+• Fit Mode: FIT
+• Slide Rendered Area: 1280 × 720 px
+• Slide Offset: X=0 px, Y=0 px
+• Dominant Remainder Color: rgb(30, 41, 59)
+• Stream Remainder Fill: background
+• Stream Frame Lock: none
+• Margin Auto-Trim: OFF
+• Manual Crops: T=0%, B=0%, L=0%, R=0%
+• Status: ZERO GAP, ZERO PADDING, BROADCAST READY

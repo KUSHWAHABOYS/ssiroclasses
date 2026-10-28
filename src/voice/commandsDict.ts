@@ -243,12 +243,12 @@ export function matchCommandFromDict(phrase: string): { action: string; icon: st
   }
 
   // 2. Navigation Next
-  if (/^(अगली|आगे|अगला|next)(\s+(स्लाइड|slide|पर|चलो|badho|chalo))*$/i.test(norm) || /^(next\s*slide|आगे\s*चलो|अगली\s*स्लाइड)$/i.test(norm)) {
+  if (/^(अगली|आगे|अगला|next|aage)(\s+(स्लाइड|slide|पेज|page|पर|चलो|badho|बढ़ो|chalo))*$/i.test(norm) || /^(next\s*slide|आगे\s*चलो|अगली\s*स्लाइड|आगे\s*बढ़ो|aage\s*chalo)$/i.test(norm)) {
     return { action: 'next', icon: '➡️' };
   }
 
   // 3. Navigation Prev
-  if (/^(पिछली|पीछे|पिछला|back|previous)(\s+(स्लाइड|slide|पर|चलो|chalo))*$/i.test(norm) || /^(previous\s*slide|पीछे\s*चलो|पिछली\s*स्लाइड)$/i.test(norm)) {
+  if (/^(पिछली|पीछे|पिछला|back|previous|peeche)(\s+(स्लाइड|slide|पेज|page|पर|चलो|chalo))*$/i.test(norm) || /^(previous\s*slide|पीछे\s*चलो|पिछली\s*स्लाइड|peeche\s*chalo)$/i.test(norm)) {
     return { action: 'prev', icon: '⬅️' };
   }
 
@@ -277,11 +277,19 @@ export function matchCommandFromDict(phrase: string): { action: string; icon: st
     return { action: `goto:${digitMatch[1]}`, icon: '🎯' };
   }
 
-  // 6. Tools
+  // 6. Sizes (MIC-4) - Checked BEFORE generic pen tool so "मोटा पेन" / "पतला पेन" match sizes
+  if (/(मोटा|बड़ा|thicker|increase.*size|mota)/i.test(norm)) {
+    return { action: 'size_thicker', icon: '✏️▲' };
+  }
+  if (/(पतला|छोटा|thinner|decrease.*size|patla)/i.test(norm)) {
+    return { action: 'size_thinner', icon: '✏️▼' };
+  }
+
+  // 7. Tools
   if (/pen|पेन|कलम/i.test(norm)) {
     return { action: 'tool:pen', icon: '✏️' };
   }
-  if (/marker|मार्कर|हाईलाइटर|हाइलाइटर/i.test(norm)) {
+  if (/marker|मार्कर|हाईलाइटर|हाइलाइटर|highlighter/i.test(norm)) {
     return { action: 'tool:marker', icon: '🖍️' };
   }
   if (/eraser|इरेज़र|इरेजर|रबर/i.test(norm)) {
@@ -291,7 +299,7 @@ export function matchCommandFromDict(phrase: string): { action: string; icon: st
     return { action: 'tool:lens', icon: '🔍' };
   }
 
-  // 7. Board & Zoom & Fullscreen
+  // 8. Board & Zoom & Fullscreen
   if (/बोर्ड|blackboard|board|श्वेतपट्ट/i.test(norm)) {
     return { action: 'board:toggle', icon: '📋' };
   }
@@ -311,7 +319,7 @@ export function matchCommandFromDict(phrase: string): { action: string; icon: st
     return { action: 'spotlight:toggle', icon: '💡' };
   }
 
-  // 8. Colors
+  // 9. Colors
   if (/लाल|red/i.test(norm)) {
     return { action: 'color:#ef4444', icon: '🔴' };
   }
@@ -331,7 +339,7 @@ export function matchCommandFromDict(phrase: string): { action: string; icon: st
     return { action: 'color:#000000', icon: '⚫' };
   }
 
-  // 9. Actions
+  // 10. Actions
   if (/साफ़|साफ|clear/i.test(norm)) {
     return { action: 'action:clear', icon: '🗑️' };
   }

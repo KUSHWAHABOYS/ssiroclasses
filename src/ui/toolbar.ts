@@ -50,6 +50,10 @@ export class Toolbar {
     this.bindEvents();
     this.bindStore();
     this.restorePositionAndScale();
+
+    // AUDIT-FIX: BUG-012 - Clamp toolbar on resize and orientationchange (TB-4, ZEN-4)
+    window.addEventListener('resize', () => this.clampToViewport(), { passive: true });
+    window.addEventListener('orientationchange', () => this.clampToViewport(), { passive: true });
   }
 
   private renderToolbar(): void {
@@ -360,8 +364,8 @@ export class Toolbar {
     handle.addEventListener('lostpointercapture', () => stopResize());
   }
 
-  private applyScale(scale: number, saveToStore = false): void {
-    const clamped = Math.max(0.60, Math.min(1.60, Math.round(scale * 100) / 100));
+  public applyScale(scale: number, saveToStore = false): void {
+    const clamped = Math.max(0.50, Math.min(2.50, Math.round(scale * 100) / 100));
     this.toolbarScale = clamped;
     this.containerEl.style.setProperty('--toolbar-scale', String(clamped));
     this.containerEl.style.transform = 'scale(var(--toolbar-scale, 1))';
@@ -372,10 +376,14 @@ export class Toolbar {
     }
   }
 
-  private clampToViewport(): void {
+  public setScale(scale: number): void {
+    this.applyScale(scale, true);
+  }
+
+  public clampToViewport(): void {
     const rect = this.containerEl.getBoundingClientRect();
-    const maxLeft = window.innerWidth - rect.width - 8;
-    const maxTop = window.innerHeight - rect.height - 8;
+    const maxLeft = Math.max(8, window.innerWidth - rect.width - 8);
+    const maxTop = Math.max(8, window.innerHeight - rect.height - 8);
     let curLeft = rect.left;
     let curTop = rect.top;
 

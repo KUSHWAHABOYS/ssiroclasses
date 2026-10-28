@@ -186,6 +186,10 @@ export class SlideView {
 
   // AUDIT-FIX: BUG-001 - Removed loadInitialDeck per WEL-7
 
+  loadDeck(deck: any): void {
+    this.applyDeck(deck);
+  }
+
   applyDeck(deck: any): void {
     slideRenderer.clearCache();
     // WELCOME-FIX: Transition appState to 'deck' and dismiss welcome screen

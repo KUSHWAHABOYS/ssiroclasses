@@ -16,7 +16,7 @@ export default defineConfig({
     video: 'off'
   },
   webServer: {
-    command: 'npm run preview -- --port 5173',
+    command: 'npm run dev -- --port 5173',
     port: 5173,
     reuseExistingServer: true,
     timeout: 60000

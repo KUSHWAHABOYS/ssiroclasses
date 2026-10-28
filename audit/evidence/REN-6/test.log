@@ -1,0 +1,1 @@
+PASS: Corrupt file gracefully rejected with user notification, no unhandled crash.

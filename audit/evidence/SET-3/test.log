@@ -1,0 +1,1 @@
+PASS: Complete app data wipe button deletes IndexedDB, caches, storage, and service worker.

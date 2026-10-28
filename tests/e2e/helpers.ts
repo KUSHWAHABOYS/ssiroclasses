@@ -43,3 +43,47 @@ export async function getCanvasPixelColor(page: Page, canvasSelector: string, x:
     return { r: pixel[0], g: pixel[1], b: pixel[2], a: pixel[3] };
   }, { selector: canvasSelector, px: x, py: y });
 }
+
+export async function loadTestDeck(page: Page, totalPages = 2): Promise<void> {
+  await page.evaluate(async (numPages) => {
+    const pages = [];
+    for (let i = 1; i <= numPages; i++) {
+      const c = document.createElement('canvas');
+      c.width = 1920; c.height = 1080;
+      const ctx = c.getContext('2d')!;
+      ctx.fillStyle = i % 2 === 1 ? '#1e293b' : '#0f172a';
+      ctx.fillRect(0, 0, 1920, 1080);
+      ctx.fillStyle = '#f8fafc';
+      ctx.font = 'bold 64px sans-serif';
+      ctx.fillText(`Slide ${i}`, 100, 200);
+
+      pages.push({
+        pageNumber: i,
+        width: 1920,
+        height: 1080,
+        sourceType: 'canvas',
+        renderData: c
+      });
+    }
+
+    const deck = {
+      id: 'test-deck',
+      name: 'Test Presentation Deck',
+      title: 'Test Presentation Deck',
+      totalPages: numPages,
+      pages
+    };
+
+    const w = window as any;
+    if (w.__SMART_STUDIO_SLIDE_VIEW__) {
+      await w.__SMART_STUDIO_SLIDE_VIEW__.loadDeck(deck);
+    }
+    if (w.__SMART_STUDIO_STORE__) {
+      w.__SMART_STUDIO_STORE__.setState({ appState: 'deck' });
+    }
+    document.body.classList.remove('state-welcome', 'state-board');
+    document.body.classList.add('state-deck');
+    document.getElementById('welcomeScreen')?.classList.add('hidden');
+  }, totalPages);
+  await page.waitForTimeout(400);
+}

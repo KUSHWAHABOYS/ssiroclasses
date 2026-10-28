@@ -1,0 +1,1 @@
+PASS: With no key configured, exactly zero AI requests are made across the app.

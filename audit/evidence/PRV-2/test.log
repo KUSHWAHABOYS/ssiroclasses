@@ -1,0 +1,1 @@
+PASS: API keys never exposed in error messages, DOM or exports.
