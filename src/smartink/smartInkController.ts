@@ -74,7 +74,8 @@ export class SmartInkController {
     window.clearTimeout(this.holdTimer);
     this.holdTimer = window.setTimeout(() => {
       this.holdTriggered = true;
-      this.showHoldRing(screenX, screenY);
+      // AUDIT-FIX: User reported unwanted circle error when drawing lines. Disable visual hold ring DOM injection.
+      this.removeHoldRing();
     }, 500); // 0.5s hold-to-snap
   }
 
@@ -85,6 +86,11 @@ export class SmartInkController {
       this.removeHoldRing();
       this.holdTriggered = false;
     }
+  }
+
+  onPointerUp(): void {
+    window.clearTimeout(this.holdTimer);
+    this.removeHoldRing();
   }
 
   // --- Main Stroke Completion Hook ---
@@ -679,28 +685,18 @@ export class SmartInkController {
   }
 
   private showHoldRing(screenX: number, screenY: number): void {
+    // AUDIT-FIX: Permanently disable visual circle ring overlay
     this.removeHoldRing();
-    const ring = document.createElement('div');
-    ring.id = 'smartInkHoldRing';
-    ring.style.position = 'fixed';
-    ring.style.pointerEvents = 'none';
-    ring.style.zIndex = '9999';
-    ring.style.left = `${screenX - 22}px`;
-    ring.style.top = `${screenY - 22}px`;
-    ring.style.width = '44px';
-    ring.style.height = '44px';
-    ring.style.borderRadius = '50%';
-    ring.style.border = '3px solid var(--primary-accent, #38bdf8)';
-    ring.style.boxShadow = '0 0 15px rgba(56, 189, 248, 0.7)';
-    ring.style.animation = 'pulse-ring 0.4s ease-out infinite';
-    document.body.appendChild(ring);
-    this.holdRingEl = ring;
   }
 
-  private removeHoldRing(): void {
+  removeHoldRing(): void {
     if (this.holdRingEl) {
       this.holdRingEl.remove();
       this.holdRingEl = null;
+    }
+    const existing = document.getElementById('smartInkHoldRing');
+    if (existing) {
+      existing.remove();
     }
   }
 }

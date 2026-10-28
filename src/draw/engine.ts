@@ -257,6 +257,7 @@ export class DrawingEngine {
     this.activePointerId = null;
     // AUDIT-FIX: BUG-006 - Unregister gesture from watchdog on pointerup
     gestureWatchdog.unregisterGesture('drawing');
+    smartInkController.onPointerUp();
 
     try {
       layerManager.annotationCanvas.releasePointerCapture(e.pointerId);
@@ -373,6 +374,7 @@ export class DrawingEngine {
     this.startPoint = null;
     // AUDIT-FIX: BUG-006 - Unregister gesture from watchdog on cancel
     gestureWatchdog.unregisterGesture('drawing');
+    smartInkController.onPointerUp();
     layerManager.previewCanvas.style.opacity = '1';
     layerManager.previewCanvas.style.mixBlendMode = 'normal';
     layerManager.previewCtx.clearRect(0, 0, layerManager.previewCtx.canvas.width, layerManager.previewCtx.canvas.height);
