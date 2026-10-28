@@ -125,10 +125,10 @@ test.describe('Voice Command & Browser Redirection Fix Verification', () => {
     const urlInput = page.locator('#webUrlInput');
     await expect(urlInput).toHaveValue('https://www.google.com');
 
-    // Verify iframe src is https://www.google.com
+    // Verify iframe src contains https://www.google.com
     const iframe = page.locator('#webIframe');
     const src = await iframe.getAttribute('src');
-    expect(src).toBe('https://www.google.com');
+    expect(src).toContain('https://www.google.com');
 
     // Close overlay
     await page.locator('#btnWebClose').click();

@@ -14,19 +14,31 @@ export class WebOverlay {
   }
 
   private render(): void {
+    const isElectron = typeof window !== 'undefined' && (
+      !!(window as any).electron || 
+      !!(window as any).process?.versions?.electron ||
+      navigator.userAgent.toLowerCase().includes('electron')
+    );
+
     this.overlayEl.innerHTML = `
       <div class="web-overlay-bar">
         <input type="text" class="web-overlay-input" id="webUrlInput" placeholder="URL या खोज दर्ज करें (e.g. google.com or topic)..." value="https://www.google.com" />
         <button class="header-btn" id="btnWebGo">खोजें / Go</button>
+        <button class="header-btn" id="btnOpenNewWindow" title="Open in New Tab (नई विंडो में खोलें)" style="background: rgba(255,255,255,0.1); font-size:12px; margin-left:auto;">
+          ⛶ New Tab
+        </button>
         <button class="web-overlay-close" id="btnWebClose" title="Close Browser (Return to Slide)">✕</button>
       </div>
-      <div class="web-frame-container">
-        <iframe id="webIframe" class="web-frame" src="" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
+      <div class="web-frame-container" id="webFrameContainer">
+        ${isElectron
+          ? `<webview id="webIframe" class="web-frame" src="about:blank" style="width:100%;height:100%;border:none;"></webview>`
+          : `<iframe id="webIframe" class="web-frame" src="about:blank" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"></iframe>`
+        }
         <div id="webFallbackCard" class="web-fallback-card hidden">
-          <h3>यह साइट इस बॉक्स में सीधे नहीं खुल सकती</h3>
+          <h3>यह साइट इस बॉक्स में सीधे नहीं खुल सकी</h3>
           <p>सुरक्षा नीतियों (X-Frame-Options) के कारण गूगल या बाहरी साइटें इन-ऐप फ़्रेम में अवरुद्ध हैं।</p>
           <p>कृपया इसे नई विंडो में खोलें और OBS / StreamYard में Window Capture का उपयोग करें।</p>
-          <button class="header-btn" id="btnOpenNewWindow" style="background: var(--primary-accent); color: #000; font-weight: 700; margin-top: 12px;">
+          <button class="header-btn" id="btnCardOpenNewWindow" style="background: var(--primary-accent); color: #000; font-weight: 700; margin-top: 12px;">
             नई विंडो में खोलें (Open in New Tab)
           </button>
         </div>
@@ -34,7 +46,7 @@ export class WebOverlay {
     `;
 
     this.inputUrl = this.overlayEl.querySelector('#webUrlInput') as HTMLInputElement;
-    this.frameEl = this.overlayEl.querySelector('#webIframe') as HTMLIFrameElement;
+    this.frameEl = this.overlayEl.querySelector('#webIframe') as any;
     this.fallbackEl = this.overlayEl.querySelector('#webFallbackCard') as HTMLElement;
   }
 
@@ -61,44 +73,45 @@ export class WebOverlay {
       window.open(url, '_blank');
     });
 
+    const btnCardNewWin = this.overlayEl.querySelector('#btnCardOpenNewWindow');
+    btnCardNewWin?.addEventListener('click', () => {
+      const url = this.getNormalizedUrl(this.inputUrl.value);
+      window.open(url, '_blank');
+    });
+
     window.addEventListener('toggle-web-overlay', () => {
       this.toggle();
     });
   }
 
   private navigate(): void {
-    let target = this.inputUrl.value.trim();
-    if (!target) return;
+    let raw = this.inputUrl.value.trim();
+    if (!raw) raw = 'https://www.google.com';
 
-    // If not a full URL or looks like search terms, direct to Google
+    let target = raw;
+
+    // Handle search query vs full URL
     if (!/^https?:\/\//i.test(target)) {
       if (target.includes('.') && !target.includes(' ')) {
         target = `https://${target}`;
       } else {
-        // Search term
-        const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(target)}`;
-        // Google forbids iframes, so immediately show fallback or open in new window
-        this.fallbackEl.classList.remove('hidden');
-        window.open(searchUrl, '_blank');
-        return;
+        // Direct Google search query with embed-enabled igu=1
+        target = `https://www.google.com/search?igu=1&q=${encodeURIComponent(target)}`;
       }
     }
 
-    this.fallbackEl.classList.add('hidden');
-    this.frameEl.src = target;
+    // Embed URL routing:
+    // 1. Google uses official igu=1 parameter which returns X-Frame-Options: null
+    // 2. Other external domains route via local proxy to strip X-Frame-Options and CSP headers
+    let embedSrc = target;
+    if (target.includes('google.com')) {
+      embedSrc = target + (target.includes('?') ? '&' : '?') + 'igu=1';
+    } else {
+      embedSrc = `/api/proxy?url=${encodeURIComponent(target)}`;
+    }
 
-    // Detect iframe load failure after 3 seconds per B10.1
-    window.clearTimeout(this.timeoutTimer);
-    this.timeoutTimer = window.setTimeout(() => {
-      try {
-        // Test cross-origin security block
-        if (!this.frameEl.contentDocument || this.frameEl.contentDocument.body.innerHTML === '') {
-          this.fallbackEl.classList.remove('hidden');
-        }
-      } catch {
-        // Cross-origin restriction is normal, but if blank error page is shown:
-      }
-    }, 3000);
+    this.fallbackEl.classList.add('hidden');
+    this.frameEl.src = embedSrc;
   }
 
   private getNormalizedUrl(raw: string): string {
@@ -114,8 +127,8 @@ export class WebOverlay {
     if (!this.inputUrl.value) {
       this.inputUrl.value = 'https://www.google.com';
     }
-    if (!this.frameEl.src || this.frameEl.src === window.location.href || this.frameEl.src.endsWith('/')) {
-      this.frameEl.src = this.inputUrl.value || 'https://www.google.com';
+    if (!this.frameEl.src || this.frameEl.src === 'about:blank' || this.frameEl.src === window.location.href || this.frameEl.src.endsWith('/')) {
+      this.navigate();
     }
   }
 

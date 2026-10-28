@@ -31,7 +31,7 @@
   transition: opacity var(--trans-normal) !important;
 }
 
-/* Horizontal scroll wrapper for small screens */
+/* Horizontal scroll wrapper with Direct Touch/Mouse Pan & Zero Scrollbars */
 .toolbar-content {
   display: flex;
   flex-direction: row;
@@ -40,27 +40,29 @@
   overflow-x: auto;
   overflow-y: hidden;
   white-space: nowrap;
-  scrollbar-width: thin;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x;
   max-width: 100%;
-  padding-bottom: 1px;
+  padding-bottom: 0px;
+  cursor: grab;
+}
+
+.toolbar-content.is-panning {
+  cursor: grabbing;
+  user-select: none;
 }
 
 .toolbar-content::-webkit-scrollbar {
-  height: 4px;
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
 }
 
-.toolbar-content::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 4px;
-}
-
+.toolbar-content::-webkit-scrollbar-track,
 .toolbar-content::-webkit-scrollbar-thumb {
-  background: rgba(245, 158, 11, 0.35);
-  border-radius: 4px;
-}
-
-.toolbar-content::-webkit-scrollbar-thumb:hover {
-  background: rgba(245, 158, 11, 0.6);
+  display: none !important;
 }
 
 /* Ghost mode: auto-dim */
@@ -125,28 +127,9 @@ body.hide-cursor, body.hide-cursor * {
   background: rgba(255, 255, 255, 0.08);
 }
 
-/* Resize Handle (Touch target >= 44px) */
+/* Resize Handle hidden per user requirement to eliminate bottom bar clutter */
 .toolbar-resize-handle {
-  width: 44px;
-  height: var(--touch-target-size);
-  min-width: 44px;
-  min-height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: nwse-resize;
-  color: var(--text-muted);
-  border-radius: 8px;
-  touch-action: none;
-  flex-shrink: 0;
-  transition: color var(--trans-fast), background var(--trans-fast);
-  user-select: none;
-}
-
-.toolbar-resize-handle:hover,
-.toolbar-resize-handle:active {
-  color: var(--primary-accent);
-  background: rgba(245, 158, 11, 0.15);
+  display: none !important;
 }
 
 /* Toolbar Buttons */

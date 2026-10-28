@@ -11,6 +11,7 @@ import { gestureWatchdog } from '../core/gestureWatchdog';
 
 export class Toolbar {
   private containerEl!: HTMLElement;
+  private contentEl!: HTMLElement;
   private tier1El!: HTMLElement;
   private tier2El!: HTMLElement;
   private dragHandleEl!: HTMLElement;
@@ -46,6 +47,7 @@ export class Toolbar {
     this.renderToolbar();
     this.bindDragging();
     this.bindResizing();
+    this.bindContentPanning();
     this.bindGhostMode();
     this.bindEvents();
     this.bindStore();
@@ -235,6 +237,7 @@ export class Toolbar {
       </div>
     `;
 
+    this.contentEl = document.getElementById('toolbarContent')!;
     this.tier1El = document.getElementById('toolbarTier1')!;
     this.tier2El = document.getElementById('toolbarTier2')!;
     this.dragHandleEl = document.getElementById('dragHandle')!;
@@ -362,6 +365,93 @@ export class Toolbar {
     handle.addEventListener('pointerup', stopResize);
     handle.addEventListener('pointercancel', stopResize);
     handle.addEventListener('lostpointercapture', () => stopResize());
+  }
+
+  private bindContentPanning(): void {
+    const content = this.contentEl;
+    if (!content) return;
+
+    let isPointerDown = false;
+    let isPanning = false;
+    let startX = 0;
+    let scrollStart = 0;
+    let lastX = 0;
+    let lastTime = 0;
+    let velocity = 0;
+    let animId = 0;
+
+    content.addEventListener('pointerdown', (e: PointerEvent) => {
+      // Don't initiate toolbar panning if clicking drag handle
+      if ((e.target as HTMLElement).closest('#dragHandle, .drag-handle')) {
+        return;
+      }
+      cancelAnimationFrame(animId);
+      isPointerDown = true;
+      isPanning = false;
+      startX = e.clientX;
+      lastX = e.clientX;
+      lastTime = performance.now();
+      scrollStart = content.scrollLeft;
+      velocity = 0;
+    });
+
+    window.addEventListener('pointermove', (e: PointerEvent) => {
+      if (!isPointerDown) return;
+      const dx = e.clientX - startX;
+
+      // 6px movement threshold distinguishes tap/click from pan
+      if (!isPanning && Math.abs(dx) > 6) {
+        isPanning = true;
+        content.classList.add('is-panning');
+      }
+
+      if (isPanning) {
+        content.scrollLeft = scrollStart - (e.clientX - startX);
+        const now = performance.now();
+        const dt = now - lastTime;
+        if (dt > 10) {
+          velocity = (e.clientX - lastX) / dt;
+          lastX = e.clientX;
+          lastTime = now;
+        }
+      }
+    });
+
+    const stopPan = () => {
+      if (!isPointerDown) return;
+      isPointerDown = false;
+
+      if (isPanning) {
+        setTimeout(() => {
+          content.classList.remove('is-panning');
+        }, 50);
+
+        // Smooth momentum glide
+        if (Math.abs(velocity) > 0.08) {
+          let currVel = velocity * 14;
+          const glide = () => {
+            if (Math.abs(currVel) > 0.4) {
+              content.scrollLeft -= currVel;
+              currVel *= 0.92;
+              animId = requestAnimationFrame(glide);
+            }
+          };
+          animId = requestAnimationFrame(glide);
+        }
+      }
+    };
+
+    window.addEventListener('pointerup', stopPan);
+    window.addEventListener('pointercancel', stopPan);
+
+    // Capture-phase click suppressor: If user was panning, prevent tool button click!
+    content.addEventListener('click', (e: MouseEvent) => {
+      if (isPanning) {
+        e.stopPropagation();
+        e.preventDefault();
+        isPanning = false;
+      }
+    }, true);
   }
 
   public applyScale(scale: number, saveToStore = false): void {
