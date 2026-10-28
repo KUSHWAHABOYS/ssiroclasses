@@ -67,6 +67,16 @@ export class Toolbar {
             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="5" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="19" r="1"/></svg>
           </div>
 
+          <!-- AUTO-CORRECTION: Dedicated Auto-Straighten Toggle near Select & Pen -->
+          <button class="tool-btn toggle-btn" id="btnToolAutoStraighten" title="Auto-Straighten [OFF]">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 4l6 6L9 21H3v-6L14 4z"/>
+              <line x1="2" y1="22" x2="22" y2="22" stroke-width="2.5"/>
+              <path d="m6 15 3 3"/>
+            </svg>
+            <span class="btn-label">Auto</span>
+          </button>
+
           <button class="tool-btn active" id="btnToolSelect" data-tool="select" title="Select / Move Media & Shapes">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 3 7 18 3-7 7-3L3 3z"/></svg>
             <span class="btn-label">Select</span>
@@ -758,6 +768,31 @@ export class Toolbar {
       this.toggleTier2();
     });
 
+    // Auto-Straighten toggle
+    const btnStraighten = document.getElementById('btnToolAutoStraighten');
+    if (btnStraighten) {
+      const active = store.getState().isAutoStraightenEnabled;
+      btnStraighten.classList.toggle('active', active);
+      btnStraighten.title = active ? 'Auto-Straighten [ON]' : 'Auto-Straighten [OFF]';
+    }
+    btnStraighten?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const active = !store.getState().isAutoStraightenEnabled;
+      store.setState({ isAutoStraightenEnabled: active });
+      const btn = e.currentTarget as HTMLElement;
+      btn.classList.toggle('active', active);
+      btn.title = active ? 'Auto-Straighten [ON]' : 'Auto-Straighten [OFF]';
+      window.dispatchEvent(
+        new CustomEvent('app-toast', {
+          detail: {
+            message: active
+              ? '✨ स्वतः सीधी रेखा चालू (Auto-Straighten [ON])'
+              : 'स्वतः सीधी रेखा बंद (Auto-Straighten [OFF])'
+          }
+        })
+      );
+    });
+
     // Handwriting ✍ ➔ Aa toggle
     const btnHw = document.getElementById('btnToolHandwriting');
     if (btnHw) {
@@ -833,6 +868,17 @@ export class Toolbar {
         swatches.forEach((sw) => {
           sw.classList.toggle('active', sw.getAttribute('data-color') === state.activeColor);
         });
+      }
+
+      // Auto-Straighten toggle sync
+      if (state.isAutoStraightenEnabled !== prev.isAutoStraightenEnabled) {
+        const btnStraighten = document.getElementById('btnToolAutoStraighten');
+        if (btnStraighten) {
+          btnStraighten.classList.toggle('active', state.isAutoStraightenEnabled);
+          btnStraighten.title = state.isAutoStraightenEnabled
+            ? 'Auto-Straighten [ON]'
+            : 'Auto-Straighten [OFF]';
+        }
       }
 
       // Tier 2 collapse / expand

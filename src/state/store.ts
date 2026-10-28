@@ -36,6 +36,7 @@ export interface AppState {
   activeShape: ShapeType;
   activeColor: string;
   isHandwritingEnabled: boolean;
+  isAutoStraightenEnabled: boolean;
   isTier2Expanded: boolean;
   isToolbarVisibleInZen: boolean;
   isWebOverlayOpen: boolean;
@@ -74,6 +75,7 @@ class Store {
       isTier2Expanded: false,
       // ECON: Smart Text (✍→Aa) defaults to OFF at every launch per Part B
       isHandwritingEnabled: false,
+      isAutoStraightenEnabled: false,
       isToolbarVisibleInZen: true,
       isWebOverlayOpen: false,
       isGeminiOpen: false,

@@ -166,6 +166,26 @@ body.hide-cursor, body.hide-cursor * {
   box-shadow: 0 0 10px rgba(245, 158, 11, 0.25);
 }
 
+/* Auto-Straighten toggle visual states */
+#btnToolAutoStraighten {
+  transition: all var(--trans-fast);
+}
+
+#btnToolAutoStraighten.active {
+  background: rgba(245, 158, 11, 0.22);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.55);
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.3);
+}
+
+#btnToolAutoStraighten:not(.active) {
+  opacity: 0.68;
+}
+
+#btnToolAutoStraighten:not(.active):hover {
+  opacity: 1;
+}
+
 .tool-btn svg {
   width: 24px;
   height: 24px;

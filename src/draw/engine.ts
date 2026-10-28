@@ -6,6 +6,7 @@ import { shortcutManager } from '../core/shortcuts';
 import { smartInkController } from '../smartink/smartInkController';
 import { voiceWriteManager } from '../voice/writeCommand';
 import { shapeSelector } from './shapeSelector';
+import { detectAndStraightenLine } from './autoStraighten';
 // AUDIT-FIX: BUG-006 - Central gesture watchdog integration
 import { gestureWatchdog } from '../core/gestureWatchdog';
 
@@ -377,20 +378,54 @@ export class DrawingEngine {
     } else if (state.activeTool === 'pen' || state.activeTool === 'highlighter') {
       if (this.currentStrokePoints.length > 0) {
         const isHighlighter = state.activeTool === 'highlighter';
+        let strokePoints = [...this.currentStrokePoints];
+        let shapeType: any = undefined;
+        let startPoint: Point | undefined = undefined;
+        let endPoint: Point | undefined = undefined;
+        let isUnderline: boolean | undefined = undefined;
+        let strokeBox: { x: number; y: number; width: number; height: number } | undefined = undefined;
+
+        // AUTO-STRAIGHTEN: If user toggled Auto-Straighten ON, snap intended lines & underlines
+        if (state.isAutoStraightenEnabled) {
+          const straight = detectAndStraightenLine(strokePoints, state.activeTool, state.isBoardMode);
+          if (straight) {
+            shapeType = 'line';
+            startPoint = straight.start;
+            endPoint = straight.end;
+            strokePoints = [straight.start, straight.end];
+            isUnderline = straight.isUnderline;
+            strokeBox = {
+              x: Math.min(straight.start.x, straight.end.x),
+              y: Math.min(straight.start.y, straight.end.y),
+              width: Math.abs(straight.end.x - straight.start.x),
+              height: Math.max(1, Math.abs(straight.end.y - straight.start.y))
+            };
+          }
+        }
+
+        const defaultHlAlpha = state.isBoardMode ? 0.35 : (state.highlighterAlpha || 0.32);
+        const defaultHlBlend = state.isBoardMode ? 'screen' : 'multiply';
+
         const stroke: Stroke = {
           id: `stroke-${Date.now()}-${Math.random()}`,
           tool: state.activeTool,
           color: state.activeColor,
           size: isHighlighter ? state.highlighterWidth : state.penSize,
-          alpha: isHighlighter ? state.highlighterAlpha : state.penAlpha,
-          points: [...this.currentStrokePoints],
+          alpha: isHighlighter ? defaultHlAlpha : state.penAlpha,
+          blendMode: isHighlighter ? defaultHlBlend : undefined,
+          points: strokePoints,
+          shapeType,
+          startPoint,
+          endPoint,
+          isUnderline,
+          box: strokeBox,
           timestamp: Date.now()
         };
 
         annotationStore.addStroke(stroke);
 
         // ECON: Notify Smart Ink for pen or highlighter when smartInkEnabled is true (pure code features work offline)
-        if (state.settings.smartInkEnabled && (state.activeTool === 'pen' || state.activeTool === 'highlighter')) {
+        if (state.settings.smartInkEnabled && !stroke.shapeType && (state.activeTool === 'pen' || state.activeTool === 'highlighter')) {
           for (const cb of this.onStrokeFinishedCallbacks) {
             cb(stroke);
           }
