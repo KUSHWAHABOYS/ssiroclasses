@@ -69,6 +69,27 @@ export class SlideView {
         connectModal.show();
       });
     });
+
+    // AUDIT-FIX: BUG-008 - Page counter click jump per NAV-1
+    this.pageCounterEl?.addEventListener('click', () => {
+      const state = store.getState();
+      if (state.appState !== 'deck' || !state.currentDeck) return;
+      const input = window.prompt(`स्लाइड पर जाएं (Go to Slide 1–${state.totalPages}):`, String(state.currentPage));
+      if (input !== null) {
+        const pageNum = parseInt(input.trim(), 10);
+        if (!isNaN(pageNum) && pageNum >= 1 && pageNum <= state.totalPages) {
+          navigationController.goToPage(pageNum);
+        } else if (!isNaN(pageNum)) {
+          window.dispatchEvent(new CustomEvent('app-toast', {
+            detail: { message: `अमान्य स्लाइड संख्या (Slide 1–${state.totalPages})`, isError: true }
+          }));
+        }
+      }
+    });
+    if (this.pageCounterEl) {
+      this.pageCounterEl.style.cursor = 'pointer';
+      this.pageCounterEl.title = 'स्लाइड पर सीधे जाने के लिए क्लिक करें (Click to jump to slide)';
+    }
   }
 
   private bindChevronsAndEdges(): void {
@@ -84,6 +105,21 @@ export class SlideView {
     btnRight?.addEventListener('click', (e) => {
       e.stopPropagation();
       navigationController.nextPage();
+    });
+
+    // AUDIT-FIX: BUG-008 - Edge clicks for mouse navigation while in select/read mode per NAV-1
+    const stage = document.getElementById('stage');
+    stage?.addEventListener('click', (e: MouseEvent) => {
+      const state = store.getState();
+      if (state.appState !== 'deck' || state.activeTool !== 'select') return;
+      if ((e.target as HTMLElement).closest('.toolbar-container, .header, .chevron-btn, .popover, .media-window, .gemini-panel, .settings-modal')) return;
+      const x = e.clientX;
+      const edgeThreshold = 48; // 48px from screen edge
+      if (x <= edgeThreshold) {
+        navigationController.prevPage();
+      } else if (x >= window.innerWidth - edgeThreshold) {
+        navigationController.nextPage();
+      }
     });
   }
 
@@ -148,11 +184,7 @@ export class SlideView {
     alert(msg);
   }
 
-  // WELCOME-FIX: Developer helper only (called from Settings -> Advanced, never on startup)
-  loadInitialDeck(): void {
-    const deck = deckLoader.createSampleDeck();
-    this.applyDeck(deck);
-  }
+  // AUDIT-FIX: BUG-001 - Removed loadInitialDeck per WEL-7
 
   applyDeck(deck: any): void {
     slideRenderer.clearCache();

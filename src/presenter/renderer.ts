@@ -168,10 +168,29 @@ export class SlideRenderer {
       offCtx.drawImage(page.renderData, 0, 0, offscreenW, offscreenH);
     }
 
+    // AUDIT-FIX: BUG-010 - Apply manual crop or auto-trim if enabled (ZEN-5)
+    const { autoTrimMargins, manualCropTop = 0, manualCropBottom = 0, manualCropLeft = 0, manualCropRight = 0 } = store.getState().settings;
+    let finalCanvas = offscreen;
+    if (manualCropTop > 0 || manualCropBottom > 0 || manualCropLeft > 0 || manualCropRight > 0) {
+      const cropL = Math.floor((manualCropLeft / 100) * offscreenW);
+      const cropR = Math.floor((manualCropRight / 100) * offscreenW);
+      const cropT = Math.floor((manualCropTop / 100) * offscreenH);
+      const cropB = Math.floor((manualCropBottom / 100) * offscreenH);
+      const croppedW = Math.max(10, offscreenW - cropL - cropR);
+      const croppedH = Math.max(10, offscreenH - cropT - cropB);
+
+      const croppedCanvas = document.createElement('canvas');
+      croppedCanvas.width = croppedW;
+      croppedCanvas.height = croppedH;
+      const cropCtx = croppedCanvas.getContext('2d')!;
+      cropCtx.drawImage(offscreen, cropL, cropT, croppedW, croppedH, 0, 0, croppedW, croppedH);
+      finalCanvas = croppedCanvas;
+    }
+
     // Sample 4 corners to extract dominant edge background color
     const dominantColor = this.sampleCornerColor(offCtx, offscreenW, offscreenH);
 
-    const bitmap = await createImageBitmap(offscreen);
+    const bitmap = await createImageBitmap(finalCanvas);
     const metrics: RenderedSlideMetrics = {
       destX: Math.round(destX),
       destY: Math.round(destY),
@@ -214,9 +233,24 @@ export class SlideRenderer {
     const ctx = layerManager.slideCtx;
     ctx.save();
 
-    // Fill surrounding area with the sampled dominant edge color so no black bars appear!
-    ctx.fillStyle = m.dominantColor;
-    ctx.fillRect(0, 0, viewW, viewH);
+    // AUDIT-FIX: BUG-010 - Support remainder fill modes: background, blur, black (ZEN-6)
+    const { streamRemainderMode } = store.getState().settings;
+    if (streamRemainderMode === 'black') {
+      ctx.fillStyle = '#000000';
+      ctx.fillRect(0, 0, viewW, viewH);
+    } else if (streamRemainderMode === 'blur') {
+      ctx.save();
+      ctx.filter = 'blur(16px)';
+      ctx.drawImage(bitmap, 0, 0, viewW, viewH);
+      ctx.filter = 'none';
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
+      ctx.fillRect(0, 0, viewW, viewH);
+      ctx.restore();
+    } else {
+      // 'background' (default) - Fill surrounding area with sampled dominant edge color
+      ctx.fillStyle = m.dominantColor;
+      ctx.fillRect(0, 0, viewW, viewH);
+    }
 
     // Blit supersampled bitmap with high quality
     ctx.imageSmoothingEnabled = true;

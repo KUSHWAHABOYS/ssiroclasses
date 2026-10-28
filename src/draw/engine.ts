@@ -6,6 +6,8 @@ import { shortcutManager } from '../core/shortcuts';
 import { smartInkController } from '../smartink/smartInkController';
 import { voiceWriteManager } from '../voice/writeCommand';
 import { shapeSelector } from './shapeSelector';
+// AUDIT-FIX: BUG-006 - Central gesture watchdog integration
+import { gestureWatchdog } from '../core/gestureWatchdog';
 
 export class DrawingEngine {
   private isDrawing = false;
@@ -25,6 +27,12 @@ export class DrawingEngine {
     canvas.addEventListener('pointermove', (e) => this.handlePointerMove(e));
     canvas.addEventListener('pointerup', (e) => this.handlePointerUp(e));
     canvas.addEventListener('pointercancel', (e) => this.handlePointerCancel(e));
+    // AUDIT-FIX: BUG-006 - lostpointercapture & contextmenu gesture cleanup
+    canvas.addEventListener('lostpointercapture', () => this.cancelCurrentStroke());
+    canvas.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      this.cancelCurrentStroke();
+    });
 
     // Handle cancellation during slide change or overlay opening
     window.addEventListener('cancel-in-progress-drawing', () => {
@@ -34,6 +42,10 @@ export class DrawingEngine {
     store.subscribe((state, prev) => {
       if (state.activeTool !== 'select' && prev.activeTool === 'select') {
         shapeSelector.deselect();
+      }
+      // AUDIT-FIX: BUG-006 - Tool switch immediately cancels any active drawing stroke
+      if (state.activeTool !== prev.activeTool && this.isDrawing) {
+        this.cancelCurrentStroke();
       }
     });
 
@@ -116,6 +128,8 @@ export class DrawingEngine {
     this.isDrawing = true;
     this.activePointerId = e.pointerId;
     layerManager.annotationCanvas.setPointerCapture(e.pointerId);
+    // AUDIT-FIX: BUG-006 - Register drawing gesture with watchdog
+    gestureWatchdog.registerGesture('drawing', () => this.cancelCurrentStroke(), e.pointerId);
 
     // SSIRO-UPDATE: Use toSlideCoords for zoom coordinate inversion
     const coords = layerManager.toSlideCoords(e.clientX, e.clientY);
@@ -186,6 +200,8 @@ export class DrawingEngine {
     }
 
     if (e.pointerId !== this.activePointerId) return;
+    // AUDIT-FIX: BUG-006 - Record pointer activity to prevent stuck watchdog timeout
+    gestureWatchdog.recordActivity('drawing');
 
     // Use coalesced events for smooth curves on 4K boards
     const events: PointerEvent[] = (e.getCoalescedEvents ? e.getCoalescedEvents() : [e]) as PointerEvent[];
@@ -239,6 +255,8 @@ export class DrawingEngine {
     if (!this.isDrawing || e.pointerId !== this.activePointerId) return;
     this.isDrawing = false;
     this.activePointerId = null;
+    // AUDIT-FIX: BUG-006 - Unregister gesture from watchdog on pointerup
+    gestureWatchdog.unregisterGesture('drawing');
 
     try {
       layerManager.annotationCanvas.releasePointerCapture(e.pointerId);
@@ -353,6 +371,8 @@ export class DrawingEngine {
     this.activePointerId = null;
     this.currentStrokePoints = [];
     this.startPoint = null;
+    // AUDIT-FIX: BUG-006 - Unregister gesture from watchdog on cancel
+    gestureWatchdog.unregisterGesture('drawing');
     layerManager.previewCanvas.style.opacity = '1';
     layerManager.previewCanvas.style.mixBlendMode = 'normal';
     layerManager.previewCtx.clearRect(0, 0, layerManager.previewCtx.canvas.width, layerManager.previewCtx.canvas.height);

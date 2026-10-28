@@ -27,6 +27,8 @@ import { smartInkController } from './smartink/smartInkController';
 import { voiceWriteManager } from './voice/writeCommand';
 // ECON: Import optional WebMCP agent manager
 import { webMcpManager } from './ai/webMcp';
+// AUDIT-FIX: BUG-006 - Import and init central gesture watchdog
+import { gestureWatchdog } from './core/gestureWatchdog';
 
 // PWA auto-updater
 if ('serviceWorker' in navigator) {
@@ -77,6 +79,8 @@ class SmartStudioApp {
     welcomeScreen.show();
 
     // Initialize core layers and presentation view
+    // AUDIT-FIX: BUG-006 - Init gesture watchdog
+    gestureWatchdog.init();
     layerManager.updateDimensions();
     slideView.init();
     drawingEngine.init();

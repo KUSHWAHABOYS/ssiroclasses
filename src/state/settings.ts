@@ -26,6 +26,8 @@ export interface AppSettings {
   welcomeLine1: string;
   welcomeLine2: string;
   welcomeDuration: number;
+  // AUDIT-FIX: BUG-007 - Custom branding logo per WEL-6
+  customLogo?: string;
   // SSIRO-UPDATE: Magnifier and Zoom settings
   magnifierSize: number;
   magnifierZoom: number;
@@ -65,6 +67,16 @@ export interface AppSettings {
   smartInkInspectorEnabled: boolean;
   // ECON: Highlighter blend mode
   smartInkHighlighterBlend?: 'auto' | 'multiply' | 'screen';
+  // AUDIT-FIX: BUG-009, BUG-010 - Streaming, Clean Broadcast & Crop Settings per ZEN-5, ZEN-6
+  streamRemainderMode: 'background' | 'blur' | 'black';
+  hideToolbarCompletelyOnIdle: boolean;
+  hideCursorWhenIdle: boolean;
+  streamFrameLock: 'none' | '16:9' | '16:10' | '4:3';
+  autoTrimMargins: boolean;
+  manualCropTop: number;
+  manualCropBottom: number;
+  manualCropLeft: number;
+  manualCropRight: number;
 }
 
 const SETTINGS_STORAGE_KEY = 'smart_studio_settings_v1';
@@ -97,6 +109,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   welcomeLine1: 'Welcome to',
   welcomeLine2: 'SSIRO Classes',
   welcomeDuration: 2.8,
+  customLogo: '',
   // SSIRO-UPDATE: Magnifier & Zoom defaults
   magnifierSize: typeof window !== 'undefined' && window.innerWidth > 1800 ? 280 : 220,
   magnifierZoom: 3.0,
@@ -137,7 +150,17 @@ export const DEFAULT_SETTINGS: AppSettings = {
   smartInkAiAssist: false,
   smartInkCorrectionLevel: 'light',
   smartInkInspectorEnabled: false,
-  smartInkHighlighterBlend: 'auto'
+  smartInkHighlighterBlend: 'auto',
+  // AUDIT-FIX: BUG-009, BUG-010 - Streaming & crop defaults
+  streamRemainderMode: 'background',
+  hideToolbarCompletelyOnIdle: false,
+  hideCursorWhenIdle: false,
+  streamFrameLock: 'none',
+  autoTrimMargins: false,
+  manualCropTop: 0,
+  manualCropBottom: 0,
+  manualCropLeft: 0,
+  manualCropRight: 0
 };
 
 export function loadSettings(): AppSettings {

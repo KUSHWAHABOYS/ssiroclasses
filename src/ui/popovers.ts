@@ -1,10 +1,14 @@
 import { store } from '../state/store';
 // MIC-AI: Import micController
 import { micController } from '../voice/micController';
+// AUDIT-FIX: BUG-006 - Central gesture watchdog
+import { gestureWatchdog } from '../core/gestureWatchdog';
 
 export class PopoverManager {
   private activePopover: HTMLElement | null = null;
   private idleTimer: number = 0;
+  // AUDIT-FIX: BUG-002 - Track outside listener to prevent listener leaks
+  private outsideListener: ((e: any) => void) | null = null;
 
   showPenPopover(anchorEl: HTMLElement): void {
     this.close();
@@ -257,14 +261,22 @@ export class PopoverManager {
     const anchorCenter = rect.left + rect.width / 2;
     const anchorTop = rect.top;
 
+    // AUDIT-FIX: BUG-003 - Clamp popover horizontally to stay entirely within viewport
+    const estimatedHalfWidth = 140; // 280px / 2
+    const minCenter = estimatedHalfWidth + 8;
+    const maxCenter = Math.max(minCenter, window.innerWidth - estimatedHalfWidth - 8);
+    const clampedCenter = Math.max(minCenter, Math.min(anchorCenter, maxCenter));
+
     // Default above anchor, flip below if not enough room (< 220px from top)
     if (anchorTop < 220) {
       popover.style.top = `${rect.bottom + 12}px`;
-      popover.style.left = `${anchorCenter}px`;
+      popover.style.bottom = 'auto';
+      popover.style.left = `${clampedCenter}px`;
       popover.style.transform = 'translateX(-50%)';
     } else {
       popover.style.bottom = `${window.innerHeight - anchorTop + 12}px`;
-      popover.style.left = `${anchorCenter}px`;
+      popover.style.top = 'auto';
+      popover.style.left = `${clampedCenter}px`;
       popover.style.transform = 'translateX(-50%)';
     }
   }
@@ -272,17 +284,28 @@ export class PopoverManager {
   private bindOutsideAndIdle(popover: HTMLElement, anchorEl: HTMLElement): void {
     this.resetIdleTimer();
 
+    // AUDIT-FIX: BUG-002 - Clean up existing outside listener if already bound
+    if (this.outsideListener) {
+      document.removeEventListener('pointerdown', this.outsideListener);
+      this.outsideListener = null;
+    }
+
     const handleOutside = (e: MouseEvent | TouchEvent) => {
       const target = e.target as HTMLElement;
       if (!popover.contains(target) && !anchorEl.contains(target)) {
         this.close();
-        document.removeEventListener('pointerdown', handleOutside);
       }
     };
 
+    this.outsideListener = handleOutside;
     setTimeout(() => {
-      document.addEventListener('pointerdown', handleOutside);
+      if (this.outsideListener === handleOutside) {
+        document.addEventListener('pointerdown', handleOutside);
+      }
     }, 50);
+
+    // AUDIT-FIX: BUG-006 - Register active popover with gesture watchdog
+    gestureWatchdog.registerGesture('popover', () => this.close());
   }
 
   private resetIdleTimer(): void {
@@ -294,6 +317,14 @@ export class PopoverManager {
 
   close(): void {
     window.clearTimeout(this.idleTimer);
+    // AUDIT-FIX: BUG-002 - Remove outside listener cleanly on any close
+    if (this.outsideListener) {
+      document.removeEventListener('pointerdown', this.outsideListener);
+      this.outsideListener = null;
+    }
+    // AUDIT-FIX: BUG-006 - Unregister gesture
+    gestureWatchdog.unregisterGesture('popover');
+
     if (this.activePopover) {
       this.activePopover.remove();
       this.activePopover = null;

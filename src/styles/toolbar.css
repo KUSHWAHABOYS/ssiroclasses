@@ -68,10 +68,27 @@
   opacity: 0.2;
 }
 
+/* AUDIT-FIX: BUG-011 - TB-2: Mic button stays >= 60% visible when listening even in ghost mode */
+.toolbar-container.dimmed #btnToolMic.mic-listening {
+  opacity: 0.85 !important;
+  box-shadow: 0 0 12px rgba(239, 68, 68, 0.7);
+}
+
 .toolbar-container.dimmed:hover,
 .toolbar-container.dimmed:focus-within,
 .toolbar-container.dimmed:active {
   opacity: 1;
+}
+
+/* AUDIT-FIX: BUG-011 - ZEN-6 / TB-2: hide completely when idle & hide cursor */
+.toolbar-container.completely-hidden {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transition: opacity 0.3s ease;
+}
+
+body.hide-cursor, body.hide-cursor * {
+  cursor: none !important;
 }
 
 /* Hidden in Zen Mode unless toggled on */

@@ -19,6 +19,12 @@ export class WelcomeScreen {
     if (line1El) line1El.textContent = settings.welcomeLine1 || WELCOME_LINE_1;
     if (line2El) line2El.textContent = settings.welcomeLine2 || WELCOME_LINE_2;
 
+    // AUDIT-FIX: BUG-007 - Render custom logo if saved on device
+    const logoContainer = this.element.querySelector('.welcome-logo-container') as HTMLElement;
+    if (logoContainer && settings.customLogo) {
+      logoContainer.innerHTML = `<img src="${settings.customLogo}" style="width:100%; height:100%; object-fit:contain; border-radius:24px;" alt="Logo" />`;
+    }
+
     // If "Show welcome screen" is turned off, use compact version per requirement 9
     if (settings.showWelcomeScreen === false) {
       this.element.classList.add('is-compact');
@@ -38,6 +44,19 @@ export class WelcomeScreen {
 
   private bindEvents(): void {
     if (!this.element) return;
+
+    // AUDIT-FIX: BUG-007 - Click logo opens Change Logo modal per WEL-6
+    const logoContainer = this.element.querySelector('.welcome-logo-container') as HTMLElement;
+    logoContainer?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      import('./changeLogoModal').then(({ changeLogoModal }) => {
+        changeLogoModal.show();
+      });
+    });
+    if (logoContainer) {
+      logoContainer.style.cursor = 'pointer';
+      logoContainer.title = 'लोगो व संस्था नाम बदलने के लिए क्लिक करें (Click to change logo)';
+    }
 
     // Open Deck Button inside Welcome Screen
     this.openDeckBtn = this.element.querySelector('#btnWelcomeOpenDeck');
@@ -74,7 +93,7 @@ export class WelcomeScreen {
 
     // Requirement 3 & 5: Stray taps and clicks on the welcome screen must do nothing
     this.element.addEventListener('pointerdown', (e: PointerEvent) => {
-      if ((e.target as HTMLElement).closest('.welcome-open-btn, .header-btn')) return;
+      if ((e.target as HTMLElement).closest('.welcome-open-btn, .header-btn, .welcome-logo-container')) return;
       e.stopPropagation();
     });
   }

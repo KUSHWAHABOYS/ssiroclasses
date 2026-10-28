@@ -6,6 +6,8 @@ import { fullscreenService } from '../core/fullscreen';
 import { zoomPopoverManager } from '../zoom/zoomPopover';
 // MIC-AI: Import micController
 import { micController, MicState } from '../voice/micController';
+// AUDIT-FIX: BUG-006 - Central gesture watchdog integration
+import { gestureWatchdog } from '../core/gestureWatchdog';
 
 export class Toolbar {
   private containerEl!: HTMLElement;
@@ -239,6 +241,24 @@ export class Toolbar {
   private bindDragging(): void {
     const handle = this.dragHandleEl;
 
+    const stopDrag = (e?: PointerEvent) => {
+      if (!this.isDragging) return;
+      this.isDragging = false;
+      this.containerEl.classList.remove('is-dragging');
+      gestureWatchdog.unregisterGesture('toolbar-drag');
+      if (e) {
+        try {
+          handle.releasePointerCapture(e.pointerId);
+        } catch {}
+      }
+
+      // Persist position
+      const rect = this.containerEl.getBoundingClientRect();
+      store.updateSettings({
+        toolbarPos: { x: Math.round(rect.left), y: Math.round(rect.top) }
+      });
+    };
+
     handle.addEventListener('pointerdown', (e: PointerEvent) => {
       this.isDragging = true;
       handle.setPointerCapture(e.pointerId);
@@ -250,11 +270,13 @@ export class Toolbar {
       this.initialToolbarLeft = rect.left;
       this.initialToolbarTop = rect.top;
 
+      gestureWatchdog.registerGesture('toolbar-drag', () => stopDrag(), e.pointerId);
       this.wakeFromGhost();
     });
 
     handle.addEventListener('pointermove', (e: PointerEvent) => {
       if (!this.isDragging) return;
+      gestureWatchdog.recordActivity('toolbar-drag');
 
       const dx = e.clientX - this.dragStartX;
       const dy = e.clientY - this.dragStartY;
@@ -276,25 +298,30 @@ export class Toolbar {
       this.preExpandLeft = newLeft;
     });
 
-    handle.addEventListener('pointerup', (e: PointerEvent) => {
-      if (!this.isDragging) return;
-      this.isDragging = false;
-      this.containerEl.classList.remove('is-dragging');
-      try {
-        handle.releasePointerCapture(e.pointerId);
-      } catch {}
-
-      // Persist position
-      const rect = this.containerEl.getBoundingClientRect();
-      store.updateSettings({
-        toolbarPos: { x: Math.round(rect.left), y: Math.round(rect.top) }
-      });
-    });
+    // AUDIT-FIX: BUG-006 - Handle pointerup, pointercancel, and lostpointercapture
+    handle.addEventListener('pointerup', stopDrag);
+    handle.addEventListener('pointercancel', stopDrag);
+    handle.addEventListener('lostpointercapture', () => stopDrag());
   }
 
   private bindResizing(): void {
     const handle = this.resizeHandleEl;
     if (!handle) return;
+
+    const stopResize = (e?: PointerEvent) => {
+      if (!this.isResizing) return;
+      this.isResizing = false;
+      this.containerEl.classList.remove('is-dragging');
+      gestureWatchdog.unregisterGesture('toolbar-resize');
+      if (e) {
+        try {
+          handle.releasePointerCapture(e.pointerId);
+        } catch {}
+      }
+
+      this.applyScale(this.toolbarScale, true);
+      this.clampToViewport();
+    };
 
     handle.addEventListener('pointerdown', (e: PointerEvent) => {
       e.stopPropagation();
@@ -308,11 +335,13 @@ export class Toolbar {
       const rect = this.containerEl.getBoundingClientRect();
       this.unscaledWidth = rect.width / this.toolbarScale;
 
+      gestureWatchdog.registerGesture('toolbar-resize', () => stopResize(), e.pointerId);
       this.wakeFromGhost();
     });
 
     handle.addEventListener('pointermove', (e: PointerEvent) => {
       if (!this.isResizing) return;
+      gestureWatchdog.recordActivity('toolbar-resize');
 
       const dx = e.clientX - this.resizeStartX;
       const dy = e.clientY - this.resizeStartY;
@@ -325,17 +354,10 @@ export class Toolbar {
       this.applyScale(newScale, false);
     });
 
-    handle.addEventListener('pointerup', (e: PointerEvent) => {
-      if (!this.isResizing) return;
-      this.isResizing = false;
-      this.containerEl.classList.remove('is-dragging');
-      try {
-        handle.releasePointerCapture(e.pointerId);
-      } catch {}
-
-      this.applyScale(this.toolbarScale, true);
-      this.clampToViewport();
-    });
+    // AUDIT-FIX: BUG-006 - Handle pointerup, pointercancel, and lostpointercapture
+    handle.addEventListener('pointerup', stopResize);
+    handle.addEventListener('pointercancel', stopResize);
+    handle.addEventListener('lostpointercapture', () => stopResize());
   }
 
   private applyScale(scale: number, saveToStore = false): void {
@@ -387,18 +409,37 @@ export class Toolbar {
   }
 
   private bindGhostMode(): void {
+    let cursorIdleTimer: number;
     const resetTimer = () => {
       this.wakeFromGhost();
       window.clearTimeout(this.idleDimTimer);
-      const idleSec = store.getState().settings.toolbarIdleSeconds || 4;
+      const s = store.getState().settings;
+      const idleSec = s.toolbarIdleSeconds || 4;
       this.idleDimTimer = window.setTimeout(() => {
-        this.containerEl.classList.add('dimmed');
+        // AUDIT-FIX: BUG-011 - Hide toolbar completely when idle if configured (TB-2, ZEN-6)
+        if (store.getState().settings.hideToolbarCompletelyOnIdle) {
+          this.containerEl.classList.add('completely-hidden');
+        } else {
+          this.containerEl.classList.add('dimmed');
+        }
       }, idleSec * 1000);
+
+      // AUDIT-FIX: BUG-011 - Hide cursor when idle if configured (ZEN-6)
+      if (s.hideCursorWhenIdle) {
+        document.body.classList.remove('hide-cursor');
+        window.clearTimeout(cursorIdleTimer);
+        cursorIdleTimer = window.setTimeout(() => {
+          if (store.getState().settings.hideCursorWhenIdle) {
+            document.body.classList.add('hide-cursor');
+          }
+        }, 3000);
+      }
     };
 
     // Any interaction with container or window pointer movement
     this.containerEl.addEventListener('pointerdown', resetTimer, { passive: true });
     this.containerEl.addEventListener('pointermove', resetTimer, { passive: true });
+    window.addEventListener('pointermove', resetTimer, { passive: true });
     window.addEventListener('keydown', resetTimer, { passive: true });
 
     resetTimer();
@@ -406,6 +447,8 @@ export class Toolbar {
 
   private wakeFromGhost(): void {
     this.containerEl.classList.remove('dimmed');
+    this.containerEl.classList.remove('completely-hidden');
+    document.body.classList.remove('hide-cursor');
   }
 
   private toggleTier2(): void {

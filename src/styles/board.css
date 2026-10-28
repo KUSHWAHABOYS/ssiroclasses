@@ -545,6 +545,63 @@
   border-bottom: 1px solid var(--border-glass);
 }
 
+/* AUDIT-FIX: BUG-009 - Settings Navigation Tabs & Search Bar per SET-1 */
+.settings-search-bar {
+  padding: 10px 20px 8px 20px;
+  border-bottom: 1px solid var(--border-glass);
+  display: flex;
+  gap: 10px;
+}
+
+.settings-search-input {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--border-glass);
+  border-radius: 8px;
+  padding: 8px 12px;
+  color: #fff;
+  font-size: 13px;
+  outline: none;
+}
+.settings-search-input:focus {
+  border-color: var(--primary-accent);
+}
+
+.settings-categories-nav {
+  display: flex;
+  gap: 6px;
+  padding: 8px 20px;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--border-glass);
+  background: rgba(0, 0, 0, 0.2);
+  scrollbar-width: none;
+}
+.settings-categories-nav::-webkit-scrollbar {
+  display: none;
+}
+
+.settings-cat-btn {
+  padding: 5px 12px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-secondary);
+  font-size: 12px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+.settings-cat-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+.settings-cat-btn.active {
+  background: rgba(245, 158, 11, 0.2);
+  border-color: var(--primary-accent);
+  color: var(--primary-accent);
+  font-weight: 600;
+}
+
 .settings-body {
   flex: 1;
   overflow-y: auto;

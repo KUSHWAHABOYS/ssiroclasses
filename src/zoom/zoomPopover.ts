@@ -1,10 +1,14 @@
 // SSIRO-UPDATE: Magnifier & Zoom Popover
 import { store } from '../state/store';
 import { zoomController } from './zoomController';
+// AUDIT-FIX: BUG-006 - Central gesture watchdog
+import { gestureWatchdog } from '../core/gestureWatchdog';
 
 export class ZoomPopoverManager {
   private activePopover: HTMLElement | null = null;
   private idleTimer: number = 0;
+  // AUDIT-FIX: BUG-002 - Track outside listener to prevent listener leaks
+  private outsideListener: ((e: any) => void) | null = null;
 
   showMagnifierPopover(anchorEl: HTMLElement): void {
     this.close();
@@ -181,13 +185,21 @@ export class ZoomPopoverManager {
     const anchorCenter = rect.left + rect.width / 2;
     const anchorTop = rect.top;
 
+    // AUDIT-FIX: BUG-003 - Clamp popover horizontally so it stays inside viewport
+    const estimatedHalfWidth = 150; // 300px / 2
+    const minCenter = estimatedHalfWidth + 8;
+    const maxCenter = Math.max(minCenter, window.innerWidth - estimatedHalfWidth - 8);
+    const clampedCenter = Math.max(minCenter, Math.min(anchorCenter, maxCenter));
+
     if (anchorTop < 320) {
       popover.style.top = `${rect.bottom + 12}px`;
-      popover.style.left = `${anchorCenter}px`;
+      popover.style.bottom = 'auto';
+      popover.style.left = `${clampedCenter}px`;
       popover.style.transform = 'translateX(-50%)';
     } else {
       popover.style.bottom = `${window.innerHeight - anchorTop + 12}px`;
-      popover.style.left = `${anchorCenter}px`;
+      popover.style.top = 'auto';
+      popover.style.left = `${clampedCenter}px`;
       popover.style.transform = 'translateX(-50%)';
     }
   }
@@ -195,17 +207,28 @@ export class ZoomPopoverManager {
   private bindOutsideAndIdle(popover: HTMLElement, anchorEl: HTMLElement): void {
     this.resetIdleTimer();
 
+    // AUDIT-FIX: BUG-002 - Clean up existing outside listener if already bound
+    if (this.outsideListener) {
+      document.removeEventListener('pointerdown', this.outsideListener);
+      this.outsideListener = null;
+    }
+
     const handleOutside = (e: MouseEvent | TouchEvent) => {
       const target = e.target as HTMLElement;
       if (!popover.contains(target) && !anchorEl.contains(target)) {
         this.close();
-        document.removeEventListener('pointerdown', handleOutside);
       }
     };
 
+    this.outsideListener = handleOutside;
     setTimeout(() => {
-      document.addEventListener('pointerdown', handleOutside);
+      if (this.outsideListener === handleOutside) {
+        document.addEventListener('pointerdown', handleOutside);
+      }
     }, 50);
+
+    // AUDIT-FIX: BUG-006 - Register active popover with gesture watchdog
+    gestureWatchdog.registerGesture('zoom-popover', () => this.close());
   }
 
   private resetIdleTimer(): void {
@@ -217,6 +240,14 @@ export class ZoomPopoverManager {
 
   close(): void {
     window.clearTimeout(this.idleTimer);
+    // AUDIT-FIX: BUG-002 - Remove outside listener cleanly on any close
+    if (this.outsideListener) {
+      document.removeEventListener('pointerdown', this.outsideListener);
+      this.outsideListener = null;
+    }
+    // AUDIT-FIX: BUG-006 - Unregister gesture
+    gestureWatchdog.unregisterGesture('zoom-popover');
+
     if (this.activePopover) {
       this.activePopover.remove();
       this.activePopover = null;

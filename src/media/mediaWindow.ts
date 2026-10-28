@@ -10,6 +10,10 @@ export interface MediaItemConfig {
   aspectRatio: number;
 }
 
+// AUDIT-FIX: BUG-006 - Central gesture watchdog
+import { gestureWatchdog } from '../core/gestureWatchdog';
+
+
 export class MediaWindow {
   el: HTMLElement;
   config: MediaItemConfig;
@@ -108,6 +112,18 @@ export class MediaWindow {
 
     // Header drag
     const header = this.el.querySelector('.media-window-header') as HTMLElement;
+    const stopDrag = (e?: PointerEvent) => {
+      if (this.isDragging) {
+        this.isDragging = false;
+        gestureWatchdog.unregisterGesture(`media-drag-${this.config.id}`);
+        if (e) {
+          try {
+            header.releasePointerCapture(e.pointerId);
+          } catch {}
+        }
+      }
+    };
+
     header.addEventListener('pointerdown', (e: PointerEvent) => {
       if ((e.target as HTMLElement).closest('.media-win-btn')) return;
       this.isDragging = true;
@@ -116,10 +132,12 @@ export class MediaWindow {
       this.dragStartY = e.clientY;
       this.initialX = parseFloat(this.el.style.left) || 0;
       this.initialY = parseFloat(this.el.style.top) || 0;
+      gestureWatchdog.registerGesture(`media-drag-${this.config.id}`, () => stopDrag(), e.pointerId);
     });
 
     header.addEventListener('pointermove', (e: PointerEvent) => {
       if (!this.isDragging) return;
+      gestureWatchdog.recordActivity(`media-drag-${this.config.id}`);
       const dx = e.clientX - this.dragStartX;
       const dy = e.clientY - this.dragStartY;
       const newX = Math.max(0, Math.min(window.innerWidth - 100, this.initialX + dx));
@@ -130,16 +148,9 @@ export class MediaWindow {
       this.config.y = newY;
     });
 
-    const stopDrag = (e: PointerEvent) => {
-      if (this.isDragging) {
-        this.isDragging = false;
-        try {
-          header.releasePointerCapture(e.pointerId);
-        } catch {}
-      }
-    };
     header.addEventListener('pointerup', stopDrag);
     header.addEventListener('pointercancel', stopDrag);
+    header.addEventListener('lostpointercapture', () => stopDrag());
 
     // Corner Resizing
     const handles = this.el.querySelectorAll<HTMLElement>('.resize-handle');
@@ -155,10 +166,12 @@ export class MediaWindow {
         this.initialY = parseFloat(this.el.style.top) || 0;
         this.initialW = parseFloat(this.el.style.width) || 300;
         this.initialH = parseFloat(this.el.style.height) || 200;
+        gestureWatchdog.registerGesture(`media-resize-${this.config.id}`, () => stopResize(), e.pointerId);
       });
 
       h.addEventListener('pointermove', (e: PointerEvent) => {
         if (!this.isResizing) return;
+        gestureWatchdog.recordActivity(`media-resize-${this.config.id}`);
         const dx = e.clientX - this.dragStartX;
         const dy = e.clientY - this.dragStartY;
 
@@ -196,16 +209,20 @@ export class MediaWindow {
         this.config.y = newY;
       });
 
-      const stopResize = (e: PointerEvent) => {
+      const stopResize = (e?: PointerEvent) => {
         if (this.isResizing) {
           this.isResizing = false;
-          try {
-            h.releasePointerCapture(e.pointerId);
-          } catch {}
+          gestureWatchdog.unregisterGesture(`media-resize-${this.config.id}`);
+          if (e) {
+            try {
+              h.releasePointerCapture(e.pointerId);
+            } catch {}
+          }
         }
       };
       h.addEventListener('pointerup', stopResize);
       h.addEventListener('pointercancel', stopResize);
+      h.addEventListener('lostpointercapture', () => stopResize());
     });
 
     // Video custom controls

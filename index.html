@@ -11,9 +11,10 @@
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
   <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
   <meta name="description" content="Fullscreen 4K Teaching & Presentation Studio for Android Smart Boards & OBS/StreamYard" />
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700;800&family=Poppins:wght@700;800&display=swap" rel="stylesheet">
+  <!-- AUDIT-FIX: BUG-004 - PRV-1 Privacy & Security Headers: Strict CSP, No-Referrer, Permissions-Policy, Zero Remote Fonts -->
+  <meta name="referrer" content="no-referrer" />
+  <meta http-equiv="Permissions-Policy" content="microphone=(self), camera=(), geolocation=(), payment=()" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' https://generativelanguage.googleapis.com https://api.openai.com https://api.anthropic.com https://api.groq.com https://api.deepseek.com https://openrouter.ai https://api.perplexity.ai; worker-src 'self' blob:; frame-src 'self' https: http:; object-src 'none';" />
   <link rel="stylesheet" href="/src/styles/tokens.css" />
   <link rel="stylesheet" href="/src/styles/layers.css" />
   <link rel="stylesheet" href="/src/styles/toolbar.css" />

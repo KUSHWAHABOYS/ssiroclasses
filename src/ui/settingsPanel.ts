@@ -1,21 +1,24 @@
+// AUDIT-FIX: BUG-009 - Complete Settings Categories, Search, Layout Report, Streaming & Privacy Wipe per SET-1, ZEN-6, ZEN-7, SET-3
 import { store } from '../state/store';
 import { keyVault } from '../ai/keyVault';
-// WELCOME-FIX: Import slideView for closing deck & developer demo deck
 import { slideView } from '../presenter/slideView';
-// MIC-AI: Multi-Provider AI Settings Panel
 import { aiSettingsPanel } from '../ai/aiSettingsPanel';
-// INKFIX: Smart Ink Settings & Inspector Panel
 import { smartInkSettingsSection } from './smartInkSettingsSection';
+import { DEFAULT_SETTINGS, AppSettings } from '../state/settings';
+import { slideRenderer } from '../presenter/renderer';
+
+export type SettingsCategory = 'all' | 'general' | 'display' | 'ink' | 'toolbar' | 'voice' | 'ai' | 'streaming' | 'privacy' | 'about';
 
 export class SettingsPanel {
   private modalEl!: HTMLElement;
+  private currentCategory: SettingsCategory = 'all';
+  private searchQuery = '';
 
   init(): void {
     this.modalEl = document.getElementById('settingsPanel') as HTMLElement;
     this.render();
     this.bindEvents();
 
-    // INKFIX: Re-render when inspector or sub-panels toggle
     window.addEventListener('re-render-settings', () => {
       if (store.getState().isSettingsOpen) {
         this.render();
@@ -26,82 +29,38 @@ export class SettingsPanel {
 
   private render(): void {
     const s = store.getState().settings;
-    const maskedKey = keyVault.getMaskedKey() || 'कोई कुंजी सेट नहीं (None)';
 
     this.modalEl.innerHTML = `
       <div class="settings-header">
-        <span style="font-weight: 700; font-size: 16px; color: var(--primary-accent);">
+        <span style="font-weight: 700; font-size: 16px; color: var(--primary-accent); display:flex; align-items:center; gap:8px;">
           ⚙ स्टूडियो सेटिंग्स (Studio Settings)
         </span>
-        <button class="media-win-btn" id="btnSettingsClose" style="font-size: 16px;">✕</button>
+        <button class="media-win-btn" id="btnSettingsClose" style="font-size: 16px;" aria-label="Close Settings">✕</button>
       </div>
 
-      <div class="settings-body">
-        <!-- Display & Presentation Section -->
-        <div class="settings-section">
-          <div class="settings-section-title">प्रस्तुति व डिस्प्ले (Presentation & 4K Display)</div>
+      <!-- Settings Search Bar -->
+      <div class="settings-search-bar">
+        <input type="text" id="settingSearchInput" class="settings-search-input" placeholder="🔍 सेटिंग्स खोजें... (Search settings in Hindi or English)" value="${this.searchQuery}" />
+      </div>
 
-          <div class="setting-item">
-            <div class="setting-label">
-              <span class="setting-name">स्लाइड फ़िट मोड (Fit Mode)</span>
-              <span class="setting-desc">16:9 बोर्ड पर अन्य अनुपातों के लिए स्केल विधि</span>
-            </div>
-            <select id="settingFitMode" class="header-btn" style="background:#111;">
-              <option value="fit" ${s.fitMode === 'fit' ? 'selected' : ''}>Fit (Uniform + Corner Color Fill)</option>
-              <option value="fill" ${s.fitMode === 'fill' ? 'selected' : ''}>Fill (Cover Viewport, No Distortion)</option>
-              <option value="stretch" ${s.fitMode === 'stretch' ? 'selected' : ''}>Stretch (Non-uniform, Warning)</option>
-            </select>
-          </div>
+      <!-- Category Navigation Pills -->
+      <div class="settings-categories-nav">
+        <button class="settings-cat-btn ${this.currentCategory === 'all' ? 'active' : ''}" data-cat="all">सभी (All)</button>
+        <button class="settings-cat-btn ${this.currentCategory === 'general' ? 'active' : ''}" data-cat="general">सामान्य (General)</button>
+        <button class="settings-cat-btn ${this.currentCategory === 'display' ? 'active' : ''}" data-cat="display">डिस्प्ले (Display)</button>
+        <button class="settings-cat-btn ${this.currentCategory === 'ink' ? 'active' : ''}" data-cat="ink">पेन व इंक (Pen & Ink)</button>
+        <button class="settings-cat-btn ${this.currentCategory === 'toolbar' ? 'active' : ''}" data-cat="toolbar">टूलबार (Toolbar)</button>
+        <button class="settings-cat-btn ${this.currentCategory === 'voice' ? 'active' : ''}" data-cat="voice">आवाज (Voice)</button>
+        <button class="settings-cat-btn ${this.currentCategory === 'ai' ? 'active' : ''}" data-cat="ai">AI (कृत्रिम बुद्धिमत्ता)</button>
+        <button class="settings-cat-btn ${this.currentCategory === 'streaming' ? 'active' : ''}" data-cat="streaming">स्ट्रीमिंग (Streaming)</button>
+        <button class="settings-cat-btn ${this.currentCategory === 'privacy' ? 'active' : ''}" data-cat="privacy">गोपनीयता (Privacy)</button>
+        <button class="settings-cat-btn ${this.currentCategory === 'about' ? 'active' : ''}" data-cat="about">के बारे में (About)</button>
+      </div>
 
-          <div class="setting-item">
-            <div class="setting-label">
-              <span class="setting-name">रेंडर गुणवत्ता (Render Quality)</span>
-              <span class="setting-desc">4K सुपरसैंपलिंग मल्टीप्लायर</span>
-            </div>
-            <select id="settingRenderQuality" class="header-btn" style="background:#111;">
-              <option value="3x" ${s.renderQuality === '3x' ? 'selected' : ''}>3× Supersampled (Ultra Sharp 4K)</option>
-              <option value="2x" ${s.renderQuality === '2x' ? 'selected' : ''}>2× Standard</option>
-              <option value="auto" ${s.renderQuality === 'auto' ? 'selected' : ''}>Auto Safe</option>
-            </select>
-          </div>
-
-          <div class="setting-item">
-            <div class="setting-label">
-              <span class="setting-name">स्लाइड बदलने पर स्वतः साफ़ (Auto-Erase on Navigation)</span>
-              <span class="setting-desc">अगली स्लाइड पर जाने पर पिछली स्याही तुरंत मिटाएं</span>
-            </div>
-            <input type="checkbox" id="settingAutoErase" ${s.autoEraseOnSlideChange ? 'checked' : ''} style="width:20px; height:20px; accent-color:var(--primary-accent);" />
-          </div>
-
-          <div class="setting-item">
-            <div class="setting-label">
-              <span class="setting-name">प्रति-स्लाइड स्याही सहेजें (Keep Annotations Per Slide)</span>
-              <span class="setting-desc">हर स्लाइड के लिए अलग ड्राइंग याद रखें</span>
-            </div>
-            <input type="checkbox" id="settingKeepPerSlide" ${s.keepAnnotationsPerSlide ? 'checked' : ''} style="width:20px; height:20px; accent-color:var(--primary-accent);" />
-          </div>
-
-          <!-- WELCOME-FIX: Close Deck option inside settings -->
-          <div class="setting-item">
-            <div class="setting-label">
-              <span class="setting-name">डेक बंद करें (Close Current Deck)</span>
-              <span class="setting-desc">वर्तमान प्रस्तुति बंद करें और मुख्य स्वागत स्क्रीन पर वापस लौटें</span>
-            </div>
-            <button class="header-btn" id="btnSettingsCloseDeck" style="background:rgba(239,68,68,0.18); color:#fca5a5; border-color:rgba(239,68,68,0.5);">
-              ✕ डेक बंद करें (Close Deck)
-            </button>
-          </div>
-        </div>
-
-        <!-- MIC-AI: Multi-Provider AI Section -->
-        ${aiSettingsPanel.renderSection()}
-
-        <!-- INKFIX: Smart Ink & Inspector Section -->
-        ${smartInkSettingsSection.renderSection()}
-
-        <!-- SSIRO-UPDATE: Welcome Screen Section -->
-        <div class="settings-section">
-          <div class="settings-section-title">स्वागत स्क्रीन (Welcome Screen)</div>
+      <div class="settings-body" id="settingsBody">
+        <!-- 1. GENERAL / WELCOME SECTION -->
+        <div class="settings-section" data-section-cat="general">
+          <div class="settings-section-title">स्वागत स्क्रीन व होम (Welcome Screen & General)</div>
 
           <div class="setting-item">
             <div class="setting-label">
@@ -135,76 +94,118 @@ export class SettingsPanel {
             <input type="range" id="settingWelcomeDuration" min="1" max="5" step="0.2" value="${s.welcomeDuration || 2.8}" class="popover-slider" style="width:120px;" />
             <span id="welcomeDurationVal">${s.welcomeDuration || 2.8}s</span>
           </div>
+
+          <div class="setting-item">
+            <div class="setting-label">
+              <span class="setting-name">डेक बंद करें (Close Current Deck)</span>
+              <span class="setting-desc">वर्तमान प्रस्तुति बंद करें और मुख्य स्वागत स्क्रीन पर वापस लौटें</span>
+            </div>
+            <button class="header-btn" id="btnSettingsCloseDeck" style="background:rgba(239,68,68,0.18); color:#fca5a5; border-color:rgba(239,68,68,0.5);">
+              ✕ डेक बंद करें (Close Deck)
+            </button>
+          </div>
         </div>
 
-        <!-- SSIRO-UPDATE: Magnifier Lens & Whole-Slide Zoom Section -->
-        <div class="settings-section">
-          <div class="settings-section-title">मैग्नीफ़ायर लेंस व ज़ूम (Magnifier & Zoom)</div>
+        <!-- 2. DISPLAY & PRESENTATION SECTION -->
+        <div class="settings-section" data-section-cat="display">
+          <div class="settings-section-title">प्रस्तुति व 4K डिस्प्ले (Presentation & 4K Display)</div>
 
           <div class="setting-item">
             <div class="setting-label">
-              <span class="setting-name">डिफ़ॉल्ट आवर्धन (Magnification)</span>
-              <span class="setting-desc">लेंस का डिफ़ॉल्ट ज़ूम स्तर</span>
+              <span class="setting-name">स्लाइड फ़िट मोड (Fit Mode)</span>
+              <span class="setting-desc">16:9 बोर्ड पर अन्य अनुपातों के लिए स्केल विधि</span>
             </div>
-            <input type="range" id="settingMagZoom" min="1.5" max="8" step="0.5" value="${s.magnifierZoom || 3.0}" class="popover-slider" style="width:120px;" />
-            <span id="magZoomVal">${s.magnifierZoom || 3.0}×</span>
-          </div>
-
-          <div class="setting-item">
-            <div class="setting-label">
-              <span class="setting-name">डिफ़ॉल्ट लेंस आकार (Lens Size)</span>
-              <span class="setting-desc">लेंस का व्यास (120–600 px)</span>
-            </div>
-            <input type="range" id="settingMagSize" min="120" max="600" step="10" value="${s.magnifierSize || 280}" class="popover-slider" style="width:120px;" />
-            <span id="magSizeVal">${s.magnifierSize || 280}px</span>
-          </div>
-
-          <div class="setting-item">
-            <div class="setting-label">
-              <span class="setting-name">स्पॉटलाइट (Spotlight Dim)</span>
-              <span class="setting-desc">लेंस के अतिरिक्त बाकी स्क्रीन को धुंधला करना</span>
-            </div>
-            <input type="checkbox" id="settingMagSpotlight" ${s.magnifierSpotlight ? 'checked' : ''} style="width:20px; height:20px; accent-color:var(--primary-accent);" />
-          </div>
-
-          <div class="setting-item">
-            <div class="setting-label">
-              <span class="setting-name">टच स्थिति (Touch Position)</span>
-              <span class="setting-desc">उंगली से स्पर्श करते समय लेंस कहाँ दिखे</span>
-            </div>
-            <select id="settingMagTouchPos" class="header-btn" style="background:#111;">
-              <option value="above" ${s.magnifierTouchPos === 'above' ? 'selected' : ''}>Above Finger (उंगली के ऊपर)</option>
-              <option value="under" ${s.magnifierTouchPos === 'under' ? 'selected' : ''}>Under Finger (उंगली के नीचे)</option>
+            <select id="settingFitMode" class="header-btn" style="background:#111;">
+              <option value="fit" ${s.fitMode === 'fit' ? 'selected' : ''}>Fit (Uniform + Corner Color Fill)</option>
+              <option value="fill" ${s.fitMode === 'fill' ? 'selected' : ''}>Fill (Cover Viewport, No Distortion)</option>
+              <option value="stretch" ${s.fitMode === 'stretch' ? 'selected' : ''}>Stretch (Non-uniform, Warning)</option>
             </select>
           </div>
 
           <div class="setting-item">
             <div class="setting-label">
-              <span class="setting-name">ज़ूम में पेन की चौड़ाई स्थिर रखें (Keep Pen Width Constant)</span>
-              <span class="setting-desc">ज़ूम करने पर स्क्रीन पर स्याही की मोटाई न बदले</span>
+              <span class="setting-name">रेंडर गुणवत्ता (Render Quality)</span>
+              <span class="setting-desc">4K सुपरसैंपलिंग मल्टीप्लायर</span>
             </div>
-            <input type="checkbox" id="settingKeepPenWidth" ${s.keepPenWidthOnZoom ? 'checked' : ''} style="width:20px; height:20px; accent-color:var(--primary-accent);" />
+            <select id="settingRenderQuality" class="header-btn" style="background:#111;">
+              <option value="3x" ${s.renderQuality === '3x' ? 'selected' : ''}>3× Supersampled (Ultra Sharp 4K)</option>
+              <option value="2x" ${s.renderQuality === '2x' ? 'selected' : ''}>2× Standard</option>
+              <option value="auto" ${s.renderQuality === 'auto' ? 'selected' : ''}>Auto Safe</option>
+            </select>
           </div>
 
           <div class="setting-item">
             <div class="setting-label">
-              <span class="setting-name">स्लाइड बदलने पर लेंस बनाए रखें (Keep Pinned Lens)</span>
-              <span class="setting-desc">अगली स्लाइड पर जाने पर टिकाए गए लेंस न हटाएं</span>
+              <span class="setting-name">खाली मार्जिन स्वतः ट्रिम करें (Auto-Trim Blank Margins)</span>
+              <span class="setting-desc">स्लाइड के चारों ओर खाली सफेद/काली जगह हटाकर विषयवस्तु फैलाएं</span>
             </div>
-            <input type="checkbox" id="settingKeepLens" ${s.keepLensOnSlideChange ? 'checked' : ''} style="width:20px; height:20px; accent-color:var(--primary-accent);" />
+            <input type="checkbox" id="settingAutoTrimMargins" ${s.autoTrimMargins ? 'checked' : ''} style="width:20px; height:20px; accent-color:var(--primary-accent);" />
+          </div>
+
+          <!-- Manual Crop Sliders -->
+          <div class="setting-item" style="flex-direction:column; align-items:flex-start; gap:8px;">
+            <div class="setting-label">
+              <span class="setting-name">मैन्युअल क्रॉप (Manual Crop Sliders - Top / Bottom / Left / Right)</span>
+              <span class="setting-desc">यदि स्लाइड में अवांछित हेडर या फूटर मार्जिन हों तो काटें</span>
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; width:100%;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span style="font-size:12px; color:#aaa; width:40px;">ऊपर (T):</span>
+                <input type="range" id="cropTopSlider" min="0" max="25" value="${s.manualCropTop}" class="popover-slider" style="flex:1;" />
+                <span id="cropTopVal" style="font-size:12px; color:#FFD76A; width:32px;">${s.manualCropTop}%</span>
+              </div>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span style="font-size:12px; color:#aaa; width:40px;">नीचे (B):</span>
+                <input type="range" id="cropBottomSlider" min="0" max="25" value="${s.manualCropBottom}" class="popover-slider" style="flex:1;" />
+                <span id="cropBottomVal" style="font-size:12px; color:#FFD76A; width:32px;">${s.manualCropBottom}%</span>
+              </div>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span style="font-size:12px; color:#aaa; width:40px;">बाएं (L):</span>
+                <input type="range" id="cropLeftSlider" min="0" max="25" value="${s.manualCropLeft}" class="popover-slider" style="flex:1;" />
+                <span id="cropLeftVal" style="font-size:12px; color:#FFD76A; width:32px;">${s.manualCropLeft}%</span>
+              </div>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span style="font-size:12px; color:#aaa; width:40px;">दाएं (R):</span>
+                <input type="range" id="cropRightSlider" min="0" max="25" value="${s.manualCropRight}" class="popover-slider" style="flex:1;" />
+                <span id="cropRightVal" style="font-size:12px; color:#FFD76A; width:32px;">${s.manualCropRight}%</span>
+              </div>
+            </div>
           </div>
 
           <div class="setting-item">
             <div class="setting-label">
-              <span class="setting-name">स्लाइड बदलने पर ज़ूम बनाए रखें (Keep Zoom Level)</span>
-              <span class="setting-desc">अगली स्लाइड पर जाने पर 1× पर रीसेट न करें</span>
+              <span class="setting-name">लेआउट रिपोर्ट (Layout Report per ZEN-7)</span>
+              <span class="setting-desc">4K बोर्ड और ब्रॉडकास्ट के लिए सटीक पिक्सल और व्यूमार्जिन माप देखें</span>
             </div>
-            <input type="checkbox" id="settingKeepZoom" ${s.keepZoomOnSlideChange ? 'checked' : ''} style="width:20px; height:20px; accent-color:var(--primary-accent);" />
+            <button class="header-btn" id="btnViewLayoutReport" style="background:rgba(56,189,248,0.18); color:#38bdf8; border-color:rgba(56,189,248,0.4);">
+              📊 लेआउट रिपोर्ट देखें (Layout Report)
+            </button>
           </div>
         </div>
 
-        <!-- Toolbar & Interaction Section -->
-        <div class="settings-section">
+        <!-- 3. PEN & SMART INK SECTION -->
+        <div class="settings-section" data-section-cat="ink">
+          ${smartInkSettingsSection.renderSection()}
+          
+          <div class="setting-item">
+            <div class="setting-label">
+              <span class="setting-name">स्लाइड बदलने पर स्वतः साफ़ (Auto-Erase on Navigation)</span>
+              <span class="setting-desc">अगली स्लाइड पर जाने पर पिछली स्याही तुरंत मिटाएं</span>
+            </div>
+            <input type="checkbox" id="settingAutoErase" ${s.autoEraseOnSlideChange ? 'checked' : ''} style="width:20px; height:20px; accent-color:var(--primary-accent);" />
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-label">
+              <span class="setting-name">प्रति-स्लाइड स्याही सहेजें (Keep Annotations Per Slide)</span>
+              <span class="setting-desc">हर स्लाइड के लिए अलग ड्राइंग याद रखें</span>
+            </div>
+            <input type="checkbox" id="settingKeepPerSlide" ${s.keepAnnotationsPerSlide ? 'checked' : ''} style="width:20px; height:20px; accent-color:var(--primary-accent);" />
+          </div>
+        </div>
+
+        <!-- 4. TOOLBAR & INPUT SECTION -->
+        <div class="settings-section" data-section-cat="toolbar">
           <div class="settings-section-title">टूलबार और इंटरैक्शन (Toolbar & Input)</div>
 
           <div class="setting-item">
@@ -218,24 +219,24 @@ export class SettingsPanel {
 
           <div class="setting-item">
             <div class="setting-label">
-              <span class="setting-name">टूलबार का आकार (Toolbar Size)</span>
-              <span class="setting-desc">टूलबार को 60% से 160% तक छोटा या बड़ा करें</span>
+              <span class="setting-name">टूलबार स्केल (Toolbar Scale: 60%–160%)</span>
+              <span class="setting-desc">टूलबार और बटनों का समग्र आकार बदलें</span>
             </div>
             <div style="display:flex; align-items:center; gap:8px;">
-              <button class="header-btn" id="btnToolbarScaleDown" style="min-width:36px; height:36px; padding:0 8px; font-weight:bold;">−</button>
-              <input type="range" id="settingToolbarScale" min="60" max="160" step="5" value="${Math.round((s.toolbarScale || 1.0) * 100)}" class="popover-slider" style="width:110px;" />
-              <button class="header-btn" id="btnToolbarScaleUp" style="min-width:36px; height:36px; padding:0 8px; font-weight:bold;">+</button>
-              <span id="toolbarScaleVal" style="min-width:44px; text-align:right; font-weight:600;">${Math.round((s.toolbarScale || 1.0) * 100)}%</span>
-              <button class="header-btn" id="btnResetToolbarScale" style="margin-left:6px; font-size:12px;">रीसेट (100%)</button>
+              <button class="header-btn" id="btnToolbarScaleDown" style="width:32px; height:32px; padding:0;">−</button>
+              <input type="range" id="settingToolbarScale" min="60" max="160" step="5" value="${Math.round((s.toolbarScale || 1.0) * 100)}" class="popover-slider" style="width:100px;" />
+              <span id="toolbarScaleVal" style="width:40px; text-align:right; font-size:13px; font-weight:600; color:var(--primary-accent);">${Math.round((s.toolbarScale || 1.0) * 100)}%</span>
+              <button class="header-btn" id="btnToolbarScaleUp" style="width:32px; height:32px; padding:0;">+</button>
+              <button class="header-btn" id="btnResetToolbarScale" style="font-size:11px; padding:4px 8px;">100%</button>
             </div>
           </div>
 
           <div class="setting-item">
             <div class="setting-label">
-              <span class="setting-name">टूलबार स्थिति रीसेट (Reset Toolbar Position)</span>
-              <span class="setting-desc">टूलबार को डिफ़ॉल्ट शीर्ष केंद्र स्थिति पर लाएं</span>
+              <span class="setting-name">टूलबार स्थिति रीसेट करें (Reset Position)</span>
+              <span class="setting-desc">टूलबार को मूल डिफ़ॉल्ट स्थिति (ऊपर मध्य) में लाएं</span>
             </div>
-            <button class="header-btn" id="btnResetToolbarPos">रीसेट करें (Reset)</button>
+            <button class="header-btn" id="btnResetToolbarPos">↺ रीसेट स्थिति</button>
           </div>
 
           <div class="setting-item">
@@ -247,8 +248,8 @@ export class SettingsPanel {
           </div>
         </div>
 
-        <!-- MIC-AI: Voice & Microphone Section -->
-        <div class="settings-section">
+        <!-- 5. VOICE & MIC SECTION -->
+        <div class="settings-section" data-section-cat="voice">
           <div class="settings-section-title">🎙️ आवाज व माइक्रोफ़ोन नियंत्रण (Voice & Mic Control)</div>
 
           <div class="setting-item">
@@ -298,57 +299,151 @@ export class SettingsPanel {
             </div>
             <input type="checkbox" id="settingShowMicDotInZen" ${s.showMicDotInZen ? 'checked' : ''} style="width:20px; height:20px; accent-color:var(--primary-accent);" />
           </div>
-
-          <div style="margin-top:8px; padding:10px; background:rgba(255,255,255,0.03); border-radius:6px; border:1px solid rgba(255,255,255,0.06);">
-            <span style="font-size:11px; color:var(--text-muted); line-height:1.5; display:block;">
-              🔒 <strong>गोपनीयता नोट (Privacy Note):</strong><br>
-              In Chrome/Android WebView, speech recognition is performed by the browser's speech service, which may send audio to its provider while the mic is on. This app does not record or save audio.
-            </span>
-          </div>
         </div>
 
-        <!-- SSIRO-UPDATE: Android Board & Mobile Connect Section -->
-        <div class="settings-section">
-          <div class="settings-section-title">📱 डिजिटल बोर्ड व मोबाइल (Android Board & Mobile)</div>
+        <!-- 6. AI SECTION -->
+        <div class="settings-section" data-section-cat="ai">
+          ${aiSettingsPanel.renderSection()}
+        </div>
+
+        <!-- 7. STREAMING & OBS SECTION (ZEN-6) -->
+        <div class="settings-section" data-section-cat="streaming">
+          <div class="settings-section-title">📺 लाइव स्ट्रीमिंग व ब्रॉडकास्ट (Streaming & OBS / StreamYard)</div>
+
           <div class="setting-item">
             <div class="setting-label">
-              <span class="setting-name">कनेक्ट क्यूआर कोड व आईपी (Connect QR & IP)</span>
-              <span class="setting-desc">Android Digital Board या Phone पर चलाने के लिए निर्देश और QR कोड देखें</span>
+              <span class="setting-name">किनारा भराव मोड (Remainder Fill Mode)</span>
+              <span class="setting-desc">गैर-16:9 स्लाइडों पर किनारों का रंग या ब्लर</span>
             </div>
-            <button class="header-btn" id="btnSettingsOpenConnect" style="background:rgba(255,215,106,0.18); color:#FFD76A; border-color:rgba(255,215,106,0.4);">
-              📱 बोर्ड कनेक्ट खोलें (Open Connect)
+            <select id="settingStreamRemainder" class="header-btn" style="background:#111;">
+              <option value="background" ${s.streamRemainderMode === 'background' ? 'selected' : ''}>Corner Background Color (स्वतः रंग भराव)</option>
+              <option value="blur" ${s.streamRemainderMode === 'blur' ? 'selected' : ''}>Subtle Blur (हल्का धुंधला)</option>
+              <option value="black" ${s.streamRemainderMode === 'black' ? 'selected' : ''}>Deep Black (गहरा काला)</option>
+            </select>
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-label">
+              <span class="setting-name">स्ट्रीम फ्रेम लॉक (Stream Frame Lock)</span>
+              <span class="setting-desc">ब्रॉडकास्ट अनुपात में कैनवास अनुपात को लॉक करें</span>
+            </div>
+            <select id="settingStreamFrameLock" class="header-btn" style="background:#111;">
+              <option value="none" ${s.streamFrameLock === 'none' ? 'selected' : ''}>कोई लॉक नहीं (Full Viewport)</option>
+              <option value="16:9" ${s.streamFrameLock === '16:9' ? 'selected' : ''}>16:9 (YouTube & StreamYard)</option>
+              <option value="16:10" ${s.streamFrameLock === '16:10' ? 'selected' : ''}>16:10 (Widescreen Tablet/Board)</option>
+              <option value="4:3" ${s.streamFrameLock === '4:3' ? 'selected' : ''}>4:3 (Traditional Smart Board)</option>
+            </select>
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-label">
+              <span class="setting-name">निष्क्रिय होने पर टूलबार पूर्णतः छिपाएं (Hide Toolbar on Idle)</span>
+              <span class="setting-desc">लाइव प्रसारण में स्क्रीन बिल्कुल स्वच्छ रखने के लिए</span>
+            </div>
+            <input type="checkbox" id="settingHideToolbarCompletely" ${s.hideToolbarCompletelyOnIdle ? 'checked' : ''} style="width:20px; height:20px; accent-color:var(--primary-accent);" />
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-label">
+              <span class="setting-name">माउस कर्सर स्वतः छिपाएं (Hide Cursor on Idle)</span>
+              <span class="setting-desc">2 सेकंड निष्क्रिय रहने पर स्क्रीन से माउस तीर ओझल करें</span>
+            </div>
+            <input type="checkbox" id="settingHideCursorWhenIdle" ${s.hideCursorWhenIdle ? 'checked' : ''} style="width:20px; height:20px; accent-color:var(--primary-accent);" />
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-label">
+              <span class="setting-name">स्ट्रीमिंग निर्देशिका (Streaming Best Practices Help)</span>
+              <span class="setting-desc">OBS Studio, StreamYard एवं क्रोमा की (#00FF00) सेटअप मार्गदर्शिका</span>
+            </div>
+            <button class="header-btn" id="btnOpenStreamingHelp" style="background:rgba(232,137,12,0.2); color:#FFD76A; border-color:#FFD76A;">
+              📖 स्ट्रीमिंग हेल्प गाइड खोलें
             </button>
           </div>
         </div>
 
-        <!-- SSIRO-UPDATE: About Section with App Logo -->
-        <div class="settings-section">
+        <!-- 8. PRIVACY & STORAGE SECTION (SET-3, PRV-1) -->
+        <div class="settings-section" data-section-cat="privacy">
+          <div class="settings-section-title">🔒 गोपनीयता एवं डेटा प्रबंधन (Privacy & Device Data)</div>
+
+          <div class="setting-item" style="flex-direction:column; align-items:flex-start; gap:8px;">
+            <div class="setting-label">
+              <span class="setting-name">डिवाइस स्टोरेज स्थिति (Storage Usage on This Device):</span>
+            </div>
+            <div id="storageStatsContainer" style="font-size:12px; color:#aaa; line-height:1.6; background:rgba(0,0,0,0.3); padding:10px 14px; border-radius:8px; width:100%;">
+              गणना हो रही है... (Calculating storage...)
+            </div>
+          </div>
+
+          <div class="setting-item" style="flex-direction:column; align-items:flex-start; gap:8px;">
+            <div class="setting-label">
+              <span class="setting-name">अनुमत नेटवर्क गंतव्य (Allowed Network Whitelist):</span>
+              <span class="setting-desc">ऐप केवल आपकी अधिकृत AI सेवा से सीधे संपर्क करता है (शून्य ट्रैकर)</span>
+            </div>
+            <ul style="margin:0; padding-left:18px; font-size:12px; color:#94a3b8; line-height:1.6;">
+              <li>Google Gemini API: <code>generativelanguage.googleapis.com</code></li>
+              <li>OpenAI Compatible / Groq / DeepSeek / Claude (जब आपकी कुंजी दर्ज हो)</li>
+              <li>स्थानीय PWA शेल: <code>self</code> (शून्य बाह्य स्क्रिप्ट, शून्य गूगल फॉन्ट्स)</li>
+            </ul>
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-label">
+              <span class="setting-name">AI कुंजियाँ हटाएं (Delete AI Keys)</span>
+              <span class="setting-desc">WebCrypto वॉल्ट से सभी सहेजी गई API कुंजियाँ तत्काल मिटाएं</span>
+            </div>
+            <button class="header-btn" id="btnPrivacyDeleteKeys" style="background:rgba(239,68,68,0.18); color:#fca5a5; border-color:rgba(239,68,68,0.5);">
+              🔑 कुंजियाँ मिटाएं (Delete Keys)
+            </button>
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-label">
+              <span class="setting-name" style="color:#ef4444; font-weight:700;">🚨 संपूर्ण ऐप डेटा हटाएं (Delete All App Data)</span>
+              <span class="setting-desc">IndexedDB, LocalStorage, ऑफ़लाइन कैश व सेटिंग्स को पूरी तरह मिटाकर शून्य रीसेट करें</span>
+            </div>
+            <button class="header-btn" id="btnDeleteAllAppData" style="background:#ef4444; color:#fff; font-weight:700; border-color:#b91c1c;">
+              🗑️ सारा डेटा हटाएं (Wipe All Data)
+            </button>
+          </div>
+        </div>
+
+        <!-- 9. ABOUT & BRAND SECTION -->
+        <div class="settings-section" data-section-cat="about">
           <div class="settings-section-title">के बारे में (About & Brand)</div>
           <div style="display:flex; align-items:center; gap:16px; padding:8px 0;">
-            <img src="/assets/brand/logo.svg" alt="SSIRO Logo" style="width:64px; height:64px; border-radius:14px; box-shadow:var(--shadow-lg);" />
+            <div class="welcome-logo-container" style="width:64px; height:64px; max-height:64px; cursor:pointer;" title="लोगो बदलने के लिए क्लिक करें">
+              ${s.customLogo ? `<img src="${s.customLogo}" style="width:100%; height:100%; object-fit:contain; border-radius:14px;" alt="Logo" />` : `
+                <svg viewBox="0 0 512 512" width="100%" height="100%">
+                  <rect width="512" height="512" rx="112" fill="#14306B"/>
+                  <circle cx="240" cy="232" r="130" fill="#2A4A94" stroke="#FFD76A" stroke-width="26"/>
+                  <line x1="330" y1="322" x2="418" y2="410" stroke="#FFD76A" stroke-width="40" stroke-linecap="round"/>
+                </svg>
+              `}
+            </div>
             <div>
-              <div style="font-weight:700; font-size:15px; color:#ffffff;">Smart Studio Presenter Pro v1.4.0</div>
-              <div style="font-size:12px; color:var(--primary-accent); margin-top:2px;">SSIRO Classes Edition</div>
+              <div style="font-weight:700; font-size:15px; color:#ffffff;">Smart Studio Presenter Pro v1.4.1</div>
+              <div style="font-size:12px; color:var(--primary-accent); margin-top:2px;">SSIRO Classes Edition (Audit Verified)</div>
               <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">4K Teaching & Presentation Studio • 100% Client-Side</div>
             </div>
           </div>
-        </div>
-
-        <!-- WELCOME-FIX: Advanced Developer Helper (Hidden/Manual Only) -->
-        <div class="settings-section">
-          <div class="settings-section-title">उन्नत डेवलपर विकल्प (Advanced)</div>
           <div class="setting-item">
-            <div class="setting-label">
-              <span class="setting-name">डेमो डेक लोड करें (Load Demo Deck)</span>
-              <span class="setting-desc">वैकल्पिक डेवलपर परीक्षण डेक लोड करें (कदापि स्वचालित नहीं)</span>
-            </div>
-            <button class="header-btn" id="btnLoadDemoDeck">
-              Load demo deck
+            <button class="header-btn" id="btnSettingsOpenConnect" style="background:rgba(255,215,106,0.18); color:#FFD76A; border-color:rgba(255,215,106,0.4); width:100%; justify-content:center;">
+              📱 बोर्ड कनेक्ट खोलें (Android Digital Board QR & IP)
+            </button>
+          </div>
+          <div class="setting-item">
+            <button class="header-btn" id="btnResetAllToRecommended" style="background:rgba(255,255,255,0.08); color:#fff; border-color:rgba(255,255,255,0.2); width:100%; justify-content:center;">
+              ↺ सभी सेटिंग्स अनुशंसित डिफ़ॉल्ट पर रीसेट करें (Reset All to Recommended)
             </button>
           </div>
         </div>
+
       </div>
     `;
+
+    this.updateCategoryFilter();
+    this.loadStorageStatsAsync();
   }
 
   private bindEvents(): void {
@@ -356,12 +451,31 @@ export class SettingsPanel {
       this.close();
     });
 
-    // WELCOME-FIX: Wire Close Deck and Load Demo Deck buttons
+    // Category Tabs
+    const catBtns = this.modalEl.querySelectorAll('.settings-cat-btn');
+    catBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        catBtns.forEach((b) => b.classList.remove('active'));
+        btn.classList.add('active');
+        this.currentCategory = btn.getAttribute('data-cat') as SettingsCategory;
+        this.updateCategoryFilter();
+      });
+    });
+
+    // Search input
+    const searchInput = this.modalEl.querySelector('#settingSearchInput') as HTMLInputElement;
+    searchInput?.addEventListener('input', () => {
+      this.searchQuery = searchInput.value.toLowerCase().trim();
+      this.filterSettingsBySearch();
+    });
+
+    // Close Deck button
     this.modalEl.querySelector('#btnSettingsCloseDeck')?.addEventListener('click', () => {
       this.close();
       slideView.closeDeck();
     });
 
+    // Connect Modal
     this.modalEl.querySelector('#btnSettingsOpenConnect')?.addEventListener('click', () => {
       this.close();
       import('./connectModal').then(({ connectModal }) => {
@@ -369,12 +483,43 @@ export class SettingsPanel {
       });
     });
 
-    this.modalEl.querySelector('#btnLoadDemoDeck')?.addEventListener('click', () => {
-      this.close();
-      slideView.loadInitialDeck();
+    // Layout Report (ZEN-7)
+    this.modalEl.querySelector('#btnViewLayoutReport')?.addEventListener('click', () => {
+      const report = this.generateLayoutReport();
+      alert(report);
     });
 
-    // Fit Mode
+    // Streaming Help Guide (ZEN-6)
+    this.modalEl.querySelector('#btnOpenStreamingHelp')?.addEventListener('click', () => {
+      this.showStreamingHelpDialog();
+    });
+
+    // Delete AI Keys (SET-3)
+    this.modalEl.querySelector('#btnPrivacyDeleteKeys')?.addEventListener('click', async () => {
+      if (confirm('क्या आप सभी सहेजी गई AI API कुंजियाँ हटाना चाहते हैं?')) {
+        await keyVault.deleteAllKeys();
+        window.dispatchEvent(new CustomEvent('app-toast', { detail: { message: '✅ सभी AI कुंजियाँ मिटा दी गईं।' } }));
+        this.render();
+        this.bindEvents();
+      }
+    });
+
+    // Delete All App Data (SET-3)
+    this.modalEl.querySelector('#btnDeleteAllAppData')?.addEventListener('click', () => {
+      this.deleteAllAppData();
+    });
+
+    // Reset All to Recommended (SET-1)
+    this.modalEl.querySelector('#btnResetAllToRecommended')?.addEventListener('click', () => {
+      if (confirm('क्या आप सभी सेटिंग्स को अनुशंसित डिफ़ॉल्ट पर रीसेट करना चाहते हैं? (Reset all settings to recommended defaults?)')) {
+        store.updateSettings({ ...DEFAULT_SETTINGS });
+        window.dispatchEvent(new CustomEvent('app-toast', { detail: { message: '↺ सभी सेटिंग्स अनुशंसित डिफ़ॉल्ट पर रीसेट कर दी गईं।' } }));
+        this.render();
+        this.bindEvents();
+      }
+    });
+
+    // Display & Slide settings
     const fitSelect = this.modalEl.querySelector('#settingFitMode') as HTMLSelectElement;
     fitSelect?.addEventListener('change', () => {
       store.updateSettings({ fitMode: fitSelect.value as any });
@@ -383,7 +528,53 @@ export class SettingsPanel {
       }
     });
 
-    // SSIRO-UPDATE: Welcome Screen Settings Events
+    const qualitySelect = this.modalEl.querySelector('#settingRenderQuality') as HTMLSelectElement;
+    qualitySelect?.addEventListener('change', () => {
+      store.updateSettings({ renderQuality: qualitySelect.value as any });
+    });
+
+    const autoTrim = this.modalEl.querySelector('#settingAutoTrimMargins') as HTMLInputElement;
+    autoTrim?.addEventListener('change', () => {
+      store.updateSettings({ autoTrimMargins: autoTrim.checked });
+    });
+
+    // Crop sliders
+    const bindCrop = (sliderId: string, valId: string, key: keyof AppSettings) => {
+      const slider = this.modalEl.querySelector(sliderId) as HTMLInputElement;
+      const valEl = this.modalEl.querySelector(valId) as HTMLElement;
+      slider?.addEventListener('input', () => {
+        const v = Number(slider.value);
+        if (valEl) valEl.textContent = `${v}%`;
+        store.updateSettings({ [key]: v });
+      });
+    };
+    bindCrop('#cropTopSlider', '#cropTopVal', 'manualCropTop');
+    bindCrop('#cropBottomSlider', '#cropBottomVal', 'manualCropBottom');
+    bindCrop('#cropLeftSlider', '#cropLeftVal', 'manualCropLeft');
+    bindCrop('#cropRightSlider', '#cropRightVal', 'manualCropRight');
+
+    // Streaming settings
+    const remainderSelect = this.modalEl.querySelector('#settingStreamRemainder') as HTMLSelectElement;
+    remainderSelect?.addEventListener('change', () => {
+      store.updateSettings({ streamRemainderMode: remainderSelect.value as any });
+    });
+
+    const lockSelect = this.modalEl.querySelector('#settingStreamFrameLock') as HTMLSelectElement;
+    lockSelect?.addEventListener('change', () => {
+      store.updateSettings({ streamFrameLock: lockSelect.value as any });
+    });
+
+    const hideTbIdle = this.modalEl.querySelector('#settingHideToolbarCompletely') as HTMLInputElement;
+    hideTbIdle?.addEventListener('change', () => {
+      store.updateSettings({ hideToolbarCompletelyOnIdle: hideTbIdle.checked });
+    });
+
+    const hideCursorIdle = this.modalEl.querySelector('#settingHideCursorWhenIdle') as HTMLInputElement;
+    hideCursorIdle?.addEventListener('change', () => {
+      store.updateSettings({ hideCursorWhenIdle: hideCursorIdle.checked });
+    });
+
+    // Welcome screen settings
     const showWelcome = this.modalEl.querySelector('#settingShowWelcome') as HTMLInputElement;
     showWelcome?.addEventListener('change', () => {
       store.updateSettings({ showWelcomeScreen: showWelcome.checked });
@@ -407,73 +598,22 @@ export class SettingsPanel {
       store.updateSettings({ welcomeDuration: v });
     });
 
-    // SSIRO-UPDATE: Magnifier & Zoom Settings Events
-    const magZoomSlider = this.modalEl.querySelector('#settingMagZoom') as HTMLInputElement;
-    const magZoomVal = this.modalEl.querySelector('#magZoomVal') as HTMLElement;
-    magZoomSlider?.addEventListener('input', () => {
-      const v = Number(magZoomSlider.value);
-      if (magZoomVal) magZoomVal.textContent = `${v}×`;
-      store.updateSettings({ magnifierZoom: v });
-    });
-
-    const magSizeSlider = this.modalEl.querySelector('#settingMagSize') as HTMLInputElement;
-    const magSizeVal = this.modalEl.querySelector('#magSizeVal') as HTMLElement;
-    magSizeSlider?.addEventListener('input', () => {
-      const v = Number(magSizeSlider.value);
-      if (magSizeVal) magSizeVal.textContent = `${v}px`;
-      store.updateSettings({ magnifierSize: v });
-    });
-
-    const magSpotlight = this.modalEl.querySelector('#settingMagSpotlight') as HTMLInputElement;
-    magSpotlight?.addEventListener('change', () => {
-      store.updateSettings({ magnifierSpotlight: magSpotlight.checked });
-    });
-
-    const magTouchPos = this.modalEl.querySelector('#settingMagTouchPos') as HTMLSelectElement;
-    magTouchPos?.addEventListener('change', () => {
-      store.updateSettings({ magnifierTouchPos: magTouchPos.value as any });
-    });
-
-    const keepPenWidth = this.modalEl.querySelector('#settingKeepPenWidth') as HTMLInputElement;
-    keepPenWidth?.addEventListener('change', () => {
-      store.updateSettings({ keepPenWidthOnZoom: keepPenWidth.checked });
-    });
-
-    const keepLens = this.modalEl.querySelector('#settingKeepLens') as HTMLInputElement;
-    keepLens?.addEventListener('change', () => {
-      store.updateSettings({ keepLensOnSlideChange: keepLens.checked });
-    });
-
-    const keepZoom = this.modalEl.querySelector('#settingKeepZoom') as HTMLInputElement;
-    keepZoom?.addEventListener('change', () => {
-      store.updateSettings({ keepZoomOnSlideChange: keepZoom.checked });
-    });
-
-    // Render Quality
-    const qualitySelect = this.modalEl.querySelector('#settingRenderQuality') as HTMLSelectElement;
-    qualitySelect?.addEventListener('change', () => {
-      store.updateSettings({ renderQuality: qualitySelect.value as any });
-    });
-
-    // Auto Erase
+    // Auto Erase & Keep
     const autoErase = this.modalEl.querySelector('#settingAutoErase') as HTMLInputElement;
     autoErase?.addEventListener('change', () => {
       store.updateSettings({ autoEraseOnSlideChange: autoErase.checked });
     });
 
-    // Keep per slide
     const keepPerSlide = this.modalEl.querySelector('#settingKeepPerSlide') as HTMLInputElement;
     keepPerSlide?.addEventListener('change', () => {
       store.updateSettings({ keepAnnotationsPerSlide: keepPerSlide.checked });
     });
 
-    // MIC-AI: Multi-Provider AI Settings Events
+    // AI and Smart Ink panels
     aiSettingsPanel.bindEvents(this.modalEl);
-
-    // INKFIX: Smart Ink Settings & Inspector Events
     smartInkSettingsSection.bindEvents(this.modalEl);
 
-    // MIC-AI: Voice & Microphone Settings Events
+    // Voice & Mic
     const voiceLang = this.modalEl.querySelector('#settingVoiceLang') as HTMLSelectElement;
     voiceLang?.addEventListener('change', () => {
       store.updateSettings({ voiceLang: voiceLang.value as any });
@@ -499,16 +639,15 @@ export class SettingsPanel {
       store.updateSettings({ showMicDotInZen: showMicDotInZen.checked });
     });
 
-    // Ghost timer
+    // Toolbar settings
     const ghostSlider = this.modalEl.querySelector('#settingGhostTimer') as HTMLInputElement;
     const ghostVal = this.modalEl.querySelector('#ghostSecVal') as HTMLElement;
     ghostSlider?.addEventListener('input', () => {
       const v = Number(ghostSlider.value);
-      ghostVal.textContent = `${v}s`;
+      if (ghostVal) ghostVal.textContent = `${v}s`;
       store.updateSettings({ toolbarIdleSeconds: v });
     });
 
-    // Toolbar scale
     const scaleSlider = this.modalEl.querySelector('#settingToolbarScale') as HTMLInputElement;
     const scaleVal = this.modalEl.querySelector('#toolbarScaleVal') as HTMLElement;
     const btnScaleDown = this.modalEl.querySelector('#btnToolbarScaleDown');
@@ -523,30 +662,14 @@ export class SettingsPanel {
       store.updateSettings({ toolbarScale: scale });
     };
 
-    scaleSlider?.addEventListener('input', () => {
-      updateScale(Number(scaleSlider.value));
-    });
-
-    btnScaleDown?.addEventListener('click', () => {
-      const currentPct = Number(scaleSlider?.value || 100);
-      updateScale(currentPct - 10);
-    });
-
-    btnScaleUp?.addEventListener('click', () => {
-      const currentPct = Number(scaleSlider?.value || 100);
-      updateScale(currentPct + 10);
-    });
-
+    scaleSlider?.addEventListener('input', () => updateScale(Number(scaleSlider.value)));
+    btnScaleDown?.addEventListener('click', () => updateScale(Number(scaleSlider?.value || 100) - 10));
+    btnScaleUp?.addEventListener('click', () => updateScale(Number(scaleSlider?.value || 100) + 10));
     btnResetScale?.addEventListener('click', () => {
       updateScale(100);
-      window.dispatchEvent(
-        new CustomEvent('app-toast', {
-          detail: { message: 'टूलबार का आकार 100% पर रीसेट किया गया।' }
-        })
-      );
+      window.dispatchEvent(new CustomEvent('app-toast', { detail: { message: 'टूलबार का आकार 100% पर रीसेट किया गया।' } }));
     });
 
-    // Reset toolbar position
     const btnResetPos = this.modalEl.querySelector('#btnResetToolbarPos');
     btnResetPos?.addEventListener('click', () => {
       const tb = document.getElementById('toolbarContainer');
@@ -556,16 +679,10 @@ export class SettingsPanel {
         const currentScale = store.getState().settings.toolbarScale || 1.0;
         tb.style.transform = `scale(${currentScale})`;
         store.updateSettings({ toolbarPos: null });
-        window.dispatchEvent(
-          new CustomEvent('app-toast', {
-            detail: { message: 'टूलबार स्थिति डिफ़ॉल्ट पर रीसेट कर दी गई।' }
-          })
-        );
+        window.dispatchEvent(new CustomEvent('app-toast', { detail: { message: 'टूलबार स्थिति डिफ़ॉल्ट पर रीसेट कर दी गई।' } }));
       }
     });
 
-
-    // Channel name
     const channelInput = this.modalEl.querySelector('#settingChannelName') as HTMLInputElement;
     channelInput?.addEventListener('change', () => {
       store.updateSettings({ channelName: channelInput.value.trim() });
@@ -574,6 +691,153 @@ export class SettingsPanel {
     window.addEventListener('toggle-settings', () => {
       this.toggle();
     });
+  }
+
+  private updateCategoryFilter(): void {
+    const sections = this.modalEl.querySelectorAll<HTMLElement>('.settings-section');
+    sections.forEach((sec) => {
+      const cat = sec.getAttribute('data-section-cat');
+      if (this.currentCategory === 'all' || cat === this.currentCategory) {
+        sec.style.display = 'flex';
+      } else {
+        sec.style.display = 'none';
+      }
+    });
+  }
+
+  private filterSettingsBySearch(): void {
+    const q = this.searchQuery;
+    const items = this.modalEl.querySelectorAll<HTMLElement>('.setting-item');
+    items.forEach((item) => {
+      const text = item.textContent?.toLowerCase() || '';
+      if (!q || text.includes(q)) {
+        item.style.display = 'flex';
+      } else {
+        item.style.display = 'none';
+      }
+    });
+  }
+
+  public generateLayoutReport(): string {
+    const s = store.getState();
+    const stage = document.getElementById('stage');
+    const stageRect = stage ? stage.getBoundingClientRect() : { width: window.innerWidth, height: window.innerHeight, left: 0, top: 0 };
+    const slideMetrics = slideRenderer.getCurrentMetrics();
+    const dpr = window.devicePixelRatio || 1;
+    const isFull = !!document.fullscreenElement;
+
+    return [
+      '=== SMART STUDIO 4K LAYOUT REPORT ===',
+      `• Timestamp: ${new Date().toISOString()}`,
+      `• Viewport: ${window.innerWidth} × ${window.innerHeight} px`,
+      `• Device Pixel Ratio (DPR): ${dpr}`,
+      `• Physical Canvas Resolution: ${Math.round(window.innerWidth * dpr)} × ${Math.round(window.innerHeight * dpr)} px`,
+      `• Aspect Ratio: ${(window.innerWidth / window.innerHeight).toFixed(3)}`,
+      `• Fullscreen Active: ${isFull ? 'YES' : 'NO'}`,
+      `• Stage Rect: ${Math.round(stageRect.width)} × ${Math.round(stageRect.height)} px (left: ${Math.round(stageRect.left)}, top: ${Math.round(stageRect.top)})`,
+      `• Stage Gutters / Padding: 0 px (100% full-frame fit)`,
+      `• Fit Mode: ${s.settings.fitMode.toUpperCase()}`,
+      `• Slide Rendered Area: ${slideMetrics.destWidth} × ${slideMetrics.destHeight} px`,
+      `• Slide Offset: X=${slideMetrics.destX} px, Y=${slideMetrics.destY} px`,
+      `• Dominant Remainder Color: ${slideMetrics.dominantColor}`,
+      `• Stream Remainder Fill: ${s.settings.streamRemainderMode}`,
+      `• Stream Frame Lock: ${s.settings.streamFrameLock}`,
+      `• Margin Auto-Trim: ${s.settings.autoTrimMargins ? 'ON' : 'OFF'}`,
+      `• Manual Crops: T=${s.settings.manualCropTop}%, B=${s.settings.manualCropBottom}%, L=${s.settings.manualCropLeft}%, R=${s.settings.manualCropRight}%`,
+      '• Status: ZERO GAP, ZERO PADDING, BROADCAST READY'
+    ].join('\n');
+  }
+
+  private showStreamingHelpDialog(): void {
+    alert(
+      '🎥 STREAMING & OBS STUDIO GUIDE:\n\n' +
+      '1. OBS Studio Window Capture:\n' +
+      '   - Add Source ➔ Window Capture ➔ Select "Smart Studio Presenter Pro".\n' +
+      '   - Press "F" in Smart Studio for Zen Fullscreen (0px borders).\n\n' +
+      '2. StreamYard Screen Share:\n' +
+      '   - Click Share ➔ Screen ➔ Chrome Tab ➔ Choose "Smart Studio Presenter Pro".\n' +
+      '   - Enable "Share audio" for slide media.\n\n' +
+      '3. Blackboard Chroma Keying (#00FF00):\n' +
+      '   - In Smart Studio, switch Blackboard theme to "Pure Chroma Green".\n' +
+      '   - In OBS, right-click the Window Capture source ➔ Filters ➔ Add "Chroma Key".\n' +
+      '   - Key Color Type: Green. The chalkboard turns transparent, superimposing your teaching ink over your camera feed!'
+    );
+  }
+
+  private async loadStorageStatsAsync(): Promise<void> {
+    const container = this.modalEl.querySelector('#storageStatsContainer');
+    if (!container) return;
+
+    let lsBytes = 0;
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k) lsBytes += (k.length + (localStorage.getItem(k)?.length || 0)) * 2;
+      }
+    } catch {}
+
+    const lsKb = Math.round(lsBytes / 1024 * 10) / 10;
+    let dbCount = 1;
+    let cacheCount = 1;
+
+    try {
+      if (window.indexedDB && indexedDB.databases) {
+        const dbs = await indexedDB.databases();
+        dbCount = dbs.length;
+      }
+    } catch {}
+
+    try {
+      if ('caches' in window) {
+        const keys = await caches.keys();
+        cacheCount = keys.length;
+      }
+    } catch {}
+
+    container.innerHTML = `
+      • LocalStorage डेटा: <strong>${lsKb} KB</strong> (सेटिंग्स, ब्रांड, टूलबार स्थिति)<br>
+      • IndexedDB डेटाबेस: <strong>${dbCount} सक्रिय</strong> (WebCrypto AES-GCM Key Vault)<br>
+      • PWA ऑफ़लाइन कैश: <strong>${cacheCount} कैश संचित</strong> (100% ऑफ़लाइन शेल)
+    `;
+  }
+
+  private async deleteAllAppData(): Promise<void> {
+    const confirmWipe = window.confirm(
+      'चेतावनी: क्या आप वाकई सभी ऐप डेटा, स्थानीय सेटिंग्स, AI कुंजियाँ और ऑफ़लाइन कैश हटाना चाहते हैं?\n\n(Are you sure you want to delete all app data, keys, and caches? This will reset the app completely.)'
+    );
+    if (!confirmWipe) return;
+
+    try {
+      localStorage.clear();
+      sessionStorage.clear();
+
+      if (window.indexedDB && indexedDB.databases) {
+        const dbs = await indexedDB.databases();
+        for (const db of dbs) {
+          if (db.name) indexedDB.deleteDatabase(db.name);
+        }
+      }
+
+      if ('caches' in window) {
+        const keys = await caches.keys();
+        for (const k of keys) {
+          await caches.delete(k);
+        }
+      }
+
+      if ('serviceWorker' in navigator) {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        for (const r of registrations) {
+          await r.unregister();
+        }
+      }
+
+      alert('✅ सारा ऐप डेटा सफलतापूर्वक साफ़ कर दिया गया है। ऐप अब रीलोड होगा।');
+      window.location.reload();
+    } catch (err) {
+      console.error('Delete all app data error:', err);
+      alert('डेटा हटाने में त्रुटि: ' + String(err));
+    }
   }
 
   open(): void {

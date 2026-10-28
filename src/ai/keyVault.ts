@@ -212,6 +212,13 @@ export class KeyVault {
     }
   }
 
+  // AUDIT-FIX: BUG-009 - Delete all AI keys completely from device (SET-3, PRV-1)
+  deleteAllKeys(): void {
+    this.saveMultiStore({});
+    localStorage.removeItem(LEGACY_GEMINI_KEY);
+    localStorage.removeItem(MULTI_VAULT_KEY);
+  }
+
   // --- Legacy Compatibility Methods ---
   async storeApiKey(rawKey: string): Promise<string> {
     return this.storeKey('gemini', rawKey);
