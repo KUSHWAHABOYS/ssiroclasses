@@ -17,6 +17,21 @@ export class VoiceCommandService {
 
   init(): void {
     console.log('🎙️ VoiceCommandService initialized (mic is OFF by default, local grammar active).');
+
+    // Trigger events for speech-to-text / voice commands
+    window.addEventListener('voice-command', (e: any) => {
+      const phrase = e.detail?.phrase || e.detail?.command || (typeof e.detail === 'string' ? e.detail : '');
+      if (phrase) {
+        this.processVoiceCommand(phrase, true);
+      }
+    });
+
+    window.addEventListener('app-voice-command', (e: any) => {
+      const phrase = e.detail?.phrase || e.detail?.command || (typeof e.detail === 'string' ? e.detail : '');
+      if (phrase) {
+        this.processVoiceCommand(phrase, true);
+      }
+    });
   }
 
   startListening(): Promise<boolean> {
@@ -53,9 +68,15 @@ export class VoiceCommandService {
         rec.onresult = (event: any) => {
           micController.setInputLevel(2);
           micController.reportActivity();
-          const last = event.results.length - 1;
-          const transcript = event.results[last][0].transcript.trim();
-          this.processVoiceCommand(transcript);
+          for (let i = event.resultIndex || 0; i < event.results.length; i++) {
+            const res = event.results[i];
+            if (res && res[0]) {
+              const transcript = res[0].transcript.trim();
+              if (transcript) {
+                this.processVoiceCommand(transcript);
+              }
+            }
+          }
           setTimeout(() => micController.setInputLevel(0), 400);
         };
 
@@ -137,8 +158,8 @@ export class VoiceCommandService {
     );
   }
 
-  public processVoiceCommand(phrase: string): boolean {
-    if (micController.getState() !== 'listening') return false;
+  public processVoiceCommand(phrase: string, force = false): boolean {
+    if (!force && micController.getState() !== 'listening') return false;
 
     // 1. Check Voice Write Command first (pure local grammar + anchor logic)
     const writeCmd = voiceWriteManager.parseCommand(phrase);
@@ -181,7 +202,25 @@ export class VoiceCommandService {
       return false; // ignore other commands silently
     }
 
-    // 3. Navigation: Slide jumps with ordinals / numbers up to 50
+    // 3. Navigation: Slide & Page Next ('Page Next', 'Slide Next', 'Next Page', 'Next Slide', 'पेज नेक्स्ट', 'स्लाइड नेक्स्ट', etc.)
+    if (
+      /\b(next\s*slide|slide\s*next|next\s*page|page\s*next|अगली\s*स्लाइड|स्लाइड\s*अगली|अगला\s*पेज|पेज\s*अगला|स्लाइड\s*नेक्स्ट|नेक्स्ट\s*स्लाइड|पेज\s*नेक्स्ट|नेक्स्ट\s*पेज|पेज\s*नेक्सट|स्लाइड\s*नेक्सट|पेज\s*नैकस्ट|स्लाइड\s*नैकस्ट|स्लाइड\s*आगे|पेज\s*आगे|आगे\s*चलो|आगे\s*बढ़ो|aage\s*chalo|aage\s*badho|agla\s*page|agli\s*slide|page\s*aage|slide\s*aage)\b/i.test(clean) ||
+      /^(next|अगला|अगली|आगे|नेक्स्ट|agla|agli|aage)$/i.test(clean)
+    ) {
+      this.executeAction('next', '➡️');
+      return true;
+    }
+
+    // 4. Navigation: Slide & Page Back ('Page Back', 'Slide Back', 'Previous Page', 'Previous Slide', 'पेज बैक', 'स्लाइड बैक', etc.)
+    if (
+      /\b(previous\s*slide|slide\s*previous|previous\s*page|page\s*previous|prev\s*slide|slide\s*prev|prev\s*page|page\s*prev|back\s*slide|slide\s*back|back\s*page|page\s*back|पिछली\s*स्लाइड|स्लाइड\s*पिछली|पिछला\s*पेज|पेज\s*पिछला|स्लाइड\s*बैक|बैक\s*स्लाइड|पेज\s*बैक|बैक\s*पेज|स्लाइड\s*पीछे|पेज\s*पीछे|पीछे\s*चलो|पीछे\s*जाओ|peeche\s*chalo|piche\s*chalo|pichla\s*page|pichli\s*slide|page\s*piche|slide\s*piche)\b/i.test(clean) ||
+      /^(back|previous|prev|पिछला|पिछली|पीछे|बैक|प्रीवियस|pichla|pichli|peeche|piche)$/i.test(clean)
+    ) {
+      this.executeAction('prev', '⬅️');
+      return true;
+    }
+
+    // 5. Navigation: Slide jumps with ordinals / numbers up to 50
     // Examples: "तीसरी स्लाइड पर चलो", "स्लाइड पाँच", "slide 7", "पांचवी स्लाइड"
     const slideJumpMatch = clean.match(
       /(?:स्लाइड|slide|page|पृष्ठ|नंबर|number)?\s*([^\s]+)\s*(?:स्लाइड|slide|page|पृष्ठ)?\s*(?:पर चलो|खोलो|दिखाओ|par chalo)?/i
@@ -209,7 +248,7 @@ export class VoiceCommandService {
       return true;
     }
 
-    // 4. Match against COMMANDS_REGISTRY
+    // 6. Match against COMMANDS_REGISTRY
     for (const cmd of COMMANDS_REGISTRY) {
       for (const syn of cmd.synonyms) {
         if (clean === syn || clean.includes(syn)) {
@@ -225,6 +264,11 @@ export class VoiceCommandService {
 
   private executeAction(action: string, icon: string): void {
     this.showIconFeedback(icon);
+    window.dispatchEvent(
+      new CustomEvent('voice-command-executed', {
+        detail: { action, icon }
+      })
+    );
 
     switch (action) {
       case 'next':
@@ -340,3 +384,7 @@ export class VoiceCommandService {
 }
 
 export const voiceCommandService = new VoiceCommandService();
+
+if (typeof window !== 'undefined') {
+  (window as any).__SMART_STUDIO_VOICE__ = voiceCommandService;
+}

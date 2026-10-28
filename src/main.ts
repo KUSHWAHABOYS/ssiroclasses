@@ -143,6 +143,7 @@ class SmartStudioApp {
     w.__SMART_STUDIO_MEDIA_MANAGER__ = overlayManager;
     w.__SMART_STUDIO_KEY_VAULT__ = keyVault;
     w.__SMART_STUDIO_MIC__ = micController;
+    w.__SMART_STUDIO_VOICE__ = voiceCommandService;
     w.__SMART_STUDIO_DRAW_ENGINE__ = drawingEngine;
 
     console.log('✅ Smart Studio Presenter Pro ready.');
@@ -239,6 +240,10 @@ class SmartStudioApp {
 
 // Start application
 const app = new SmartStudioApp();
-window.addEventListener('DOMContentLoaded', () => {
+if (document.readyState === 'loading') {
+  window.addEventListener('DOMContentLoaded', () => {
+    app.init();
+  });
+} else {
   app.init();
-});
+}

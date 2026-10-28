@@ -93,12 +93,27 @@ export const COMMANDS_REGISTRY: VoiceCommandDef[] = [
   {
     action: 'next',
     icon: '➡️',
-    synonyms: ['next', 'अगला', 'अगली', 'आगे', 'agla', 'agli', 'aage', 'aage chalo', 'aage badho', 'next slide']
+    synonyms: [
+      'next', 'अगला', 'अगली', 'आगे', 'agla', 'agli', 'aage', 'aage chalo', 'aage badho',
+      'next slide', 'slide next', 'next page', 'page next', 'forward',
+      'अगला पेज', 'अगली स्लाइड', 'पेज आगे', 'स्लाइड आगे',
+      'पेज नेक्स्ट', 'नेक्स्ट पेज', 'स्लाइड नेक्स्ट', 'नेक्स्ट स्लाइड', 'नेक्स्ट',
+      'पेज नेक्सट', 'स्लाइड नेक्सट', 'पेज नैकस्ट', 'स्लाइड नैकस्ट',
+      'agla page', 'agli slide', 'page aage', 'slide aage'
+    ]
   },
   {
     action: 'prev',
     icon: '⬅️',
-    synonyms: ['back', 'पिछला', 'पिछली', 'पीछे', 'pichla', 'pichli', 'peeche', 'piche chalo', 'previous', 'previous slide']
+    synonyms: [
+      'back', 'पिछला', 'पिछली', 'पीछे', 'pichla', 'pichli', 'peeche', 'piche chalo', 'peeche chalo',
+      'previous', 'prev', 'previous slide', 'slide previous', 'previous page', 'page previous',
+      'slide back', 'page back', 'back slide', 'back page', 'prev slide', 'prev page',
+      'पिछला पेज', 'पिछली स्लाइड', 'पेज पीछे', 'स्लाइड पीछे',
+      'पेज बैक', 'बैक पेज', 'स्लाइड बैक', 'बैक स्लाइड', 'बैक',
+      'प्रीवियस', 'प्रीवियस पेज', 'प्रीवियस स्लाइड',
+      'pichla page', 'pichli slide', 'page piche', 'slide piche'
+    ]
   },
   {
     action: 'first_slide',
@@ -243,12 +258,20 @@ export function matchCommandFromDict(phrase: string): { action: string; icon: st
   }
 
   // 2. Navigation Next
-  if (/^(अगली|आगे|अगला|next|aage)(\s+(स्लाइड|slide|पेज|page|पर|चलो|badho|बढ़ो|chalo))*$/i.test(norm) || /^(next\s*slide|आगे\s*चलो|अगली\s*स्लाइड|आगे\s*बढ़ो|aage\s*chalo)$/i.test(norm)) {
+  if (
+    /^(अगली|आगे|अगला|next|aage|page\s*next|slide\s*next|next\s*page|next\s*slide|पेज\s*नेक्स्ट|स्लाइड\s*नेक्स्ट|नेक्स्ट\s*पेज|नेक्स्ट\s*स्लाइड|पेज\s*आगे|स्लाइड\s*आगे)/i.test(norm) ||
+    /\b(next\s*slide|slide\s*next|next\s*page|page\s*next|अगली\s*स्लाइड|स्लाइड\s*अगली|अगला\s*पेज|पेज\s*अगला|स्लाइड\s*नेक्स्ट|नेक्स्ट\s*स्लाइड|पेज\s*नेक्स्ट|नेक्स्ट\s*पेज|पेज\s*नेक्सट|स्लाइड\s*नेक्सट|स्लाइड\s*आगे|पेज\s*आगे|आगे\s*चलो|आगे\s*बढ़ो|aage\s*chalo|aage\s*badho|agla\s*page|agli\s*slide|page\s*aage|slide\s*aage)\b/i.test(norm) ||
+    /^(next|अगला|अगली|आगे|नेक्स्ट|agla|agli|aage)$/i.test(norm)
+  ) {
     return { action: 'next', icon: '➡️' };
   }
 
   // 3. Navigation Prev
-  if (/^(पिछली|पीछे|पिछला|back|previous|peeche)(\s+(स्लाइड|slide|पेज|page|पर|चलो|chalo))*$/i.test(norm) || /^(previous\s*slide|पीछे\s*चलो|पिछली\s*स्लाइड|peeche\s*chalo)$/i.test(norm)) {
+  if (
+    /^(पिछली|पीछे|पिछला|back|previous|prev|peeche|piche|page\s*back|slide\s*back|back\s*page|back\s*slide|previous\s*page|page\s*previous|previous\s*slide|slide\s*previous|prev\s*page|page\s*prev|prev\s*slide|slide\s*prev|पेज\s*बैक|स्लाइड\s*बैक|बैक\s*पेज|बैक\s*स्लाइड|पेज\s*पीछे|स्लाइड\s*पीछे)/i.test(norm) ||
+    /\b(previous\s*slide|slide\s*previous|previous\s*page|page\s*previous|prev\s*slide|slide\s*prev|prev\s*page|page\s*prev|back\s*slide|slide\s*back|back\s*page|page\s*back|पिछली\s*स्लाइड|स्लाइड\s*पिछली|पिछला\s*पेज|पेज\s*पिछला|स्लाइड\s*बैक|बैक\s*स्लाइड|पेज\s*बैक|बैक\s*पेज|स्लाइड\s*पीछे|पेज\s*पीछे|पीछे\s*चलो|पीछे\s*जाओ|peeche\s*chalo|piche\s*chalo|pichla\s*page|pichli\s*slide|page\s*piche|slide\s*piche)\b/i.test(norm) ||
+    /^(back|previous|prev|पिछला|पिछली|पीछे|बैक|प्रीवियस|pichla|pichli|peeche|piche)$/i.test(norm)
+  ) {
     return { action: 'prev', icon: '⬅️' };
   }
 

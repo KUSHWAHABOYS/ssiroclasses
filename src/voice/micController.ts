@@ -226,13 +226,8 @@ export class MicController {
   }
 
   private bindSlideAndBoardEvents(): void {
-    // Mute on slide change
+    // Keep mic active across slide changes so voice navigation (Page Next, Slide Back, etc.) works continuously
     store.subscribe((state, prev) => {
-      if (state.currentPage !== prev.currentPage && this.micState === 'listening') {
-        console.log('Slide changed, turning mic off');
-        this.turnOff();
-      }
-
       // Mute on entering board if setting enabled
       if (state.isBoardMode && !prev.isBoardMode) {
         if (state.settings.muteMicOnBoard && this.micState === 'listening') {

@@ -16,12 +16,12 @@ export class WebOverlay {
   private render(): void {
     this.overlayEl.innerHTML = `
       <div class="web-overlay-bar">
-        <input type="text" class="web-overlay-input" id="webUrlInput" placeholder="URL या खोज दर्ज करें (e.g. en.m.wikipedia.org or topic)..." value="https://en.m.wikipedia.org" />
+        <input type="text" class="web-overlay-input" id="webUrlInput" placeholder="URL या खोज दर्ज करें (e.g. google.com or topic)..." value="https://www.google.com" />
         <button class="header-btn" id="btnWebGo">खोजें / Go</button>
         <button class="web-overlay-close" id="btnWebClose" title="Close Browser (Return to Slide)">✕</button>
       </div>
       <div class="web-frame-container">
-        <iframe id="webIframe" class="web-frame" src="https://en.m.wikipedia.org" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
+        <iframe id="webIframe" class="web-frame" src="" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
         <div id="webFallbackCard" class="web-fallback-card hidden">
           <h3>यह साइट इस बॉक्स में सीधे नहीं खुल सकती</h3>
           <p>सुरक्षा नीतियों (X-Frame-Options) के कारण गूगल या बाहरी साइटें इन-ऐप फ़्रेम में अवरुद्ध हैं।</p>
@@ -70,7 +70,7 @@ export class WebOverlay {
     let target = this.inputUrl.value.trim();
     if (!target) return;
 
-    // If not a full URL or looks like search terms, direct to Wikipedia or Google
+    // If not a full URL or looks like search terms, direct to Google
     if (!/^https?:\/\//i.test(target)) {
       if (target.includes('.') && !target.includes(' ')) {
         target = `https://${target}`;
@@ -111,6 +111,12 @@ export class WebOverlay {
   open(): void {
     store.setState({ isWebOverlayOpen: true });
     this.overlayEl.classList.remove('hidden');
+    if (!this.inputUrl.value) {
+      this.inputUrl.value = 'https://www.google.com';
+    }
+    if (!this.frameEl.src || this.frameEl.src === window.location.href || this.frameEl.src.endsWith('/')) {
+      this.frameEl.src = this.inputUrl.value || 'https://www.google.com';
+    }
   }
 
   close(): void {

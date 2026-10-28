@@ -3,7 +3,9 @@
     "argv": [
       "C:\\Program Files\\nodejs\\node.exe",
       "C:\\Users\\rnran\\.gemini\\antigravity-ide\\scratch\\smart-studio\\node_modules\\@playwright\\test\\cli.js",
-      "test"
+      "test",
+      "tests/e2e/08_voice_browser_fix.spec.ts",
+      "tests/e2e/07_welcome_cleanup.spec.ts"
     ],
     "configFile": "C:\\Users\\rnran\\.gemini\\antigravity-ide\\scratch\\smart-studio\\playwright.config.ts",
     "rootDir": "C:/Users/rnran/.gemini/antigravity-ide/scratch/smart-studio/tests/e2e",
@@ -97,20 +99,20 @@
   },
   "suites": [
     {
-      "title": "01_welcome_deck.spec.ts",
-      "file": "01_welcome_deck.spec.ts",
+      "title": "07_welcome_cleanup.spec.ts",
+      "file": "07_welcome_cleanup.spec.ts",
       "column": 0,
       "line": 0,
       "specs": [],
       "suites": [
         {
-          "title": "Section 1: Launch, Welcome, and Home (WEL-1 to WEL-7, CON-1)",
-          "file": "01_welcome_deck.spec.ts",
+          "title": "WELCOME-CLEANUP Verification Suite (Part B Requirements)",
+          "file": "07_welcome_cleanup.spec.ts",
           "line": 4,
           "column": 6,
           "specs": [
             {
-              "title": "WEL-1 & WEL-2: Cold start shows full-screen welcome, gold gradient on SSIRO Classes, no sample deck loaded, toolbar hidden",
+              "title": "Test 3(a): Welcome page contains exactly logo, two text lines, and ONE button",
               "ok": true,
               "tags": [],
               "tests": [
@@ -125,12 +127,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 9069,
+                      "duration": 764,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-28T06:33:00.845Z",
+                      "startTime": "2026-10-28T09:22:08.875Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -138,13 +140,13 @@
                   "status": "expected"
                 }
               ],
-              "id": "4176bf7bacfb3735e193-df48f696d3de55b80d72",
-              "file": "01_welcome_deck.spec.ts",
-              "line": 12,
+              "id": "85fc3abb0be5d697c21d-f8ce4711be1106393322",
+              "file": "07_welcome_cleanup.spec.ts",
+              "line": 11,
               "column": 3
             },
             {
-              "title": "WEL-4: Open Blackboard from welcome screen works and closing returns to welcome",
+              "title": "Test 3(b): Clicking Open Deck triggers file picker and loading PDF transitions into slide 1",
               "ok": true,
               "tags": [],
               "tests": [
@@ -159,12 +161,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1800,
+                      "duration": 1022,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-28T06:33:10.214Z",
+                      "startTime": "2026-10-28T09:22:09.750Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -172,13 +174,13 @@
                   "status": "expected"
                 }
               ],
-              "id": "4176bf7bacfb3735e193-a2e6b5d1bdfc73d9c5b7",
-              "file": "01_welcome_deck.spec.ts",
-              "line": 39,
+              "id": "85fc3abb0be5d697c21d-a38822e7cfcf0353b842",
+              "file": "07_welcome_cleanup.spec.ts",
+              "line": 42,
               "column": 3
             },
             {
-              "title": "WEL-5: Welcome screen text customization and duration in Settings",
+              "title": "Test 3(c): Dropping PDF onto welcome page does nothing, shows no overlay, and prevents navigation",
               "ok": true,
               "tags": [],
               "tests": [
@@ -193,12 +195,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1788,
+                      "duration": 323,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-28T06:33:12.027Z",
+                      "startTime": "2026-10-28T09:22:10.787Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -206,13 +208,13 @@
                   "status": "expected"
                 }
               ],
-              "id": "4176bf7bacfb3735e193-9b8187eda2f93cdaec2b",
-              "file": "01_welcome_deck.spec.ts",
-              "line": 63,
+              "id": "85fc3abb0be5d697c21d-19b44ec9e84207404e60",
+              "file": "07_welcome_cleanup.spec.ts",
+              "line": 69,
               "column": 3
             },
             {
-              "title": "WEL-6: Change Logo modal opens, square crop preview and SVG sanitization",
+              "title": "Test 3(d): Top-bar Open Deck still works once a deck is open",
               "ok": true,
               "tags": [],
               "tests": [
@@ -227,12 +229,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1768,
+                      "duration": 979,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-28T06:33:13.828Z",
+                      "startTime": "2026-10-28T09:22:11.130Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -240,1156 +242,196 @@
                   "status": "expected"
                 }
               ],
-              "id": "4176bf7bacfb3735e193-7914b49392eb08523384",
-              "file": "01_welcome_deck.spec.ts",
-              "line": 84,
-              "column": 3
-            },
-            {
-              "title": "WEL-7: Verification that no demo deck button, sample slides or demo assets exist",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "",
-                  "projectName": "",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 2012,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-10-28T06:33:15.607Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "4176bf7bacfb3735e193-b4b326362647fb59922d",
-              "file": "01_welcome_deck.spec.ts",
-              "line": 104,
-              "column": 3
-            },
-            {
-              "title": "CON-1: Android Board Connect Pairing Modal",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "",
-                  "projectName": "",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 1718,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-10-28T06:33:17.633Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "4176bf7bacfb3735e193-264bd207f6fa7fc89f2a",
-              "file": "01_welcome_deck.spec.ts",
-              "line": 120,
-              "column": 3
-            }
-          ]
-        },
-        {
-          "title": "Section 2: Deck Loading and Rendering Quality (REN-3, REN-4, REN-6, REN-7)",
-          "file": "01_welcome_deck.spec.ts",
-          "line": 141,
-          "column": 6,
-          "specs": [
-            {
-              "title": "REN-4: Image Deck opens in Fit mode by default with uniform aspect ratio",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "",
-                  "projectName": "",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 2512,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-10-28T06:33:19.362Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "4176bf7bacfb3735e193-d6217a270999be6c815f",
-              "file": "01_welcome_deck.spec.ts",
-              "line": 142,
-              "column": 3
-            },
-            {
-              "title": "REN-6: Corrupt file fails gracefully with error message, never a blank screen",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "",
-                  "projectName": "",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 1933,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-10-28T06:33:21.884Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "4176bf7bacfb3735e193-de56de3d13a67e5ee431",
-              "file": "01_welcome_deck.spec.ts",
-              "line": 151,
-              "column": 3
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "title": "02_zen_navigation.spec.ts",
-      "file": "02_zen_navigation.spec.ts",
-      "column": 0,
-      "line": 0,
-      "specs": [],
-      "suites": [
-        {
-          "title": "Section 3 & 4: Present, Zen, Full-Frame & Navigation (ZEN-1 to ZEN-7, NAV-1 to NAV-3)",
-          "file": "02_zen_navigation.spec.ts",
-          "line": 4,
-          "column": 6,
-          "specs": [
-            {
-              "title": "ZEN-1 & ZEN-2: Full-frame layout, stage equals viewport, Zen toggle hides chrome",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "",
-                  "projectName": "",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 2772,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-10-28T06:33:23.838Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "b840290ddcdf14d3be6e-c8464ddef8c1b3e427dc",
-              "file": "02_zen_navigation.spec.ts",
-              "line": 10,
-              "column": 3
-            },
-            {
-              "title": "ZEN-3: Double-click / double-tap toggles toolbar visibility",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "",
-                  "projectName": "",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 2869,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-10-28T06:33:26.621Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "b840290ddcdf14d3be6e-ee7daa0b793dca35573c",
-              "file": "02_zen_navigation.spec.ts",
-              "line": 45,
-              "column": 3
-            },
-            {
-              "title": "ZEN-4: Responsive layout across all 9 specified viewports and aspect ratios",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "",
-                  "projectName": "",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 4221,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-10-28T06:33:29.504Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "b840290ddcdf14d3be6e-e39af003135ac74ce128",
-              "file": "02_zen_navigation.spec.ts",
-              "line": 63,
-              "column": 3
-            },
-            {
-              "title": "ZEN-7: Display Layout Report generates accurate measurements",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "",
-                  "projectName": "",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 2059,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-10-28T06:33:33.744Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "b840290ddcdf14d3be6e-959f265741e9eb42acb6",
-              "file": "02_zen_navigation.spec.ts",
-              "line": 88,
-              "column": 3
-            },
-            {
-              "title": "NAV-1: Navigation via keyboard arrows, page counter jump, and edge clicks",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "",
-                  "projectName": "",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 2762,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-10-28T06:33:35.819Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "b840290ddcdf14d3be6e-56c6c7e963c8d3d418dc",
-              "file": "02_zen_navigation.spec.ts",
-              "line": 107,
-              "column": 3
-            },
-            {
-              "title": "NAV-2: Auto-erase ink on slide change before new slide paints",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "",
-                  "projectName": "",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 2507,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-10-28T06:33:38.597Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "b840290ddcdf14d3be6e-2a8b4d664fb8aec71f3c",
-              "file": "02_zen_navigation.spec.ts",
-              "line": 130,
-              "column": 3
-            },
-            {
-              "title": "NAV-3: Navigation chevrons are transparent overlays and do not take layout space",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "",
-                  "projectName": "",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 2121,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-10-28T06:33:41.119Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "b840290ddcdf14d3be6e-a25d717fcf3a4495125f",
-              "file": "02_zen_navigation.spec.ts",
-              "line": 161,
-              "column": 3
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "title": "03_toolbar_drawing.spec.ts",
-      "file": "03_toolbar_drawing.spec.ts",
-      "column": 0,
-      "line": 0,
-      "specs": [],
-      "suites": [
-        {
-          "title": "Section 5 & 6: Toolbar & Drawing Tools (TB-1 to TB-7, DRW-1 to DRW-7)",
-          "file": "03_toolbar_drawing.spec.ts",
-          "line": 4,
-          "column": 6,
-          "specs": [
-            {
-              "title": "TB-1 & TB-4: Toolbar draggable, clamped on-screen, resizable scale 0.5x-2.5x",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "",
-                  "projectName": "",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 2327,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-10-28T06:33:43.276Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "ed9d9f6b3693a063784a-9b38f5cfec89046ea238",
-              "file": "03_toolbar_drawing.spec.ts",
-              "line": 10,
-              "column": 3
-            },
-            {
-              "title": "TB-2: Ghost mode dims to ~20%, mic button stays >= 60% visible when listening",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "",
-                  "projectName": "",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 2398,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-10-28T06:33:45.617Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "ed9d9f6b3693a063784a-0d09ace9c7b603616925",
-              "file": "03_toolbar_drawing.spec.ts",
-              "line": 49,
-              "column": 3
-            },
-            {
-              "title": "TB-3 & TB-6: Two tiers attach to same bar, only one tool active at a time",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "",
-                  "projectName": "",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 2624,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-10-28T06:33:48.028Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "ed9d9f6b3693a063784a-14862e08644b97898055",
-              "file": "03_toolbar_drawing.spec.ts",
-              "line": 84,
-              "column": 3
-            },
-            {
-              "title": "DRW-1 & DRW-2: Pen and Marker drawing, single-path stroke without dark overlap",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "",
-                  "projectName": "",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 2636,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-10-28T06:33:50.664Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "ed9d9f6b3693a063784a-7e60fea137c1eeda7319",
-              "file": "03_toolbar_drawing.spec.ts",
-              "line": 117,
-              "column": 3
-            },
-            {
-              "title": "DRW-3: Eraser mode with cursor ring and size popover",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "",
-                  "projectName": "",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 2243,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-10-28T06:33:53.314Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "ed9d9f6b3693a063784a-d43b59749a81c433bad0",
-              "file": "03_toolbar_drawing.spec.ts",
-              "line": 152,
-              "column": 3
-            },
-            {
-              "title": "DRW-4: Shape tool creates Box, Circle, Ellipse, Line, Triangle and Arrow",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "",
-                  "projectName": "",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 1972,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-10-28T06:33:55.575Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "ed9d9f6b3693a063784a-5c98b5a178433f752015",
-              "file": "03_toolbar_drawing.spec.ts",
-              "line": 164,
-              "column": 3
-            },
-            {
-              "title": "DRW-6 & TB-7: Undo/Redo across drawing and clear actions",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "",
-                  "projectName": "",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 2389,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-10-28T06:33:57.564Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "ed9d9f6b3693a063784a-26e24b7f54fdf57b0822",
-              "file": "03_toolbar_drawing.spec.ts",
-              "line": 183,
-              "column": 3
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "title": "04_board_magnifier_media.spec.ts",
-      "file": "04_board_magnifier_media.spec.ts",
-      "column": 0,
-      "line": 0,
-      "specs": [],
-      "suites": [
-        {
-          "title": "Section 9, 10, 11 & 12: Blackboard, Media, Magnifier & Browser (BRD-1 to BRD-3, MAG-1 to MAG-4, MED-1 to MED-3, BRW-1)",
-          "file": "04_board_magnifier_media.spec.ts",
-          "line": 4,
-          "column": 6,
-          "specs": [
-            {
-              "title": "BRD-1 & BRD-2: Blackboard opens at 100% display, themes, and exact Pure Chroma Green #00FF00 pixel check",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "",
-                  "projectName": "",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 1980,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-10-28T06:33:59.972Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "2e328534b87a7fc0b85a-2af033a5f628b0547201",
-              "file": "04_board_magnifier_media.spec.ts",
-              "line": 10,
-              "column": 3
-            },
-            {
-              "title": "MAG-1 & MAG-2: Magnifier lens follow, size 120-600px and magnification 1.5-8x",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "",
-                  "projectName": "",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 2411,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-10-28T06:34:01.968Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "2e328534b87a7fc0b85a-8f72fe3836db2c258cda",
-              "file": "04_board_magnifier_media.spec.ts",
-              "line": 54,
-              "column": 3
-            },
-            {
-              "title": "MAG-4: Whole-slide zoom: 2.5x tap zoom, zoom in/out, and 1x reset chip",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "",
-                  "projectName": "",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 2444,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-10-28T06:34:04.392Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "2e328534b87a7fc0b85a-c16f9a582605a4e4bb72",
-              "file": "04_board_magnifier_media.spec.ts",
-              "line": 84,
-              "column": 3
-            },
-            {
-              "title": "MED-1 & MED-2: Media overlay windows management and compare tiling",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "",
-                  "projectName": "",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 1983,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-10-28T06:34:06.849Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "2e328534b87a7fc0b85a-afa02b013c3ae726e1d3",
-              "file": "04_board_magnifier_media.spec.ts",
-              "line": 107,
-              "column": 3
-            },
-            {
-              "title": "BRW-1: Browser overlay fallback card on web",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "",
-                  "projectName": "",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 1973,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-10-28T06:34:08.846Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "2e328534b87a7fc0b85a-fef1f435b3314b320de8",
-              "file": "04_board_magnifier_media.spec.ts",
-              "line": 124,
-              "column": 3
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "title": "05_ai_voice_settings.spec.ts",
-      "file": "05_ai_voice_settings.spec.ts",
-      "column": 0,
-      "line": 0,
-      "specs": [],
-      "suites": [
-        {
-          "title": "Section 13, 14, 15 & 16: AI, Voice, Settings & Privacy (AI-1 to AI-8, MIC-1 to MIC-3, SET-1 to SET-3, PRV-1, PWA-1)",
-          "file": "05_ai_voice_settings.spec.ts",
-          "line": 4,
-          "column": 6,
-          "specs": [
-            {
-              "title": "AI-1 & AI-7: Key vault AES-GCM security and zero requests without key",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "",
-                  "projectName": "",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 2055,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-10-28T06:34:10.858Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "3bbd55fcb2604f55c8ad-85aea17428bf783b1919",
-              "file": "05_ai_voice_settings.spec.ts",
-              "line": 10,
-              "column": 3
-            },
-            {
-              "title": "MIC-1 & MIC-2 & MIC-3: Mic is OFF by default, never auto-starts, visible in Tier 1 and header, 0 transcript in DOM",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "",
-                  "projectName": "",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 2128,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-10-28T06:34:12.924Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "3bbd55fcb2604f55c8ad-e390534077058aa65782",
-              "file": "05_ai_voice_settings.spec.ts",
-              "line": 61,
-              "column": 3
-            },
-            {
-              "title": "SET-1, SET-2 & SET-3: Settings 9 categories, search, and Complete App Data Wipe",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "",
-                  "projectName": "",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 2674,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-10-28T06:34:15.065Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "3bbd55fcb2604f55c8ad-9c704c96c8ffc799e440",
-              "file": "05_ai_voice_settings.spec.ts",
-              "line": 89,
-              "column": 3
-            },
-            {
-              "title": "PRV-1 & PRV-2: Privacy guarantees, 0 external trackers or fonts, strict CSP",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "",
-                  "projectName": "",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 2148,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-10-28T06:34:17.754Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "3bbd55fcb2604f55c8ad-4f5ca0bd6b5162f48ec6",
-              "file": "05_ai_voice_settings.spec.ts",
-              "line": 123,
-              "column": 3
-            },
-            {
-              "title": "PWA-1 & PWA-2: PWA Web Manifest and Offline Service Worker precache",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "",
-                  "projectName": "",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 2039,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-10-28T06:34:19.916Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "3bbd55fcb2604f55c8ad-65e4f58012910893b54c",
-              "file": "05_ai_voice_settings.spec.ts",
-              "line": 144,
-              "column": 3
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "title": "06_fuzz_watchdog_soak.spec.ts",
-      "file": "06_fuzz_watchdog_soak.spec.ts",
-      "column": 0,
-      "line": 0,
-      "specs": [],
-      "suites": [
-        {
-          "title": "Section 17: Fuzz Testing, Gesture Watchdog & Soak Test (Part C2, C4, C8)",
-          "file": "06_fuzz_watchdog_soak.spec.ts",
-          "line": 4,
-          "column": 6,
-          "specs": [
-            {
-              "title": "Part C2: Gesture Watchdog force-resets stuck gestures on blur, window hide, and 30s timeout",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "",
-                  "projectName": "",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 2275,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-10-28T06:34:21.982Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "0182c2f15022d35bac7d-b712b0537fb83875b77c",
-              "file": "06_fuzz_watchdog_soak.spec.ts",
-              "line": 10,
-              "column": 3
-            },
-            {
-              "title": "Part C4: 5,000 Rapid Pointer Sequences Fuzz Test",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "",
-                  "projectName": "",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 2287,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-10-28T06:34:24.270Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "0182c2f15022d35bac7d-19abbe3e3dcac6771027",
-              "file": "06_fuzz_watchdog_soak.spec.ts",
-              "line": 36,
-              "column": 3
-            },
-            {
-              "title": "Part C8: Soak and Memory Stability Simulation",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "",
-                  "projectName": "",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 2700,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-10-28T06:34:26.570Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "0182c2f15022d35bac7d-530133a3a1e66afcbc61",
-              "file": "06_fuzz_watchdog_soak.spec.ts",
+              "id": "85fc3abb0be5d697c21d-e327a1877151ad565784",
+              "file": "07_welcome_cleanup.spec.ts",
               "line": 109,
+              "column": 3
+            },
+            {
+              "title": "Test 3(e): OS file-handler dispatch via app-open-files transitions from welcome into deck",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 894,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-28T09:22:12.134Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "85fc3abb0be5d697c21d-931bd3cfac9652389f5b",
+              "file": "07_welcome_cleanup.spec.ts",
+              "line": 127,
+              "column": 3
+            },
+            {
+              "title": "Test 3(f): Zero console errors and zero connect network requests",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1393,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-28T09:22:13.043Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "85fc3abb0be5d697c21d-3d0ae3a9defe9e353a50",
+              "file": "07_welcome_cleanup.spec.ts",
+              "line": 157,
+              "column": 3
+            },
+            {
+              "title": "Test 4: Smoke flow verification (welcome -> open PDF -> draw -> shapes -> zoom/magnifier -> blackboard -> Close deck -> welcome; mic off at start; AI panel opens)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2196,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-28T09:22:14.456Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "85fc3abb0be5d697c21d-6a03b0fafe610d50c255",
+              "file": "07_welcome_cleanup.spec.ts",
+              "line": 188,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "08_voice_browser_fix.spec.ts",
+      "file": "08_voice_browser_fix.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Voice Command & Browser Redirection Fix Verification",
+          "file": "08_voice_browser_fix.spec.ts",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "1. Voice commands Page Next, Page Back, Slide Next, Slide Back navigate pages when mic is on",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3646,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-28T09:22:16.688Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "f6b4b5ad9848fe47bd4e-ecec978af7fcf73b62ab",
+              "file": "08_voice_browser_fix.spec.ts",
+              "line": 5,
+              "column": 3
+            },
+            {
+              "title": "2. Browser overlay default URL is https://www.google.com and toolbar button opens Google",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1284,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-28T09:22:20.348Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "f6b4b5ad9848fe47bd4e-4130abf37aac49c33091",
+              "file": "08_voice_browser_fix.spec.ts",
+              "line": 105,
               "column": 3
             }
           ]
@@ -1399,9 +441,9 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-10-28T06:33:00.384Z",
-    "duration": 89007.20400000001,
-    "expected": 35,
+    "startTime": "2026-10-28T09:22:07.522Z",
+    "duration": 14408.475,
+    "expected": 9,
     "skipped": 0,
     "unexpected": 0,
     "flaky": 0

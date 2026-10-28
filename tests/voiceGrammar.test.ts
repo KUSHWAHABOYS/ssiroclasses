@@ -4,6 +4,13 @@ import { matchCommandFromDict, normalizeSpeech, NUMBER_WORDS } from '../src/voic
 describe('MIC-4 Local Command Grammar Suite', () => {
   const navPhrases = [
       // Next variants
+      { phrase: 'Page Next', expected: 'next' },
+      { phrase: 'page next', expected: 'next' },
+      { phrase: 'Slide Next', expected: 'next' },
+      { phrase: 'slide next', expected: 'next' },
+      { phrase: 'next page', expected: 'next' },
+      { phrase: 'पेज नेक्स्ट', expected: 'next' },
+      { phrase: 'स्लाइड नेक्स्ट', expected: 'next' },
       { phrase: 'अगली स्लाइड', expected: 'next' },
       { phrase: 'आगे चलो', expected: 'next' },
       { phrase: 'अगला पेज', expected: 'next' },
@@ -13,6 +20,13 @@ describe('MIC-4 Local Command Grammar Suite', () => {
       { phrase: 'aage chalo', expected: 'next' },
 
       // Prev variants
+      { phrase: 'Page Back', expected: 'prev' },
+      { phrase: 'page back', expected: 'prev' },
+      { phrase: 'Slide Back', expected: 'prev' },
+      { phrase: 'slide back', expected: 'prev' },
+      { phrase: 'previous page', expected: 'prev' },
+      { phrase: 'पेज बैक', expected: 'prev' },
+      { phrase: 'स्लाइड बैक', expected: 'prev' },
       { phrase: 'पिछली स्लाइड', expected: 'prev' },
       { phrase: 'पीछे चलो', expected: 'prev' },
       { phrase: 'पिछला पेज', expected: 'prev' },
