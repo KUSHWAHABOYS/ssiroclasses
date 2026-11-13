@@ -32,6 +32,9 @@ import { gestureWatchdog } from './core/gestureWatchdog';
 import { deckLoader } from './presenter/loader';
 import { annotationStore } from './draw/annotationStore';
 import { keyVault } from './ai/keyVault';
+// AI-TRANSLATE: Import translator overlay and card managers
+import { translatorOverlayManager } from './ui/translatorOverlay';
+import { translatorCardManager } from './ui/translatorCard';
 
 // PWA auto-updater
 if ('serviceWorker' in navigator) {
@@ -111,6 +114,8 @@ class SmartStudioApp {
     zoomController.init();
     magnifierLensController.init();
     zoomGestureHandler.init();
+    // AI-TRANSLATE: Initialize Translator Overlay Manager
+    translatorOverlayManager.init();
 
     // SSIRO-UPDATE: touch-action:none on stage while Magnifier/Zoom are active per C7
     store.subscribe((state, prev) => {
@@ -146,6 +151,8 @@ class SmartStudioApp {
     w.__SMART_STUDIO_MIC__ = micController;
     w.__SMART_STUDIO_VOICE__ = voiceCommandService;
     w.__SMART_STUDIO_DRAW_ENGINE__ = drawingEngine;
+    w.__SMART_STUDIO_TRANSLATOR_OVERLAY__ = translatorOverlayManager;
+    w.__SMART_STUDIO_TRANSLATOR_CARD__ = translatorCardManager;
 
     console.log('✅ Smart Studio Presenter Pro ready.');
   }
@@ -188,6 +195,21 @@ class SmartStudioApp {
       const fileInput = document.getElementById('fileInputDeck') as HTMLInputElement;
       fileInput?.click();
     });
+    shortcutManager.register('layout', () => {
+      const current = store.getState().settings.fitMode;
+      const nextMode = current === 'fill' ? 'stretch' : current === 'stretch' ? 'fit' : 'fill';
+      store.updateSettings({ fitMode: nextMode });
+      const labels: Record<string, string> = {
+        fill: 'लेआउट: फ़ुल स्क्रीन (Fill 100%)',
+        stretch: 'लेआउट: 100% बोर्ड खिंचाव (Stretch)',
+        fit: 'लेआउट: ओरिजिनल अनुपात (Fit)'
+      };
+      window.dispatchEvent(
+        new CustomEvent('app-toast', {
+          detail: { message: `📐 ${labels[nextMode] || nextMode}` }
+        })
+      );
+    });
     // MIC-AI: Register V shortcut for mic toggle or push-to-talk
     shortcutManager.register('mic', () => {
       const s = store.getState().settings;
@@ -207,12 +229,20 @@ class SmartStudioApp {
       if (state.isGeminiOpen) geminiPanel.close();
       if (state.isWebOverlayOpen) webOverlay.close();
       if (state.isBoardMode) blackboardStudio.closeBoard();
+      translatorCardManager.close();
+      if (state.activeTool === 'translate') {
+        store.setState({ activeTool: 'select' });
+      }
     });
 
     window.addEventListener('close-all-overlays', () => {
       settingsPanel.close();
       geminiPanel.close();
       webOverlay.close();
+      translatorCardManager.close();
+      if (store.getState().activeTool === 'translate') {
+        store.setState({ activeTool: 'select' });
+      }
     });
   }
 

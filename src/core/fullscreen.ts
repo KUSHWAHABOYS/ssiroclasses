@@ -1,15 +1,26 @@
 import { store } from '../state/store';
+import { layerManager } from './layers';
+import { slideRenderer } from '../presenter/renderer';
 
 class FullscreenService {
   private wakeLock: any = null;
 
   constructor() {
-    document.addEventListener('fullscreenchange', () => {
+    const handleFullscreenState = () => {
       const isFs = !!document.fullscreenElement;
       if (store.getState().isZen !== isFs) {
         store.setState({ isZen: isFs });
       }
-    });
+      // Trigger instant dimension recomputation and slide cache clearance for 4K Full View
+      setTimeout(() => {
+        layerManager.updateDimensions();
+        slideRenderer.clearCache();
+        window.dispatchEvent(new CustomEvent('app-fullscreen-changed', { detail: { isZen: isFs } }));
+      }, 60);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenState);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenState);
 
     // Request wake lock to prevent screen dimming on 4K smart boards
     this.requestWakeLock();
@@ -34,6 +45,11 @@ class FullscreenService {
       console.warn('Browser fullscreen request failed (allowed if user gesture restricted):', err);
     }
     store.setState({ isZen: true, isToolbarVisibleInZen: true });
+    setTimeout(() => {
+      layerManager.updateDimensions();
+      slideRenderer.clearCache();
+      window.dispatchEvent(new CustomEvent('app-fullscreen-changed', { detail: { isZen: true } }));
+    }, 60);
   }
 
   async exitZen(): Promise<void> {
@@ -49,6 +65,11 @@ class FullscreenService {
       console.warn('Browser exit fullscreen failed:', err);
     }
     store.setState({ isZen: false, isToolbarVisibleInZen: true });
+    setTimeout(() => {
+      layerManager.updateDimensions();
+      slideRenderer.clearCache();
+      window.dispatchEvent(new CustomEvent('app-fullscreen-changed', { detail: { isZen: false } }));
+    }, 60);
   }
 
   toggleZen(): void {

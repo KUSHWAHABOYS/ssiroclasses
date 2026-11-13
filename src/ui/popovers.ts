@@ -10,15 +10,36 @@ export class PopoverManager {
   // AUDIT-FIX: BUG-002 - Track outside listener to prevent listener leaks
   private outsideListener: ((e: any) => void) | null = null;
 
+  isOpen(): boolean {
+    return this.activePopover !== null;
+  }
+
+  private getHost(): HTMLElement {
+    // Crucial for Full View: #stage is the fullscreen element.
+    // Appending to document.body puts popovers outside fullscreen top-layer, making them invisible!
+    return document.getElementById('stage') || document.body;
+  }
+
   showPenPopover(anchorEl: HTMLElement): void {
     this.close();
     const state = store.getState();
 
     const popover = document.createElement('div');
-    popover.className = 'popover';
+    popover.className = 'popover pen-popover';
     popover.innerHTML = `
       <div class="popover-header">
-        <span>पेन सेटिंग्स (Pen)</span>
+        <span>✏️ पेन सेटिंग्स (Pen Options)</span>
+      </div>
+      <div class="popover-row">
+        <label>
+          <span>त्वरित आकार (Quick Size)</span>
+        </label>
+        <div class="popover-presets" id="penQuickPresets">
+          <button type="button" class="popover-preset-btn ${state.penSize === 3 ? 'active' : ''}" data-size="3">3px बारीक</button>
+          <button type="button" class="popover-preset-btn ${state.penSize === 6 ? 'active' : ''}" data-size="6">6px मानक</button>
+          <button type="button" class="popover-preset-btn ${state.penSize === 12 ? 'active' : ''}" data-size="12">12px बोल्ड</button>
+          <button type="button" class="popover-preset-btn ${state.penSize === 20 ? 'active' : ''}" data-size="20">20px मार्कर</button>
+        </div>
       </div>
       <div class="popover-row">
         <label>
@@ -40,7 +61,7 @@ export class PopoverManager {
     `;
 
     this.positionPopover(popover, anchorEl);
-    document.body.appendChild(popover);
+    this.getHost().appendChild(popover);
     this.activePopover = popover;
 
     const sizeSlider = popover.querySelector('#penSizeSlider') as HTMLInputElement;
@@ -49,13 +70,29 @@ export class PopoverManager {
     const sizeVal = popover.querySelector('#penSizeVal') as HTMLElement;
     const alphaVal = popover.querySelector('#penAlphaVal') as HTMLElement;
 
-    sizeSlider.addEventListener('input', () => {
-      const sz = Number(sizeSlider.value);
+    const updateSize = (sz: number) => {
       sizeVal.textContent = `${sz}px`;
       dot.style.width = `${sz}px`;
       dot.style.height = `${sz}px`;
       store.setState({ penSize: sz });
       this.resetIdleTimer();
+    };
+
+    sizeSlider.addEventListener('input', () => {
+      const sz = Number(sizeSlider.value);
+      popover.querySelectorAll('#penQuickPresets .popover-preset-btn').forEach(b => b.classList.remove('active'));
+      updateSize(sz);
+    });
+
+    popover.querySelectorAll('#penQuickPresets .popover-preset-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const sz = Number(btn.getAttribute('data-size'));
+        sizeSlider.value = String(sz);
+        popover.querySelectorAll('#penQuickPresets .popover-preset-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        updateSize(sz);
+      });
     });
 
     alphaSlider.addEventListener('input', () => {
@@ -74,10 +111,21 @@ export class PopoverManager {
     const state = store.getState();
 
     const popover = document.createElement('div');
-    popover.className = 'popover';
+    popover.className = 'popover hl-popover';
     popover.innerHTML = `
       <div class="popover-header">
-        <span>हाइलाइटर सेटिंग्स (Highlighter)</span>
+        <span>🖍️ हाइलाइटर सेटिंग्स (Highlighter)</span>
+      </div>
+      <div class="popover-row">
+        <label>
+          <span>त्वरित चौड़ाई (Quick Width)</span>
+        </label>
+        <div class="popover-presets" id="hlQuickPresets">
+          <button type="button" class="popover-preset-btn ${state.highlighterWidth === 16 ? 'active' : ''}" data-width="16">16px पतला</button>
+          <button type="button" class="popover-preset-btn ${state.highlighterWidth === 28 ? 'active' : ''}" data-width="28">28px मानक</button>
+          <button type="button" class="popover-preset-btn ${state.highlighterWidth === 44 ? 'active' : ''}" data-width="44">44px चौड़ा</button>
+          <button type="button" class="popover-preset-btn ${state.highlighterWidth === 64 ? 'active' : ''}" data-width="64">64px मोटा</button>
+        </div>
       </div>
       <div class="popover-row">
         <label>
@@ -94,29 +142,48 @@ export class PopoverManager {
         <input type="range" class="popover-slider" id="hlAlphaSlider" min="10" max="60" value="${Math.round(state.highlighterAlpha * 100)}" />
       </div>
       <div class="brush-preview" style="background: #ffffff;">
-        <div style="width: 80%; height: ${state.highlighterWidth / 2}px; background-color: ${state.activeColor}; opacity: ${state.highlighterAlpha}; border-radius: 2px;"></div>
+        <div id="hlPreviewBar" style="width: 80%; height: ${state.highlighterWidth / 2}px; background-color: ${state.activeColor}; opacity: ${state.highlighterAlpha}; border-radius: 2px;"></div>
       </div>
     `;
 
     this.positionPopover(popover, anchorEl);
-    document.body.appendChild(popover);
+    this.getHost().appendChild(popover);
     this.activePopover = popover;
 
     const widthSlider = popover.querySelector('#hlWidthSlider') as HTMLInputElement;
     const alphaSlider = popover.querySelector('#hlAlphaSlider') as HTMLInputElement;
     const widthVal = popover.querySelector('#hlWidthVal') as HTMLElement;
     const alphaVal = popover.querySelector('#hlAlphaVal') as HTMLElement;
+    const previewBar = popover.querySelector('#hlPreviewBar') as HTMLElement;
+
+    const updateWidth = (w: number) => {
+      widthVal.textContent = `${w}px`;
+      if (previewBar) previewBar.style.height = `${w / 2}px`;
+      store.setState({ highlighterWidth: w });
+      this.resetIdleTimer();
+    };
 
     widthSlider.addEventListener('input', () => {
       const w = Number(widthSlider.value);
-      widthVal.textContent = `${w}px`;
-      store.setState({ highlighterWidth: w });
-      this.resetIdleTimer();
+      popover.querySelectorAll('#hlQuickPresets .popover-preset-btn').forEach(b => b.classList.remove('active'));
+      updateWidth(w);
+    });
+
+    popover.querySelectorAll('#hlQuickPresets .popover-preset-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const w = Number(btn.getAttribute('data-width'));
+        widthSlider.value = String(w);
+        popover.querySelectorAll('#hlQuickPresets .popover-preset-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        updateWidth(w);
+      });
     });
 
     alphaSlider.addEventListener('input', () => {
       const a = Number(alphaSlider.value) / 100;
       alphaVal.textContent = `${Math.round(a * 100)}%`;
+      if (previewBar) previewBar.style.opacity = `${a}`;
       store.setState({ highlighterAlpha: a });
       this.resetIdleTimer();
     });
@@ -129,18 +196,29 @@ export class PopoverManager {
     const state = store.getState();
 
     const popover = document.createElement('div');
-    popover.className = 'popover';
+    popover.className = 'popover eraser-popover';
     popover.innerHTML = `
       <div class="popover-header">
-        <span>रबर सेटिंग्स (Eraser)</span>
+        <span>🧹 इरेज़र सेटिंग्स (Eraser Options)</span>
       </div>
       <div class="popover-row">
         <label>
           <span>मोड (Eraser Mode)</span>
         </label>
         <div class="toggle-group">
-          <button class="toggle-btn ${state.eraserMode === 'pixel' ? 'active' : ''}" id="btnModePixel">Pixel</button>
-          <button class="toggle-btn ${state.eraserMode === 'stroke' ? 'active' : ''}" id="btnModeStroke">Stroke</button>
+          <button class="toggle-btn ${state.eraserMode === 'pixel' ? 'active' : ''}" id="btnModePixel">Pixel (पिक्सेल)</button>
+          <button class="toggle-btn ${state.eraserMode === 'stroke' ? 'active' : ''}" id="btnModeStroke">Stroke (स्ट्रोक मिटाएं)</button>
+        </div>
+      </div>
+      <div class="popover-row">
+        <label>
+          <span>त्वरित आकार (Quick Size)</span>
+        </label>
+        <div class="popover-presets" id="eraserQuickPresets">
+          <button type="button" class="popover-preset-btn ${state.eraserSize === 20 ? 'active' : ''}" data-size="20">20px छोटा</button>
+          <button type="button" class="popover-preset-btn ${state.eraserSize === 40 ? 'active' : ''}" data-size="40">40px मध्यम</button>
+          <button type="button" class="popover-preset-btn ${state.eraserSize === 80 ? 'active' : ''}" data-size="80">80px बड़ा</button>
+          <button type="button" class="popover-preset-btn ${state.eraserSize === 120 ? 'active' : ''}" data-size="120">120px विशाल</button>
         </div>
       </div>
       <div class="popover-row">
@@ -153,7 +231,7 @@ export class PopoverManager {
     `;
 
     this.positionPopover(popover, anchorEl);
-    document.body.appendChild(popover);
+    this.getHost().appendChild(popover);
     this.activePopover = popover;
 
     const sizeSlider = popover.querySelector('#eraserSizeSlider') as HTMLInputElement;
@@ -161,11 +239,27 @@ export class PopoverManager {
     const btnPixel = popover.querySelector('#btnModePixel') as HTMLElement;
     const btnStroke = popover.querySelector('#btnModeStroke') as HTMLElement;
 
-    sizeSlider.addEventListener('input', () => {
-      const s = Number(sizeSlider.value);
+    const updateEraserSize = (s: number) => {
       sizeVal.textContent = `${s}px`;
       store.setState({ eraserSize: s });
       this.resetIdleTimer();
+    };
+
+    sizeSlider.addEventListener('input', () => {
+      const s = Number(sizeSlider.value);
+      popover.querySelectorAll('#eraserQuickPresets .popover-preset-btn').forEach(b => b.classList.remove('active'));
+      updateEraserSize(s);
+    });
+
+    popover.querySelectorAll('#eraserQuickPresets .popover-preset-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const s = Number(btn.getAttribute('data-size'));
+        sizeSlider.value = String(s);
+        popover.querySelectorAll('#eraserQuickPresets .popover-preset-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        updateEraserSize(s);
+      });
     });
 
     btnPixel.addEventListener('click', () => {
@@ -227,7 +321,7 @@ export class PopoverManager {
     `;
 
     this.positionPopover(popover, anchorEl);
-    document.body.appendChild(popover);
+    this.getHost().appendChild(popover);
     this.activePopover = popover;
 
     popover.querySelector('#popoverToggleMic')?.addEventListener('click', () => {

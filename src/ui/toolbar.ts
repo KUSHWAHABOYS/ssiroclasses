@@ -53,6 +53,11 @@ export class Toolbar {
     this.bindStore();
     this.restorePositionAndScale();
 
+    // Prevent touch/swipe gestures on toolbar from bubbling to stage (so PPT slides don't change on toolbar swipe)
+    this.containerEl.addEventListener('touchstart', (e) => e.stopPropagation(), { passive: true });
+    this.containerEl.addEventListener('touchmove', (e) => e.stopPropagation(), { passive: true });
+    this.containerEl.addEventListener('touchend', (e) => e.stopPropagation(), { passive: true });
+
     // AUDIT-FIX: BUG-012 - Clamp toolbar on resize and orientationchange (TB-4, ZEN-4)
     window.addEventListener('resize', () => this.clampToViewport(), { passive: true });
     window.addEventListener('orientationchange', () => this.clampToViewport(), { passive: true });
@@ -82,25 +87,35 @@ export class Toolbar {
             <span class="btn-label">Select</span>
           </button>
 
-          <button class="tool-btn" id="btnToolPen" data-tool="pen" title="Pen (Tap again for size & opacity)">
+          <button class="tool-btn" id="btnToolPen" data-tool="pen" data-has-sub="true" title="पेन (Pen • टैप या दबाकर रखें सेटिंग्स हेतु)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
-            <span class="btn-label">Pen</span>
+            <span class="btn-label">Pen <span class="tool-sub-indicator">▾</span></span>
           </button>
 
-          <button class="tool-btn" id="btnToolHighlighter" data-tool="highlighter" title="Highlighter (Translucent marker)">
+          <button class="tool-btn" id="btnToolHighlighter" data-tool="highlighter" data-has-sub="true" title="हाइलाइटर (Highlighter • टैप या दबाकर रखें सेटिंग्स हेतु)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 11-6 6v3h3l6-6"/><path d="m22 12-4.6 4.6a2 2 0 0 1-2.8 0l-5.2-5.2a2 2 0 0 1 0-2.8L14 4"/></svg>
-            <span class="btn-label">Marker</span>
+            <span class="btn-label">Marker <span class="tool-sub-indicator">▾</span></span>
           </button>
 
-          <button class="tool-btn" id="btnToolEraser" data-tool="eraser" title="Eraser (Pixel / Stroke)">
+          <button class="tool-btn" id="btnToolEraser" data-tool="eraser" data-has-sub="true" title="इरेज़र (Eraser • टैप या दबाकर रखें सेटिंग्स हेतु)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/><path d="M22 21H7"/><path d="m5 11 9 9"/></svg>
-            <span class="btn-label">Eraser</span>
+            <span class="btn-label">Eraser <span class="tool-sub-indicator">▾</span></span>
           </button>
 
           <!-- SSIRO-UPDATE: Magnifier Button in Tier 1 next to Eraser -->
-          <button class="tool-btn" id="btnToolMagnifier" data-tool="magnifier" title="Magnifier Lens (🔍 Tap again for settings)">
+          <button class="tool-btn" id="btnToolMagnifier" data-tool="magnifier" data-has-sub="true" title="मैग्नीफ़ायर लेंस (Magnifier Lens • टैप या दबाकर रखें सेटिंग्स हेतु)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            <span class="btn-label">Lens</span>
+            <span class="btn-label">Lens <span class="tool-sub-indicator">▾</span></span>
+          </button>
+
+          <!-- AI TRANSLATE LENS: Live Area Translation Tool -->
+          <button class="tool-btn tool-ai-translate" id="btnToolTranslate" data-tool="translate" title="AI लाइव अनुवाद लेंस (English/Sanskrit/Pali ➔ Hindi)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="2" y1="12" x2="22" y2="12"/>
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1 4-10z"/>
+            </svg>
+            <span class="btn-label">AI अनुवाद</span>
           </button>
 
           <div class="swatch-group" id="swatchGroup">
@@ -146,6 +161,14 @@ export class Toolbar {
               <span class="mic-bar bar-3"></span>
             </div>
             <span class="btn-label">माइक / Mic</span>
+          </button>
+
+          <!-- Slide Fit / Full View Quick Toggle (In Tier 1, always visible) -->
+          <button class="tool-btn" id="btnToolFitModeTier1" title="स्लाइड दृश्य मोड बदलें (Full / Fit / Stretch • L)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
+            </svg>
+            <span class="btn-label" id="btnToolFitModeTier1Label">फुल व्यू</span>
           </button>
 
           <!-- More / Less Button -->
@@ -227,6 +250,12 @@ export class Toolbar {
           <button class="tool-btn" id="btnSettings" title="Studio Settings">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
             <span class="btn-label">Settings</span>
+          </button>
+
+          <!-- Slide Fit / Full View Quick Toggle -->
+          <button class="tool-btn" id="btnToolFitMode" title="स्लाइड दृश्य मोड बदलें (Fit: 16:9 / Fill View)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
+            <span class="btn-label" id="btnToolFitModeLabel">${store.getState().settings.fitMode === 'fill' ? 'Fill' : 'Fit'}</span>
           </button>
 
           <!-- Fullscreen Zen button -->
@@ -612,15 +641,83 @@ export class Toolbar {
   }
 
   private bindEvents(): void {
-    // Tool buttons (including individual shapes)
+    // Helper to open or toggle tool popovers
+    const openSubPopover = (tool: ActiveTool, anchorEl: HTMLElement, forceOpen = false) => {
+      if (tool === 'pen') {
+        if (!forceOpen && popoverManager.isOpen()) {
+          popoverManager.close();
+        } else {
+          popoverManager.showPenPopover(anchorEl);
+        }
+      } else if (tool === 'highlighter') {
+        if (!forceOpen && popoverManager.isOpen()) {
+          popoverManager.close();
+        } else {
+          popoverManager.showHighlighterPopover(anchorEl);
+        }
+      } else if (tool === 'eraser') {
+        if (!forceOpen && popoverManager.isOpen()) {
+          popoverManager.close();
+        } else {
+          popoverManager.showEraserPopover(anchorEl);
+        }
+      } else if (tool === 'magnifier') {
+        if (!forceOpen && zoomPopoverManager.isOpen()) {
+          zoomPopoverManager.close();
+        } else {
+          zoomPopoverManager.showMagnifierPopover(anchorEl);
+        }
+      }
+    };
+
+    // Tool buttons (including individual shapes & sub-menus)
     const toolBtns = this.containerEl.querySelectorAll<HTMLButtonElement>('[data-tool]');
     toolBtns.forEach((btn) => {
+      const tool = btn.getAttribute('data-tool') as ActiveTool;
+      const hasSub = btn.hasAttribute('data-has-sub') || ['pen', 'highlighter', 'eraser', 'magnifier'].includes(tool);
+      let pressTimer: number | null = null;
+      let isLongPressed = false;
+
+      // Long-press detection (350ms) for digital touch boards
+      if (hasSub) {
+        btn.addEventListener('pointerdown', () => {
+          isLongPressed = false;
+          pressTimer = window.setTimeout(() => {
+            isLongPressed = true;
+            try { navigator.vibrate?.(40); } catch {}
+            store.setState({ activeTool: tool });
+            openSubPopover(tool, btn, true);
+          }, 350);
+        });
+
+        const cancelPressTimer = () => {
+          if (pressTimer !== null) {
+            clearTimeout(pressTimer);
+            pressTimer = null;
+          }
+        };
+
+        btn.addEventListener('pointerup', cancelPressTimer);
+        btn.addEventListener('pointercancel', cancelPressTimer);
+        btn.addEventListener('pointerleave', cancelPressTimer);
+
+        btn.addEventListener('contextmenu', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          store.setState({ activeTool: tool });
+          openSubPopover(tool, btn, true);
+        });
+      }
+
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
-        const tool = btn.getAttribute('data-tool') as ActiveTool;
+        if (isLongPressed) {
+          isLongPressed = false;
+          return;
+        }
+
         const shape = btn.getAttribute('data-shape') as ShapeType | null;
         const currentTool = store.getState().activeTool;
-        const currentShape = store.getState().activeShape;
 
         if (tool === 'shape' && shape) {
           popoverManager.close();
@@ -630,16 +727,9 @@ export class Toolbar {
         }
 
         if (tool === currentTool) {
-          // Centered in-place popover for Pen, Highlighter, Eraser, Magnifier per spec
-          if (tool === 'pen') {
-            popoverManager.showPenPopover(btn);
-          } else if (tool === 'highlighter') {
-            popoverManager.showHighlighterPopover(btn);
-          } else if (tool === 'eraser') {
-            popoverManager.showEraserPopover(btn);
-          } else if (tool === 'magnifier') {
-            // SSIRO-UPDATE: Open Magnifier Settings Popover directly above button
-            zoomPopoverManager.showMagnifierPopover(btn);
+          // If already selected, toggle its sub-menu popover
+          if (hasSub) {
+            openSubPopover(tool, btn);
           }
         } else {
           popoverManager.close();
@@ -840,6 +930,30 @@ export class Toolbar {
       window.dispatchEvent(new CustomEvent('toggle-settings'));
     });
 
+    // Slide Fit / Fill View Mode Toggle button
+    const handleFitToggle = (e?: Event) => {
+      e?.stopPropagation();
+      const current = store.getState().settings.fitMode;
+      const nextMode = current === 'fill' ? 'stretch' : current === 'stretch' ? 'fit' : 'fill';
+      store.updateSettings({ fitMode: nextMode });
+      const labels: Record<string, string> = {
+        fill: 'स्लाइड दृश्य: पूर्ण पर्दा (Fill 100%)',
+        stretch: 'स्लाइड दृश्य: 100% बोर्ड खिंचाव (Stretch)',
+        fit: 'स्लाइड दृश्य: प्राकृतिक फिट (Fit 16:9)'
+      };
+      window.dispatchEvent(
+        new CustomEvent('app-toast', {
+          detail: {
+            message: labels[nextMode] || nextMode
+          }
+        })
+      );
+    };
+
+    document.getElementById('btnToolFitMode')?.addEventListener('click', handleFitToggle);
+    document.getElementById('btnToolFitModeTier1')?.addEventListener('click', handleFitToggle);
+    document.getElementById('btnFitToggleHeader')?.addEventListener('click', handleFitToggle);
+
     // Fullscreen button
     document.getElementById('btnFullscreen')?.addEventListener('click', () => {
       fullscreenService.toggleZen();
@@ -889,6 +1003,19 @@ export class Toolbar {
       // Toolbar scale update
       if (state.settings.toolbarScale !== prev.settings.toolbarScale) {
         this.applyScale(state.settings.toolbarScale || 1.0, false);
+      }
+
+      // Slide Fit mode button label sync
+      if (state.settings.fitMode !== prev.settings.fitMode) {
+        const text = state.settings.fitMode === 'fill' ? 'Fill' : state.settings.fitMode === 'stretch' ? 'Stretch' : 'Fit';
+        const lbl = document.getElementById('btnToolFitModeLabel');
+        if (lbl) {
+          lbl.textContent = text;
+        }
+        const lbl1 = document.getElementById('btnToolFitModeTier1Label');
+        if (lbl1) {
+          lbl1.textContent = text === 'Fill' ? 'Fill 100%' : text;
+        }
       }
 
       // Zen mode toolbar visibility

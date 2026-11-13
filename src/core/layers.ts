@@ -50,6 +50,8 @@ export class LayerManager {
 
     window.addEventListener('resize', handleResize, { passive: true });
     window.addEventListener('orientationchange', handleResize, { passive: true });
+    document.addEventListener('fullscreenchange', handleResize, { passive: true });
+    document.addEventListener('webkitfullscreenchange', handleResize, { passive: true });
     this.updateDimensions();
   }
 
@@ -57,13 +59,17 @@ export class LayerManager {
     const rect = this.stageEl.getBoundingClientRect();
     const cssWidth = Math.max(320, Math.floor(rect.width || window.innerWidth));
     const cssHeight = Math.max(240, Math.floor(rect.height || window.innerHeight));
-    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    const dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
 
-    // Slide canvas
-    this.slideCanvas.width = cssWidth;
-    this.slideCanvas.height = cssHeight;
+    // Slide canvas (scaled by dpr for pristine 4K sharpness)
+    this.slideCanvas.width = Math.floor(cssWidth * dpr);
+    this.slideCanvas.height = Math.floor(cssHeight * dpr);
     this.slideCanvas.style.width = `${cssWidth}px`;
     this.slideCanvas.style.height = `${cssHeight}px`;
+    this.slideCtx.resetTransform?.();
+    this.slideCtx.scale(dpr, dpr);
+    this.slideCtx.imageSmoothingEnabled = true;
+    this.slideCtx.imageSmoothingQuality = 'high';
 
     // Annotation canvas (scaled by dpr for 4K sharpness)
     this.annotationCanvas.width = Math.floor(cssWidth * dpr);

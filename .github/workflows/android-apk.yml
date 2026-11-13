@@ -1,0 +1,133 @@
+name: Build Signed Android APK
+
+on:
+  push:
+    branches: [main, "release/**"]
+    tags: ["v*"]
+  workflow_dispatch: # Manual trigger from GitHub UI
+
+jobs:
+  build-apk:
+    name: Build & Sign Release APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    env:
+      ANDROID_HOME: /usr/local/lib/android/sdk
+      ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+
+    steps:
+      # ── 1. Checkout ────────────────────────────────────────────────────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ── 2. Setup Node.js ───────────────────────────────────────────────────
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      # ── 3. Setup JDK 21 ───────────────────────────────────────────────────
+      - name: Setup JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      # ── 4. Setup Android SDK ───────────────────────────────────────────────
+      - name: Setup Android SDK Licenses & Tools
+        run: |
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-35" "build-tools;35.0.0"
+
+      # ── 5. Setup Gradle ───────────────────────────────────────────────────
+      - name: Setup Gradle 8.10.2
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 8.10.2
+
+      # ── 6. Install npm dependencies ────────────────────────────────────────
+      - name: Install npm dependencies
+        run: npm install
+
+      # ── 7. Build web assets ────────────────────────────────────────────────
+      - name: Build web application
+        run: npm run build
+
+      # ── 8. Sync with Capacitor Android ─────────────────────────────────────
+      - name: Capacitor sync Android
+        run: npx cap sync android
+
+      # ── 9. Keystore setup ─────────────────────────────────────────────────
+      - name: Setup Keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
+        run: |
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "Using secret-configured release keystore..."
+            echo "$KEYSTORE_BASE64" | base64 --decode > android/smart-studio-release.jks
+            printf "storeFile=../smart-studio-release.jks\nstorePassword=%s\nkeyAlias=%s\nkeyPassword=%s\n" \
+              "$STORE_PASSWORD" "$KEY_ALIAS" "$KEY_PASSWORD" > android/keystore.properties
+          else
+            echo "Generating automated signing keystore for build..."
+            keytool -genkey -v -keystore android/smart-studio-release.jks -alias studio \
+              -keyalg RSA -keysize 2048 -validity 10000 \
+              -storepass smartstudio123 -keypass smartstudio123 \
+              -dname "CN=SmartStudio, OU=Education, O=SmartStudio, L=City, ST=State, C=IN"
+            printf "storeFile=../smart-studio-release.jks\nstorePassword=smartstudio123\nkeyAlias=studio\nkeyPassword=smartstudio123\n" > android/keystore.properties
+          fi
+
+      # ── 10. Ensure Gradle Wrapper exists & is executable ───────────────────
+      - name: Prepare Gradle Wrapper
+        working-directory: android
+        run: |
+          if [ ! -f "gradlew" ]; then
+            echo "Generating gradlew wrapper..."
+            gradle wrapper --gradle-version 8.10.2
+          fi
+          chmod +x gradlew
+
+      # ── 11. Build release APK ─────────────────────────────────────────────
+      - name: Build release APK (Gradle assembleRelease)
+        working-directory: android
+        continue-on-error: true
+        run: ./gradlew assembleRelease --stacktrace --no-daemon
+
+      # ── 12. Build debug APK (backup) ──────────────────────────────────────
+      - name: Build debug APK
+        working-directory: android
+        run: ./gradlew assembleDebug --no-daemon
+
+      # ── 13. Get version ───────────────────────────────────────────────────
+      - name: Get version
+        id: version
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      # ── 14. Collect APKs ──────────────────────────────────────────────────
+      - name: Collect APK files
+        run: |
+          mkdir -p dist-apk
+          VERSION=${{ steps.version.outputs.version }}
+          if [ -f android/app/build/outputs/apk/release/app-release.apk ]; then
+            cp android/app/build/outputs/apk/release/app-release.apk "dist-apk/Smart-Studio-v${VERSION}-release.apk"
+          fi
+          if [ -f android/app/build/outputs/apk/debug/app-debug.apk ]; then
+            cp android/app/build/outputs/apk/debug/app-debug.apk "dist-apk/Smart-Studio-v${VERSION}-debug.apk"
+          fi
+          cd dist-apk
+          sha256sum *.apk > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+
+      # ── 15. Upload APK artifacts ──────────────────────────────────────────
+      - name: Upload APK artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: smart-studio-apk-v${{ steps.version.outputs.version }}
+          path: dist-apk/
+          retention-days: 90

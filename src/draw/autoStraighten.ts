@@ -133,3 +133,4 @@ export function detectAndStraightenLine(
 
   return { start: snappedStart, end: snappedEnd, isUnderline };
 }
+

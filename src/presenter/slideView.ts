@@ -30,6 +30,14 @@ export class SlideView {
 
     // Listen for resize to re-render current slide sharply
     layerManager.onResize(() => {
+      slideRenderer.clearCache();
+      this.reRenderCurrentSlide();
+    });
+
+    // Listen for Full View (Zen Fullscreen) transitions to auto-adjust slide
+    window.addEventListener('app-fullscreen-changed', () => {
+      slideRenderer.clearCache();
+      layerManager.updateDimensions();
       this.reRenderCurrentSlide();
     });
 
@@ -60,6 +68,12 @@ export class SlideView {
     const btnZen = document.getElementById('btnZenToggle');
     btnZen?.addEventListener('click', () => {
       fullscreenService.toggleZen();
+    });
+
+    // Quick Fit / View Mode Toggle in Header
+    const btnFitMode = document.getElementById('btnFitModeHeader');
+    btnFitMode?.addEventListener('click', () => {
+      this.toggleFitMode();
     });
 
     // WELCOME-CLEANUP: Removed btnConnectBoardHeader listener
@@ -130,38 +144,37 @@ export class SlideView {
   }
 
   private async handleIncomingFiles(files: File[]): Promise<void> {
-    const pdfFile = files.find(f => f.name.toLowerCase().endsWith('.pdf'));
-    const pptxFile = files.find(f => f.name.toLowerCase().endsWith('.pptx'));
+    const pdfFile = files.find(f => /\.pdf$/i.test(f.name) || f.type === 'application/pdf');
+    const pptxFile = files.find(f => /\.(pptx|ppt)$/i.test(f.name));
     const imageFiles = files.filter(f => /\.(jpe?g|png|webp)$/i.test(f.name));
 
     if (pdfFile) {
-      this.showToast(`PDF लोड हो रहा है / Loading PDF: ${pdfFile.name}...`);
+      this.showToast(`PDF लोड हो रहा है: ${pdfFile.name}...`);
       try {
         const deck = await deckLoader.loadPDF(pdfFile, pdfFile.name);
         this.applyDeck(deck);
+        this.showToast(`PDF लोड हो गई: ${deck.totalPages} पेज`);
       } catch (err: any) {
         console.error('PDF Load Error:', err);
-        // WELCOME-FIX: Stay on welcome screen and show bilingual error toast
-        this.showToast(`त्रुटि / Error loading PDF: ${err.message || 'Invalid or corrupt file'}`, true);
+        alert(`PDF लोड करने में त्रुटि आई:\n${err.message || 'फाइल नहीं खुल सकी'}\n\nकृपया सुनिश्चित करें कि फाइल एक वैध PDF है।`);
+        this.showToast(`त्रुटि: ${err.message || 'PDF लोड नहीं हो सकी'}`, true);
       }
     } else if (pptxFile) {
-      // PPTX guidance dialog per B3.4
       this.showPPTXGuidanceDialog(pptxFile);
     } else if (imageFiles.length > 0) {
-      this.showToast(`छवियां लोड हो रही हैं / Loading ${imageFiles.length} images...`);
+      this.showToast(`छवियां लोड हो रही हैं: ${imageFiles.length} स्लाइड...`);
       try {
         const deck = await deckLoader.loadImages(imageFiles);
         this.applyDeck(deck);
       } catch (err: any) {
         console.error('Image Deck Error:', err);
-        // WELCOME-FIX: Stay on welcome screen and show bilingual error toast
-        this.showToast(`त्रुटि / Error loading images: ${err.message || 'Invalid or corrupt file'}`, true);
+        this.showToast(`त्रुटि: ${err.message || 'इमेज लोड नहीं हो सकी'}`, true);
       }
     }
   }
 
   private showPPTXGuidanceDialog(file: File): void {
-    const msg = `PowerPoint (.pptx) फ़ाइलें ब्राउज़र में सीधे 100% शुद्धता के साथ रेंडर नहीं हो सकती हैं।\n\nसर्वोत्तम और तीक्ष्ण 4K प्रस्तुति के लिए, कृपया PowerPoint या Google Slides में 'Save As PDF' या 'Export PDF' करें और PDF फ़ाइल यहाँ अपलोड करें।`;
+    const msg = `PowerPoint (${file.name}) को 4K स्मार्ट बोर्ड पर सबसे तेज़ और क्रिस्टल-क्लीयर चलाने के लिए इसे PDF रूप में लोड किया जाता है।\n\n📌 आसान तरीका:\n1. PowerPoint में इस फ़ाइल को खोलें और कीबोर्ड पर 'F12' दबाएँ।\n2. 'Save as type' में 'PDF (*.pdf)' चुनें और सेव कर दें।\n3. फिर उस PDF को Smart Studio में लोड करें!\n\n(💡 मैंने आपके डेस्कटॉप पर 'Convert-PPT-to-PDF' टूल भी बना दिया है, जिस पर PPT डालते ही वह तुरंत PDF बन जाती है!)`;
     alert(msg);
   }
 
@@ -239,6 +252,21 @@ export class SlideView {
     }
   }
 
+  toggleFitMode(): void {
+    const current = store.getState().settings.fitMode;
+    const nextMode = current === 'fill' ? 'fit' : 'fill';
+    store.updateSettings({ fitMode: nextMode });
+    this.updateFitModeUI(nextMode);
+    this.showToast(nextMode === 'fill' ? 'स्लाइड दृश्य: पूर्ण पर्दा (Fill Screen)' : 'स्लाइड दृश्य: प्राकृतिक फिट (Fit 16:9)');
+  }
+
+  updateFitModeUI(mode: string): void {
+    const btnText = document.getElementById('btnFitModeText');
+    if (btnText) {
+      btnText.textContent = mode === 'fill' ? 'Fill View' : 'Fit: 16:9';
+    }
+  }
+
   private bindStore(): void {
     store.subscribe((state, prev) => {
       if (state.currentPage !== prev.currentPage || state.totalPages !== prev.totalPages) {
@@ -249,9 +277,15 @@ export class SlideView {
         this.channelNameEl.textContent = state.settings.channelName;
       }
 
-      if (state.settings.fitMode !== prev.settings.fitMode || state.settings.renderQuality !== prev.settings.renderQuality) {
+      if (
+        state.settings.fitMode !== prev.settings.fitMode ||
+        state.settings.renderQuality !== prev.settings.renderQuality ||
+        state.isZen !== prev.isZen
+      ) {
         slideRenderer.clearCache();
+        layerManager.updateDimensions();
         this.reRenderCurrentSlide();
+        this.updateFitModeUI(state.settings.fitMode);
       }
     });
   }

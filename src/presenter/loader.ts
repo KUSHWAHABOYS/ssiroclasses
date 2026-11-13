@@ -1,8 +1,12 @@
-import * as pdfjsLib from 'pdfjs-dist';
+import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf.mjs';
 import { DeckInfo, DeckPage } from '../state/store';
 
-// Configure local worker (bundled locally in public, zero CDN reliance)
-pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
+const CDN_WORKER_URL = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.worker.min.mjs';
+
+// Configure robust CDN worker URL
+try {
+  (pdfjsLib as any).GlobalWorkerOptions.workerSrc = CDN_WORKER_URL;
+} catch (_) {}
 
 const DB_NAME = 'SmartStudioDecksDB';
 const STORE_NAME = 'decks';
@@ -42,8 +46,31 @@ export async function saveDeckToIndexedDB(deck: DeckInfo, blob?: Blob): Promise<
 export class DeckLoader {
   async loadPDF(file: File | Blob, name: string): Promise<DeckInfo> {
     const arrayBuffer = await file.arrayBuffer();
-    const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
-    const pdfDoc = await loadingTask.promise;
+    const uint8 = new Uint8Array(arrayBuffer);
+
+    try {
+      (pdfjsLib as any).GlobalWorkerOptions.workerSrc = CDN_WORKER_URL;
+    } catch (_) {}
+
+    let pdfDoc: any;
+    try {
+      const loadingTask = (pdfjsLib as any).getDocument({
+        data: uint8,
+        cMapUrl: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/cmaps/',
+        cMapPacked: true,
+      });
+      pdfDoc = await loadingTask.promise;
+    } catch (workerErr: any) {
+      console.warn('Primary parse failed, retrying simple fallback...', workerErr);
+      try {
+        const fallbackTask = (pdfjsLib as any).getDocument({
+          data: uint8,
+        });
+        pdfDoc = await fallbackTask.promise;
+      } catch (finalErr: any) {
+        throw new Error(finalErr?.message || workerErr?.message || 'PDF पार्स नहीं हो सका');
+      }
+    }
 
     const pages: DeckPage[] = [];
     for (let i = 1; i <= pdfDoc.numPages; i++) {
@@ -98,12 +125,10 @@ export class DeckLoader {
     return new Promise((resolve, reject) => {
       const img = new Image();
       img.onload = () => resolve(img);
-      img.onerror = reject;
+      img.onerror = () => reject(new Error('Failed to load image slide'));
       img.src = url;
     });
   }
-
-  // AUDIT-FIX: BUG-001 - Removed createSampleDeck and sample slide assets per WEL-7
 }
 
 export const deckLoader = new DeckLoader();

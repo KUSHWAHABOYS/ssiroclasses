@@ -23,8 +23,14 @@
   touch-action: none;
 }
 
-#annotationCanvas, #previewCanvas, #slideCanvas {
+#annotationCanvas, #previewCanvas {
   touch-action: none;
+}
+
+#slideCanvas {
+  touch-action: none;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
 }
 
 /* z-index mapping */

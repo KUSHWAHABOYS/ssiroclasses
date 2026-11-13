@@ -43,6 +43,14 @@ export class InputCoordinator {
 
     // Touch gesture tracking for double-tap and swipe
     stage.addEventListener('touchstart', (e: TouchEvent) => {
+      // Don't track gestures if touch originated on toolbar, header, modals or controls
+      const target = e.target as HTMLElement;
+      if (target?.closest('.toolbar-container, .board-dock, .header, .web-overlay, .gemini-panel, .settings-modal, .welcome-screen, .popover, .pinned-lens-container, .translation-card, .translator-overlay, .pinned-translation-note')) {
+        this.touchCount = 0;
+        this.touchStartTime = 0;
+        return;
+      }
+
       this.touchCount = e.touches.length;
       if (e.touches.length === 1) {
         const touch = e.touches[0];
@@ -60,6 +68,12 @@ export class InputCoordinator {
     }, { passive: true });
 
     stage.addEventListener('touchend', (e: TouchEvent) => {
+      const target = e.target as HTMLElement;
+      if (target?.closest('.toolbar-container, .board-dock, .header, .web-overlay, .gemini-panel, .settings-modal, .welcome-screen, .popover, .pinned-lens-container, .translation-card, .translator-overlay, .pinned-translation-note')) {
+        return;
+      }
+      if (this.touchStartTime === 0) return;
+
       const now = performance.now();
       const duration = now - this.touchStartTime;
       const touch = e.changedTouches[0];

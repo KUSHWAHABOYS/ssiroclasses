@@ -123,14 +123,18 @@ export class DrawingEngine {
       }
       return;
     }
-    // SSIRO-UPDATE: Magnifier & Zoom tools do not draw ink
-    if (state.activeTool === 'magnifier' || state.activeTool === 'zoom') return;
+    // SSIRO-UPDATE: Magnifier, Zoom & Translate tools do not draw ink
+    if (state.activeTool === 'magnifier' || state.activeTool === 'zoom' || state.activeTool === 'translate') return;
 
-    // Palm rejection: if stylus was used and this event is a wide finger touch, reject
+    // Palm rejection: reject secondary touches while drawing (resting palm on board)
+    if (this.isDrawing) return;
+    if (!e.isPrimary && e.pointerType === 'touch') return;
+
+    // Palm rejection: reject wide contact areas typical of resting palm/hand (>24px)
     if (e.pointerType === 'pen') {
       this.hasStylusEverBeenUsed = true;
-    } else if (e.pointerType === 'touch' && this.hasStylusEverBeenUsed) {
-      if ((e.width && e.width > 36) || (e.height && e.height > 36)) {
+    } else if (e.pointerType === 'touch') {
+      if ((e.width && e.width > 24) || (e.height && e.height > 24)) {
         return; // Reject palm contact
       }
     }
@@ -162,6 +166,7 @@ export class DrawingEngine {
     const wf = this.getWidthScaleFactor();
 
     if (state.activeTool === 'eraser') {
+      annotationStore.saveSnapshot();
       this.updateEraserCursor(e.clientX, e.clientY, state.eraserSize, true);
       this.executeEraser(point);
     } else if (state.activeTool === 'pen') {
@@ -454,18 +459,19 @@ export class DrawingEngine {
   private executeEraser(point: Point): void {
     const state = store.getState();
     const wf = this.getWidthScaleFactor();
-    if (state.eraserMode === 'stroke') {
-      annotationStore.eraseStrokeAt(point, (state.eraserSize / 2) * wf);
-    } else {
-      // Pixel eraser using destination-out
-      const ctx = layerManager.annotationCtx;
-      ctx.save();
-      ctx.globalCompositeOperation = 'destination-out';
-      ctx.beginPath();
-      ctx.arc(point.x, point.y, (state.eraserSize / 2) * wf, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.restore();
-    }
+    const radius = Math.max(16, (state.eraserSize / 2) * wf);
+
+    // 1. Permanently remove stroke points from vector memory so they NEVER reappear on redraw
+    annotationStore.eraseStrokeAt(point, radius);
+
+    // 2. Also visually clear pixels with destination-out for instant zero-lag feedback
+    const ctx = layerManager.annotationCtx;
+    ctx.save();
+    ctx.globalCompositeOperation = 'destination-out';
+    ctx.beginPath();
+    ctx.arc(point.x, point.y, radius, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
   }
 
   private renderPenPreview(): void {

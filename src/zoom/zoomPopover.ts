@@ -10,6 +10,14 @@ export class ZoomPopoverManager {
   // AUDIT-FIX: BUG-002 - Track outside listener to prevent listener leaks
   private outsideListener: ((e: any) => void) | null = null;
 
+  isOpen(): boolean {
+    return this.activePopover !== null;
+  }
+
+  private getHost(): HTMLElement {
+    return document.getElementById('stage') || document.body;
+  }
+
   showMagnifierPopover(anchorEl: HTMLElement): void {
     this.close();
     const settings = store.getState().settings;
@@ -22,7 +30,18 @@ export class ZoomPopoverManager {
     popover.style.minWidth = '280px';
     popover.innerHTML = `
       <div class="popover-header">
-        <span>मैग्नीफ़ायर सेटिंग्स (Magnifier)</span>
+        <span>🔍 मैग्नीफ़ायर सेटिंग्स (Magnifier)</span>
+      </div>
+
+      <!-- Quick Zoom presets -->
+      <div class="popover-row">
+        <label><span>त्वरित आवर्धन (Quick Zoom)</span></label>
+        <div class="popover-presets" id="magQuickPresets">
+          <button type="button" class="popover-preset-btn ${(settings.magnifierZoom || 3.0) === 2.0 ? 'active' : ''}" data-zoom="2.0">2× स्पष्ट</button>
+          <button type="button" class="popover-preset-btn ${(settings.magnifierZoom || 3.0) === 3.0 ? 'active' : ''}" data-zoom="3.0">3× मानक</button>
+          <button type="button" class="popover-preset-btn ${(settings.magnifierZoom || 3.0) === 4.0 ? 'active' : ''}" data-zoom="4.0">4× बड़ा</button>
+          <button type="button" class="popover-preset-btn ${(settings.magnifierZoom || 3.0) === 6.0 ? 'active' : ''}" data-zoom="6.0">6× सूक्ष्म</button>
+        </div>
       </div>
 
       <!-- Size -->
@@ -93,7 +112,7 @@ export class ZoomPopoverManager {
     `;
 
     this.positionPopover(popover, anchorEl);
-    document.body.appendChild(popover);
+    this.getHost().appendChild(popover);
     this.activePopover = popover;
 
     // Events
@@ -108,11 +127,27 @@ export class ZoomPopoverManager {
 
     const zoomSlider = popover.querySelector('#magZoomSlider') as HTMLInputElement;
     const zoomVal = popover.querySelector('#magZoomVal') as HTMLElement;
-    zoomSlider?.addEventListener('input', () => {
-      const v = Number(zoomSlider.value);
+    const updateZoom = (v: number) => {
       zoomVal.textContent = `${v}×`;
       store.updateSettings({ magnifierZoom: v });
       this.resetIdleTimer();
+    };
+
+    zoomSlider?.addEventListener('input', () => {
+      const v = Number(zoomSlider.value);
+      popover.querySelectorAll('#magQuickPresets .popover-preset-btn').forEach(b => b.classList.remove('active'));
+      updateZoom(v);
+    });
+
+    popover.querySelectorAll('#magQuickPresets .popover-preset-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const z = Number(btn.getAttribute('data-zoom'));
+        if (zoomSlider) zoomSlider.value = String(z);
+        popover.querySelectorAll('#magQuickPresets .popover-preset-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        updateZoom(z);
+      });
     });
 
     // Shape buttons

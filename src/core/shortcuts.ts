@@ -2,7 +2,7 @@ import { store } from '../state/store';
 import { fullscreenService } from './fullscreen';
 
 // MIC-AI: Registered 'mic' shortcut action (V key)
-export type ShortcutAction = 'next' | 'prev' | 'first' | 'last' | 'zen' | 'board' | 'closeOverlay' | 'openDeck' | 'mic';
+export type ShortcutAction = 'next' | 'prev' | 'first' | 'last' | 'zen' | 'board' | 'closeOverlay' | 'openDeck' | 'mic' | 'layout';
 
 export class ShortcutManager {
   private handlers: Map<ShortcutAction, () => void> = new Map();
@@ -88,6 +88,12 @@ export class ShortcutManager {
       case 'V':
         e.preventDefault();
         this.dispatch('mic');
+        break;
+
+      case 'l':
+      case 'L':
+        e.preventDefault();
+        this.dispatch('layout');
         break;
 
       case 'Escape':

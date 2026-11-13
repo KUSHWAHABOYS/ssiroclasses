@@ -83,7 +83,7 @@ const SETTINGS_STORAGE_KEY = 'smart_studio_settings_v1';
 
 export const DEFAULT_SETTINGS: AppSettings = {
   language: 'hi',
-  fitMode: 'fit',
+  fitMode: 'fill',
   renderQuality: 'auto',
   autoEraseOnSlideChange: true,
   keepAnnotationsPerSlide: false,
@@ -96,11 +96,11 @@ export const DEFAULT_SETTINGS: AppSettings = {
   defaultHighlighterWidth: 32,
   defaultHighlighterAlpha: 0.25,
   defaultEraserSize: 36,
-  eraserMode: 'pixel',
+  eraserMode: 'stroke',
   handwritingDelayMs: 1800,
   handwritingProvider: 'gemini',
   voiceLang: 'hi-IN',
-  geminiModel: 'gemini-1.5-flash',
+  geminiModel: 'gemini-3.5-flash',
   boardDefaultTheme: 'slate',
   clearMediaOnSlideChange: false,
   channelName: 'SSIRO Classes',
@@ -168,6 +168,10 @@ export function loadSettings(): AppSettings {
     const raw = localStorage.getItem(SETTINGS_STORAGE_KEY);
     if (!raw) return { ...DEFAULT_SETTINGS };
     const parsed = JSON.parse(raw);
+    // Auto-migrate legacy 'fit' to 'fill' for 100% full screen smart board presentation
+    if (parsed.fitMode === 'fit') {
+      parsed.fitMode = 'fill';
+    }
     return { ...DEFAULT_SETTINGS, ...parsed };
   } catch {
     return { ...DEFAULT_SETTINGS };

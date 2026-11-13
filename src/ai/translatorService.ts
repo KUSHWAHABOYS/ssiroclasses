@@ -1,0 +1,280 @@
+import { keyVault } from './keyVault';
+import { store } from '../state/store';
+
+export interface TranslationResult {
+  detectedLanguage: string;
+  originalText: string;
+  hindiTranslation: string;
+  keyGlossary: Array<{ term: string; meaning: string }>;
+  summary?: string;
+  rawResponse?: string;
+}
+
+export class TranslatorService {
+  private cachedWorkingModel: string | null = null;
+  private readonly fallbackCandidates = [
+    'gemini-3.5-flash',
+    'gemini-3.5-flash-lite',
+    'gemini-3.1-flash-lite',
+    'gemini-flash-latest',
+    'gemini-2.5-flash',
+    'gemini-2.5-pro',
+    'gemini-pro-latest'
+  ];
+
+  /**
+   * Automatically resolves the best active Gemini model without requiring manual user selection
+   */
+  async resolveWorkingModel(apiKey: string, forceFresh = false): Promise<string> {
+    if (!forceFresh && this.cachedWorkingModel && !this.cachedWorkingModel.includes('1.5')) {
+      return this.cachedWorkingModel;
+    }
+
+    if (!forceFresh) {
+      try {
+        const saved = localStorage.getItem('smart_studio_working_gemini_model');
+        if (saved && saved.startsWith('gemini') && !saved.includes('1.5')) {
+          this.cachedWorkingModel = saved;
+          return saved;
+        }
+      } catch {}
+    }
+
+    // Auto-discover available models from user's Gemini API key
+    try {
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+      if (res.ok) {
+        const data = await res.json();
+        const available: string[] = (data.models || [])
+          .filter((m: any) => Array.isArray(m.supportedGenerationMethods) && m.supportedGenerationMethods.includes('generateContent'))
+          .map((m: any) => m.name.replace(/^models\//, ''));
+
+        for (const pref of this.fallbackCandidates) {
+          if (available.includes(pref)) {
+            this.setWorkingModel(pref);
+            return pref;
+          }
+        }
+
+        const anyFlash = available.find((m) => m.includes('flash') && !m.includes('image') && !m.includes('tts'));
+        if (anyFlash) {
+          this.setWorkingModel(anyFlash);
+          return anyFlash;
+        }
+      }
+    } catch (e) {
+      console.warn('Auto model discovery query failed, falling back to default:', e);
+    }
+
+    const defaultModel = 'gemini-3.5-flash';
+    this.setWorkingModel(defaultModel);
+    return defaultModel;
+  }
+
+  private setWorkingModel(model: string): void {
+    this.cachedWorkingModel = model;
+    try {
+      localStorage.setItem('smart_studio_working_gemini_model', model);
+      store.updateSettings({ geminiModel: model });
+    } catch {}
+  }
+
+  /**
+   * Translates an image snippet (English / Sanskrit / Pali) into high-quality Hindi
+   * @param base64PngWithoutPrefix Base64 encoded PNG data (without data:image/png;base64,)
+   */
+  async translateImageRegion(base64PngWithoutPrefix: string): Promise<TranslationResult> {
+    const apiKey = await keyVault.getKey('gemini');
+    if (!apiKey) {
+      const err: any = new Error('NO_API_KEY');
+      err.code = 'NO_API_KEY';
+      throw err;
+    }
+
+    const initialModel = await this.resolveWorkingModel(apiKey);
+
+    // Build ordered list of candidate models for seamless automatic fallback
+    const candidateList = [
+      initialModel,
+      ...this.fallbackCandidates.filter((m) => m !== initialModel)
+    ];
+
+    const systemPrompt = `You are a distinguished scholar and master translator of Ancient Indian Epigraphy, Indology, Philosophy, Sanskrit, Pali, and English academic texts.
+The user is a teacher lecturing live on a digital smart board to Indian students and YouTube audience.
+
+Examine the provided image (which contains academic screenshots, text passages, Sanskrit shlokas, or Pali suttas/gathas).
+
+Instructions:
+1. Identify the source language: English, Sanskrit (Devanagari or Roman/IAST), Pali (Devanagari, Roman/IAST), or Mixed.
+2. Transcribe the essential text from the image accurately into "originalText".
+3. Provide a clear, natural, dignified, and fluent Hindi translation in "hindiTranslation".
+   - Keep the tone scholarly, engaging, and clear so the lecturer can explain it effortlessly to viewers.
+   - For shlokas or gathas, give both the direct sentence-by-sentence meaning and overall spiritual/philosophical essence.
+4. If there are technical, philosophical, or difficult terms (such as Paṭiccasamuppāda, Anattā, Epistemology, Nirvāna, Dharma, etc.), explain 2 to 4 of them in the "keyGlossary" array with brief Hindi meanings.
+5. Provide a 1-sentence takeaway summary in Hindi.
+
+Return ONLY a valid JSON object with this exact structure (no markdown fences, no extra text):
+{
+  "detectedLanguage": "string (e.g. 'अंग्रेजी (English)', 'पालि (Pali)', 'संस्कृत (Sanskrit)', or 'English + Pali')",
+  "hindiTranslation": "string (fluent Hindi translation)",
+  "summary": "string (1-sentence essence in Hindi)",
+  "keyGlossary": [
+    { "term": "term", "meaning": "Hindi explanation" }
+  ],
+  "originalText": "string (transcribed source text, keep concise)"
+}`;
+
+    const requestBody = {
+      contents: [
+        {
+          parts: [
+            { text: systemPrompt },
+            {
+              inline_data: {
+                mime_type: 'image/png',
+                data: base64PngWithoutPrefix
+              }
+            }
+          ]
+        }
+      ],
+      generationConfig: {
+        responseMimeType: 'application/json',
+        temperature: 0.1,
+        maxOutputTokens: 4096
+      }
+    };
+
+    let lastError: Error | null = null;
+
+    // Resilient automatic model fallback: try candidates until success
+    for (const modelCandidate of candidateList) {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelCandidate}:generateContent`;
+
+      let response: Response;
+      try {
+        response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-goog-api-key': apiKey
+          },
+          body: JSON.stringify(requestBody)
+        });
+      } catch (networkErr: any) {
+        throw new Error(`इंटरनेट या नेटवर्क त्रुटि: ${networkErr.message || 'कनेक्शन नहीं बन सका'}`);
+      }
+
+      if (response.ok) {
+        const data = await response.json();
+        const rawCandidate = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || '';
+        // Remember successful working model
+        this.setWorkingModel(modelCandidate);
+        return this.parseResponse(rawCandidate);
+      }
+
+      const errData = await response.json().catch(() => ({}));
+      const msg: string = errData?.error?.message || `HTTP ${response.status} ${response.statusText}`;
+
+      // If invalid API key, fail fast
+      if (response.status === 400 && msg.toLowerCase().includes('api key')) {
+        throw new Error(`Gemini API Key अमान्य है: ${msg}`);
+      } else if (response.status === 403) {
+        throw new Error(`Gemini API Key प्रतिबंधित या अनाधिकृत है: ${msg}`);
+      } else if (response.status === 429) {
+        // Model-specific quota exceeded, attempt next candidate model!
+        console.warn(`Model ${modelCandidate} quota limit (429) reached, falling back to next candidate...`);
+        lastError = new Error(`Gemini कोटा सीमा (Rate Limit) समाप्त हो गई है। कृपया थोड़ी देर बाद पुनः प्रयास करें।`);
+        continue;
+      }
+
+      // If model not found (404) or temporary service unavailable (503), try next candidate
+      console.warn(`Model ${modelCandidate} failed (${msg}), trying next available candidate...`);
+      lastError = new Error(`अनुवाद त्रुटि: ${msg}`);
+    }
+
+    throw lastError || new Error('सभी उपलब्ध Gemini मॉडल अनुपलब्ध रहे। कृपया इंटरनेट कनेक्शन जांचें।');
+  }
+
+  private parseResponse(raw: string): TranslationResult {
+    // Clean code fences if present (```json ... ```)
+    let cleaned = raw.trim();
+    if (cleaned.startsWith('```')) {
+      cleaned = cleaned.replace(/^```[a-zA-Z]*\s*/, '').replace(/\s*```$/, '').trim();
+    }
+    const firstBrace = cleaned.indexOf('{');
+    const lastBrace = cleaned.lastIndexOf('}');
+    if (firstBrace !== -1 && lastBrace > firstBrace) {
+      cleaned = cleaned.slice(firstBrace, lastBrace + 1);
+    }
+
+    try {
+      const parsed = JSON.parse(cleaned);
+      return {
+        detectedLanguage: parsed.detectedLanguage || 'स्वचालित (Auto-detected)',
+        originalText: parsed.originalText || '',
+        hindiTranslation: parsed.hindiTranslation || '',
+        keyGlossary: Array.isArray(parsed.keyGlossary) ? parsed.keyGlossary : [],
+        summary: parsed.summary || '',
+        rawResponse: raw
+      };
+    } catch (e) {
+      // Robust fallback: Extract fields even if JSON has minor syntax or escaping quirks
+      let detectedLanguage = 'स्वचालित (Auto-detected)';
+      let originalText = '';
+      let hindiTranslation = '';
+      let summary = '';
+      const keyGlossary: Array<{ term: string; meaning: string }> = [];
+
+      const langMatch = cleaned.match(/"detectedLanguage"\s*:\s*"([^"]+)"/);
+      if (langMatch) detectedLanguage = langMatch[1];
+
+      const summaryMatch = cleaned.match(/"summary"\s*:\s*"([^"]+)"/);
+      if (summaryMatch) summary = summaryMatch[1];
+
+      const hindiMatch =
+        cleaned.match(/"hindiTranslation"\s*:\s*"((?:[^"\\]|\\.)*)"/s) ||
+        cleaned.match(/"hindiTranslation"\s*:\s*"([\s\S]*?)(?:"\s*,\s*"\w+"|\s*})/s);
+      if (hindiMatch && hindiMatch[1]) {
+        hindiTranslation = hindiMatch[1]
+          .replace(/\\n/g, '\n')
+          .replace(/\\"/g, '"')
+          .replace(/\\t/g, '\t')
+          .replace(/\\r/g, '')
+          .trim();
+      }
+
+      const origMatch =
+        cleaned.match(/"originalText"\s*:\s*"((?:[^"\\]|\\.)*)"/s) ||
+        cleaned.match(/"originalText"\s*:\s*"([\s\S]*?)(?:"\s*,\s*"\w+"|\s*})/s);
+      if (origMatch && origMatch[1]) {
+        originalText = origMatch[1]
+          .replace(/\\n/g, '\n')
+          .replace(/\\"/g, '"')
+          .trim();
+      }
+
+      if (hindiTranslation && hindiTranslation.length > 5) {
+        return {
+          detectedLanguage,
+          originalText,
+          hindiTranslation,
+          keyGlossary,
+          summary,
+          rawResponse: raw
+        };
+      }
+
+      return {
+        detectedLanguage: 'अंग्रेजी / पालि / संस्कृत ➔ हिंदी',
+        originalText: '',
+        hindiTranslation: cleaned.replace(/^[{\s]*"hindiTranslation"\s*:\s*"?/, '').replace(/["}\s]*$/, ''),
+        keyGlossary: [],
+        summary,
+        rawResponse: raw
+      };
+    }
+  }
+}
+
+export const translatorService = new TranslatorService();

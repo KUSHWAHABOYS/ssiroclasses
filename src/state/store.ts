@@ -1,7 +1,7 @@
 import { AppSettings, loadSettings, saveSettings } from './settings';
 
-// SSIRO-UPDATE: Register magnifier and zoom tools
-export type ActiveTool = 'select' | 'pen' | 'highlighter' | 'eraser' | 'shape' | 'arrow' | 'text' | 'magnifier' | 'zoom';
+// SSIRO-UPDATE: Register magnifier, zoom, and live AI translate lens tools
+export type ActiveTool = 'select' | 'pen' | 'highlighter' | 'eraser' | 'shape' | 'arrow' | 'text' | 'magnifier' | 'zoom' | 'translate';
 export type ShapeType = 'rect' | 'circle' | 'triangle' | 'line';
 export type BoardThemeId = 'slate' | 'chalkboard' | 'chroma' | 'navy' | 'maths';
 

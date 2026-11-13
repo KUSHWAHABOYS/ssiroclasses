@@ -5,10 +5,6 @@
       "C:\\Users\\rnran\\.gemini\\antigravity-ide\\scratch\\smart-studio\\node_modules\\@playwright\\test\\cli.js",
       "test",
       "tests/e2e/03_toolbar_drawing.spec.ts",
-      "tests/e2e/04_board_magnifier_media.spec.ts",
-      "tests/e2e/08_voice_browser_fix.spec.ts",
-      "tests/e2e/09_magnifier_freeform.spec.ts",
-      "tests/e2e/10_browser_embed_toolbar_pan.spec.ts",
       "tests/e2e/11_board_drawing_toolbar_unification.spec.ts"
     ],
     "configFile": "C:\\Users\\rnran\\.gemini\\antigravity-ide\\scratch\\smart-studio\\playwright.config.ts",
@@ -131,12 +127,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1072,
+                      "duration": 1090,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-28T11:13:10.998Z",
+                      "startTime": "2026-10-28T12:36:21.406Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -165,12 +161,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 996,
+                      "duration": 1010,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-28T11:13:12.162Z",
+                      "startTime": "2026-10-28T12:36:22.609Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -199,12 +195,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1335,
+                      "duration": 1382,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-28T11:13:13.171Z",
+                      "startTime": "2026-10-28T12:36:23.632Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -233,12 +229,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1390,
+                      "duration": 1505,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-28T11:13:14.518Z",
+                      "startTime": "2026-10-28T12:36:25.025Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -267,12 +263,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 876,
+                      "duration": 1003,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-28T11:13:15.920Z",
+                      "startTime": "2026-10-28T12:36:26.547Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -301,12 +297,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 706,
+                      "duration": 805,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-28T11:13:16.807Z",
+                      "startTime": "2026-10-28T12:36:27.571Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -335,12 +331,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1086,
+                      "duration": 1159,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-28T11:13:17.525Z",
+                      "startTime": "2026-10-28T12:36:28.396Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -351,482 +347,6 @@
               "id": "ed9d9f6b3693a063784a-26e24b7f54fdf57b0822",
               "file": "03_toolbar_drawing.spec.ts",
               "line": 183,
-              "column": 3
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "title": "04_board_magnifier_media.spec.ts",
-      "file": "04_board_magnifier_media.spec.ts",
-      "column": 0,
-      "line": 0,
-      "specs": [],
-      "suites": [
-        {
-          "title": "Section 9, 10, 11 & 12: Blackboard, Media, Magnifier & Browser (BRD-1 to BRD-3, MAG-1 to MAG-4, MED-1 to MED-3, BRW-1)",
-          "file": "04_board_magnifier_media.spec.ts",
-          "line": 4,
-          "column": 6,
-          "specs": [
-            {
-              "title": "BRD-1 & BRD-2: Blackboard opens at 100% display, themes, and exact Pure Chroma Green #00FF00 pixel check",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "",
-                  "projectName": "",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 726,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-10-28T11:13:18.630Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "2e328534b87a7fc0b85a-2af033a5f628b0547201",
-              "file": "04_board_magnifier_media.spec.ts",
-              "line": 10,
-              "column": 3
-            },
-            {
-              "title": "MAG-1 & MAG-2: Magnifier lens follow, size 120-600px and magnification 1.5-8x",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "",
-                  "projectName": "",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 1152,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-10-28T11:13:19.370Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "2e328534b87a7fc0b85a-8f72fe3836db2c258cda",
-              "file": "04_board_magnifier_media.spec.ts",
-              "line": 54,
-              "column": 3
-            },
-            {
-              "title": "MAG-4: Whole-slide zoom: 2.5x tap zoom, zoom in/out, and 1x reset chip",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "",
-                  "projectName": "",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 1125,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-10-28T11:13:20.534Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "2e328534b87a7fc0b85a-c16f9a582605a4e4bb72",
-              "file": "04_board_magnifier_media.spec.ts",
-              "line": 84,
-              "column": 3
-            },
-            {
-              "title": "MED-1 & MED-2: Media overlay windows management and compare tiling",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "",
-                  "projectName": "",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 704,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-10-28T11:13:21.670Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "2e328534b87a7fc0b85a-afa02b013c3ae726e1d3",
-              "file": "04_board_magnifier_media.spec.ts",
-              "line": 107,
-              "column": 3
-            },
-            {
-              "title": "BRW-1: Browser overlay fallback card on web",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "",
-                  "projectName": "",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 733,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-10-28T11:13:22.385Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "2e328534b87a7fc0b85a-fef1f435b3314b320de8",
-              "file": "04_board_magnifier_media.spec.ts",
-              "line": 124,
-              "column": 3
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "title": "08_voice_browser_fix.spec.ts",
-      "file": "08_voice_browser_fix.spec.ts",
-      "column": 0,
-      "line": 0,
-      "specs": [],
-      "suites": [
-        {
-          "title": "Voice Command & Browser Redirection Fix Verification",
-          "file": "08_voice_browser_fix.spec.ts",
-          "line": 4,
-          "column": 6,
-          "specs": [
-            {
-              "title": "1. Voice commands Page Next, Page Back, Slide Next, Slide Back navigate pages when mic is on",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "",
-                  "projectName": "",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 3573,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-10-28T11:13:23.148Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "f6b4b5ad9848fe47bd4e-ecec978af7fcf73b62ab",
-              "file": "08_voice_browser_fix.spec.ts",
-              "line": 5,
-              "column": 3
-            },
-            {
-              "title": "2. Browser overlay default URL is https://www.google.com and toolbar button opens Google",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "",
-                  "projectName": "",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 1207,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-10-28T11:13:26.729Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "f6b4b5ad9848fe47bd4e-4130abf37aac49c33091",
-              "file": "08_voice_browser_fix.spec.ts",
-              "line": 105,
-              "column": 3
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "title": "09_magnifier_freeform.spec.ts",
-      "file": "09_magnifier_freeform.spec.ts",
-      "column": 0,
-      "line": 0,
-      "specs": [],
-      "suites": [
-        {
-          "title": "Magnifier UI/UX Refinement & Freeform Resizing Verification",
-          "file": "09_magnifier_freeform.spec.ts",
-          "line": 4,
-          "column": 6,
-          "specs": [
-            {
-              "title": "1. Freeform resizing: horizontal rectangle, vertical banner, and corner dragging",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "",
-                  "projectName": "",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 4762,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-10-28T11:13:27.971Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "182531b54149debce040-51c60ba3424f53bdf2f7",
-              "file": "09_magnifier_freeform.spec.ts",
-              "line": 5,
-              "column": 3
-            },
-            {
-              "title": "2. Clean border, no corner black smudges, and touch hitbox padding",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "",
-                  "projectName": "",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 1368,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-10-28T11:13:32.742Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "182531b54149debce040-2bc807263c21c9643f6f",
-              "file": "09_magnifier_freeform.spec.ts",
-              "line": 82,
-              "column": 3
-            },
-            {
-              "title": "3. Restricted to two shapes: Circle and Rectangle",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "",
-                  "projectName": "",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 945,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-10-28T11:13:34.119Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "182531b54149debce040-d56774f35b123ee0d412",
-              "file": "09_magnifier_freeform.spec.ts",
-              "line": 135,
-              "column": 3
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "title": "10_browser_embed_toolbar_pan.spec.ts",
-      "file": "10_browser_embed_toolbar_pan.spec.ts",
-      "column": 0,
-      "line": 0,
-      "specs": [],
-      "suites": [
-        {
-          "title": "In-App Browser Embed & Toolbar Direct Pan Verification",
-          "file": "10_browser_embed_toolbar_pan.spec.ts",
-          "line": 4,
-          "column": 6,
-          "specs": [
-            {
-              "title": "1. In-App Browser: Google & external sites embed directly without X-Frame-Options fallback block",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "",
-                  "projectName": "",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 1406,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-10-28T11:13:35.087Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "0c12f428f6b1789ebe21-1502df22e0d87e43aa89",
-              "file": "10_browser_embed_toolbar_pan.spec.ts",
-              "line": 5,
-              "column": 3
-            },
-            {
-              "title": "2. Toolbar Clean-up: Zero bottom scrollbars, resize handle hidden, and smooth direct pan/scroll",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "",
-                  "projectName": "",
-                  "results": [
-                    {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 1171,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-10-28T11:13:36.503Z",
-                      "annotations": [],
-                      "attachments": []
-                    }
-                  ],
-                  "status": "expected"
-                }
-              ],
-              "id": "0c12f428f6b1789ebe21-9180f9c511284842e960",
-              "file": "10_browser_embed_toolbar_pan.spec.ts",
-              "line": 45,
               "column": 3
             }
           ]
@@ -862,12 +382,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 2529,
+                      "duration": 2642,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-28T11:13:37.694Z",
+                      "startTime": "2026-10-28T12:36:29.593Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -896,12 +416,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 2419,
+                      "duration": 2439,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-28T11:13:40.232Z",
+                      "startTime": "2026-10-28T12:36:32.255Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -930,12 +450,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 1438,
+                      "duration": 1459,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-10-28T11:13:42.661Z",
+                      "startTime": "2026-10-28T12:36:34.706Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -955,9 +475,9 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-10-28T11:13:10.543Z",
-    "duration": 33650.434,
-    "expected": 22,
+    "startTime": "2026-10-28T12:36:20.985Z",
+    "duration": 15285.143999999998,
+    "expected": 10,
     "skipped": 0,
     "unexpected": 0,
     "flaky": 0
