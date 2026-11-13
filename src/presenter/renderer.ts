@@ -242,34 +242,46 @@ export class SlideRenderer {
   }
 
   private blitToSlideCanvas(bitmap: ImageBitmap, m: RenderedSlideMetrics, viewW: number, viewH: number): void {
+    const canvas = layerManager.slideCanvas;
     const ctx = layerManager.slideCtx;
-    const dpr = layerManager.getDimensions().dpr || 1;
-    ctx.save();
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const canvasW = canvas.width;
+    const canvasH = canvas.height;
 
-    // AUDIT-FIX: BUG-010 - Support remainder fill modes: background, blur, black (ZEN-6)
+    ctx.save();
+    // 1. Reset transform to 1:1 identity on physical canvas pixels (completely eliminates DPR skew / corner sticking)
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+
+    // 2. Remainder background fill across entire physical canvas
     const { streamRemainderMode } = store.getState().settings;
     if (streamRemainderMode === 'black') {
       ctx.fillStyle = '#000000';
-      ctx.fillRect(0, 0, viewW, viewH);
+      ctx.fillRect(0, 0, canvasW, canvasH);
     } else if (streamRemainderMode === 'blur') {
       ctx.save();
       ctx.filter = 'blur(16px)';
-      ctx.drawImage(bitmap, 0, 0, viewW, viewH);
+      ctx.drawImage(bitmap, 0, 0, canvasW, canvasH);
       ctx.filter = 'none';
       ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
-      ctx.fillRect(0, 0, viewW, viewH);
+      ctx.fillRect(0, 0, canvasW, canvasH);
       ctx.restore();
     } else {
-      // 'background' (default) - Fill surrounding area with sampled dominant edge color
-      ctx.fillStyle = m.dominantColor;
-      ctx.fillRect(0, 0, viewW, viewH);
+      ctx.fillStyle = m.dominantColor || '#000000';
+      ctx.fillRect(0, 0, canvasW, canvasH);
     }
+
+    // 3. Map destination metrics from CSS stage coordinates to physical canvas pixels
+    const scaleX = canvasW / Math.max(1, viewW);
+    const scaleY = canvasH / Math.max(1, viewH);
+
+    const drawX = Math.round(m.destX * scaleX);
+    const drawY = Math.round(m.destY * scaleY);
+    const drawW = Math.round(m.destWidth * scaleX);
+    const drawH = Math.round(m.destHeight * scaleY);
 
     // Blit supersampled bitmap with pristine 4K sharpness
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
-    ctx.drawImage(bitmap, m.destX, m.destY, m.destWidth, m.destHeight);
+    ctx.drawImage(bitmap, drawX, drawY, drawW, drawH);
 
     ctx.restore();
   }

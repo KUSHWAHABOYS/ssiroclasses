@@ -104,10 +104,13 @@ export class LayerManager {
 
   getDimensions(): StageDimensions {
     const rect = this.stageEl.getBoundingClientRect();
+    const cssWidth = Math.max(320, Math.floor(rect.width || window.innerWidth));
+    const cssHeight = Math.max(240, Math.floor(rect.height || window.innerHeight));
+    const dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
     return {
-      width: rect.width || window.innerWidth,
-      height: rect.height || window.innerHeight,
-      dpr: Math.min(2, window.devicePixelRatio || 1)
+      width: cssWidth,
+      height: cssHeight,
+      dpr
     };
   }
 
