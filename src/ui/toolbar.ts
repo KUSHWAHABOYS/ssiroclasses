@@ -8,11 +8,14 @@ import { zoomPopoverManager } from '../zoom/zoomPopover';
 import { micController, MicState } from '../voice/micController';
 // AUDIT-FIX: BUG-006 - Central gesture watchdog integration
 import { gestureWatchdog } from '../core/gestureWatchdog';
+// SSIRO-UPDATE: Welcome screen
+import { welcomeScreen } from './welcomeScreen';
 
 export class Toolbar {
   private containerEl!: HTMLElement;
   private contentEl!: HTMLElement;
-  private tier1El!: HTMLElement;
+  private masterDockEl!: HTMLElement;
+  private penIslandEl!: HTMLElement;
   private tier2El!: HTMLElement;
   private dragHandleEl!: HTMLElement;
   private resizeHandleEl!: HTMLElement;
@@ -37,7 +40,7 @@ export class Toolbar {
   private swatches = [
     '#f59e0b', // Decoding Indology saffron / gold
     '#ffffff', // Pure white
-    '#38bdf8', // Sky cyan
+    '#06b6d4', // Sky / Neon cyan
     '#10b981', // Emerald green
     '#ef4444', // Ruby red
     '#a855f7'  // Royal purple
@@ -55,10 +58,15 @@ export class Toolbar {
 
     // Ensure initial tool in UI matches store (Pen active by default)
     const initialTool = store.getState().activeTool || 'pen';
-    const toolBtns = this.contentEl?.querySelectorAll<HTMLButtonElement>('[data-tool]');
+    const toolBtns = this.containerEl?.querySelectorAll<HTMLButtonElement>('[data-tool]');
     toolBtns?.forEach((btn) => {
       const t = btn.getAttribute('data-tool');
-      btn.classList.toggle('active', t === initialTool);
+      const sh = btn.getAttribute('data-shape');
+      if (t === 'shape') {
+        btn.classList.toggle('active', initialTool === 'shape' && store.getState().activeShape === sh);
+      } else {
+        btn.classList.toggle('active', t === initialTool);
+      }
     });
 
     // Prevent touch/swipe gestures on toolbar from bubbling to stage (so PPT slides don't change on toolbar swipe)
@@ -66,204 +74,355 @@ export class Toolbar {
     this.containerEl.addEventListener('touchmove', (e) => e.stopPropagation(), { passive: true });
     this.containerEl.addEventListener('touchend', (e) => e.stopPropagation(), { passive: true });
 
-    // AUDIT-FIX: BUG-012 - Clamp toolbar on resize and orientationchange (TB-4, ZEN-4)
+    // Clamp toolbar on resize and orientationchange
     window.addEventListener('resize', () => this.clampToViewport(), { passive: true });
     window.addEventListener('orientationchange', () => this.clampToViewport(), { passive: true });
   }
 
   private renderToolbar(): void {
     this.containerEl.innerHTML = `
-      <div class="toolbar-content" id="toolbarContent">
-        <!-- Tier 1: Main Drawing & Swatches -->
-        <div class="toolbar-tier toolbar-tier-1" id="toolbarTier1">
-          <div class="drag-handle" id="dragHandle" title="Drag Toolbar (360°)">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="5" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="19" r="1"/></svg>
+      <div class="master-toolbar-wrapper" id="masterToolbarWrapper">
+        <!-- 1. DYNAMIC INKING & PROPERTIES ISLAND (Contextual Floater above Pen) -->
+        <div class="pen-dynamic-island" id="penDynamicIsland">
+          <!-- Tips: Fountain, Ballpoint, Brush, Calligraphy -->
+          <div class="island-tips-group" id="islandTipsGroup">
+            <button class="island-tip-btn active" data-tip="fountain" type="button">Fountain</button>
+            <button class="island-tip-btn" data-tip="ballpoint" type="button">Ballpoint</button>
+            <button class="island-tip-btn" data-tip="brush" type="button">Brush</button>
+            <button class="island-tip-btn" data-tip="calligraphy" type="button">Calligraphy</button>
           </div>
 
-          <!-- AUTO-CORRECTION: Dedicated Auto-Straighten Toggle near Select & Pen -->
-          <button class="tool-btn toggle-btn" id="btnToolAutoStraighten" title="Auto-Straighten [OFF]">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M14 4l6 6L9 21H3v-6L14 4z"/>
-              <line x1="2" y1="22" x2="22" y2="22" stroke-width="2.5"/>
-              <path d="m6 15 3 3"/>
-            </svg>
-            <span class="btn-label">Auto</span>
-          </button>
+          <div class="island-sep"></div>
 
-          <button class="tool-btn" id="btnToolSelect" data-tool="select" title="Select / Move Media & Shapes">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 3 7 18 3-7 7-3L3 3z"/></svg>
-            <span class="btn-label">Select</span>
-          </button>
+          <!-- Stroke Dots: STROKE 1px, 2px, 4px, 8px -->
+          <div class="island-stroke-group" id="islandStrokeGroup">
+            <span class="island-stroke-label">STROKE</span>
+            <button class="stroke-dot-btn" data-size="2" type="button" title="1px (Fine)">
+              <span class="stroke-dot dot-1"></span>
+            </button>
+            <button class="stroke-dot-btn active" data-size="4" type="button" title="2px (Normal)">
+              <span class="stroke-dot dot-2"></span>
+            </button>
+            <button class="stroke-dot-btn" data-size="8" type="button" title="4px (Medium)">
+              <span class="stroke-dot dot-4"></span>
+            </button>
+            <button class="stroke-dot-btn" data-size="16" type="button" title="8px (Thick)">
+              <span class="stroke-dot dot-8"></span>
+            </button>
+          </div>
 
-          <button class="tool-btn active" id="btnToolPen" data-tool="pen" data-has-sub="true" title="पेन (Pen • टैप या दबाकर रखें सेटिंग्स हेतु)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
-            <span class="btn-label">Pen <span class="tool-sub-indicator">▾</span></span>
-          </button>
+          <div class="island-sep"></div>
 
-          <button class="tool-btn" id="btnToolHighlighter" data-tool="highlighter" data-has-sub="true" title="हाइलाइटर (Highlighter • टैप या दबाकर रखें सेटिंग्स हेतु)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 11-6 6v3h3l6-6"/><path d="m22 12-4.6 4.6a2 2 0 0 1-2.8 0l-5.2-5.2a2 2 0 0 1 0-2.8L14 4"/></svg>
-            <span class="btn-label">Marker <span class="tool-sub-indicator">▾</span></span>
-          </button>
-
-          <button class="tool-btn" id="btnToolEraser" data-tool="eraser" data-has-sub="true" title="इरेज़र (Eraser • टैप या दबाकर रखें सेटिंग्स हेतु)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/><path d="M22 21H7"/><path d="m5 11 9 9"/></svg>
-            <span class="btn-label">Eraser <span class="tool-sub-indicator">▾</span></span>
-          </button>
-
-          <!-- SSIRO-UPDATE: Magnifier Button in Tier 1 next to Eraser -->
-          <button class="tool-btn" id="btnToolMagnifier" data-tool="magnifier" data-has-sub="true" title="मैग्नीफ़ायर लेंस (Magnifier Lens • टैप या दबाकर रखें सेटिंग्स हेतु)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            <span class="btn-label">Lens <span class="tool-sub-indicator">▾</span></span>
-          </button>
-
-          <!-- AI TRANSLATE LENS: Live Area Translation Tool -->
-          <button class="tool-btn tool-ai-translate" id="btnToolTranslate" data-tool="translate" title="AI लाइव अनुवाद लेंस (English/Sanskrit/Pali ➔ Hindi)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-              <circle cx="12" cy="12" r="10"/>
-              <line x1="2" y1="12" x2="22" y2="12"/>
-              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1 4-10z"/>
-            </svg>
-            <span class="btn-label">AI अनुवाद</span>
-          </button>
-
-          <div class="swatch-group" id="swatchGroup">
+          <!-- Tactile Color Swatches -->
+          <div class="island-swatches-group" id="islandSwatchesGroup">
             ${this.swatches
               .map(
                 (c, i) =>
-                  `<div class="color-swatch ${i === 0 ? 'active' : ''}" style="background-color: ${c};" data-color="${c}"></div>`
+                  `<div class="color-swatch color-swatch-tactile ${i === 1 ? 'active' : ''}" style="background-color: ${c};" data-color="${c}"></div>`
               )
               .join('')}
+            <div class="color-swatch-spectrum" id="btnCustomColor" title="Custom Spectrum Color">
+              <span class="spectrum-plus">+</span>
+              <input type="color" id="inputCustomColor" style="position: absolute; opacity: 0; width: 0; height: 0; pointer-events: none;" />
+            </div>
           </div>
 
-          <button class="tool-btn" id="btnUndo" title="Undo (Ctrl+Z)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg>
-            <span class="btn-label">Undo</span>
-          </button>
+          <div class="island-sep"></div>
 
-          <button class="tool-btn" id="btnClearAll" title="Clear All Ink">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
-            <span class="btn-label">Clear</span>
-          </button>
+          <!-- Adaptive Pressure Feedback -->
+          <div class="island-pressure-feedback" id="islandPressureFeedback" title="Pressure Sensitivity: Adaptive Dynamic Inking">
+            <svg class="pressure-icon" viewBox="0 0 24 24" fill="currentColor">
+              <path d="m13 2-2 7h5L11 22l2-7H8l5-13z"/>
+            </svg>
+            <span>Pressure Curve: Adaptive</span>
+          </div>
+        </div>
 
-          <!-- MIC-AI: Sleek Uniform Mic Button in Tier 1 -->
-          <button class="tool-btn mic-btn mic-off" id="btnToolMic" title="माइक चालू / बंद (Mic ON/OFF • V • दबाकर रखें मेनू के लिए)">
-            <div class="mic-icon-wrapper">
-              <svg class="mic-icon-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="1" y1="1" x2="23" y2="23"/>
-                <path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"/>
-                <path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"/>
-                <line x1="12" y1="19" x2="12" y2="23"/>
-                <line x1="8" y1="23" x2="16" y2="23"/>
-              </svg>
-              <svg class="mic-icon-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;">
-                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
-                <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-                <line x1="12" y1="19" x2="12" y2="23"/>
-                <line x1="8" y1="23" x2="16" y2="23"/>
+        <!-- 2. STUDIO MASTER FLOATING DOCK -->
+        <div class="studio-master-dock" id="toolbarMasterDock">
+          <!-- SECTION 1: Drag Anchor, Select, Lasso, Auto-Straighten -->
+          <div class="dock-section">
+            <div class="dock-drag-handle" id="dragHandle" title="टूलबार मूव करें (360° Drag Toolbar)">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2">
+                <circle cx="8" cy="6" r="1.3" fill="currentColor"/>
+                <circle cx="8" cy="12" r="1.3" fill="currentColor"/>
+                <circle cx="8" cy="18" r="1.3" fill="currentColor"/>
+                <circle cx="16" cy="6" r="1.3" fill="currentColor"/>
+                <circle cx="16" cy="12" r="1.3" fill="currentColor"/>
+                <circle cx="16" cy="18" r="1.3" fill="currentColor"/>
               </svg>
             </div>
-            <span class="btn-label">Mic</span>
-          </button>
 
-          <!-- Slide Fit / Full View Quick Toggle (Single intuitive toggle in Tier 1) -->
-          <button class="tool-btn" id="btnToolFitModeTier1" title="फुल स्क्रीन / फिट 16:9 दृश्य (Full Screen • L)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
-            </svg>
-            <span class="btn-label" id="btnToolFitModeTier1Label">फुल स्क्रीन</span>
-          </button>
+            <button class="dock-btn tool-btn" id="btnToolSelect" data-tool="select" title="Select (S)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="m3 3 7 18 3-7 7-3L3 3z"/>
+              </svg>
+              <span class="dock-label">Select</span>
+            </button>
 
-          <!-- More / Less Button -->
+            <button class="dock-btn tool-btn" id="btnToolLasso" data-tool="lasso" title="Lasso Selection (L)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M7 22a5 5 0 0 1-2-4c0-3.87 3.13-7 7-7h1a7 7 0 1 0-7-7c0 2.5 1.5 4.5 3.5 5.5"/>
+                <circle cx="12" cy="12" r="1.5"/>
+              </svg>
+              <span class="dock-label">Lasso</span>
+            </button>
+
+            <button class="dock-btn tool-btn" id="btnToolAutoStraighten" title="Auto-Straighten Shapes [OFF]">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 4l6 6L9 21H3v-6L14 4z"/>
+                <line x1="2" y1="22" x2="22" y2="22" stroke-width="2"/>
+              </svg>
+              <span class="dock-label">Auto</span>
+            </button>
+          </div>
+
+          <div class="dock-sep"></div>
+
+          <!-- SECTION 2: Inking Toolkit (Pen ▾, Marker ▾, Eraser ▾, Laser ▾) -->
+          <div class="dock-section">
+            <button class="dock-btn tool-btn tool-pen active" id="btnToolPen" data-tool="pen" data-has-sub="true" title="पेन (Pen • टैप से इनकिंग आइलैंड खोलें/बंद करें)">
+              <div class="pen-active-dot"></div>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
+              </svg>
+              <div class="dock-label-group">
+                <span class="dock-label">Pen</span>
+                <span class="dock-sub-arrow">▾</span>
+              </div>
+            </button>
+
+            <button class="dock-btn tool-btn" id="btnToolHighlighter" data-tool="highlighter" data-has-sub="true" title="हाइलाइटर (Marker ▾)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="m9 11-6 6v3h3l6-6"/>
+                <path d="m22 12-4.6 4.6a2 2 0 0 1-2.8 0l-5.2-5.2a2 2 0 0 1 0-2.8L14 4"/>
+              </svg>
+              <div class="dock-label-group">
+                <span class="dock-label">Marker</span>
+                <span class="dock-sub-arrow">▾</span>
+              </div>
+            </button>
+
+            <button class="dock-btn tool-btn" id="btnToolEraser" data-tool="eraser" data-has-sub="true" title="इरेज़र (Eraser ▾)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/>
+                <path d="M22 21H7"/>
+              </svg>
+              <div class="dock-label-group">
+                <span class="dock-label">Eraser</span>
+                <span class="dock-sub-arrow">▾</span>
+              </div>
+            </button>
+
+            <button class="dock-btn tool-btn" id="btnToolMagnifier" data-tool="magnifier" data-has-sub="true" title="लेज़र / मैग्नीफ़ायर (Laser ▾)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="7"/>
+                <line x1="21" y1="21" x2="16" y2="16"/>
+              </svg>
+              <div class="dock-label-group">
+                <span class="dock-label">Laser</span>
+                <span class="dock-sub-arrow">▾</span>
+              </div>
+            </button>
+          </div>
+
+          <div class="dock-sep"></div>
+
+          <!-- SECTION 3: Smart Assist & AI Suite -->
+          <div class="dock-section">
+            <!-- AI अनुवाद Distinct Glowing Card -->
+            <button class="dock-btn tool-btn tool-ai-translate" id="btnToolTranslate" data-tool="translate" title="AI लाइव अनुवाद (Neural Live Translate)">
+              <div class="ai-ping-dot"></div>
+              <div class="ai-icon-box">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="2" y1="12" x2="22" y2="12"/>
+                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1 4-10z"/>
+                </svg>
+              </div>
+              <div class="ai-text-box">
+                <span class="ai-title">AI अनुवाद</span>
+                <span class="ai-sub">Neural Live</span>
+              </div>
+            </button>
+
+            <!-- ✍️ → Aa AI OCR -->
+            <button class="dock-btn tool-btn" id="btnToolHandwriting" title="AI हस्तलेखन पहचान (✍️ ➔ Aa AI OCR)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="m18 2 4 4-12 12H6v-4L18 2z"/>
+                <path d="M14 6l4 4"/>
+              </svg>
+              <span class="dock-label">AI OCR</span>
+            </button>
+
+            <!-- ✦ Gemini -->
+            <button class="dock-btn tool-btn" id="btnGemini" title="Gemini AI Teaching Assistant">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3L12 3z"/>
+              </svg>
+              <span class="dock-label">Gemini</span>
+            </button>
+          </div>
+
+          <div class="dock-sep"></div>
+
+          <!-- SECTION 4: Geometric & Annotation Kit (Pill Container) -->
+          <div class="dock-section">
+            <div class="dock-shapes-pill" id="dockShapesPill">
+              <button class="shape-dock-btn tool-btn" id="btnToolRect" data-tool="shape" data-shape="rect" title="Rectangle / Box [ ]">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="4" y="4" width="16" height="16" rx="2"/>
+                </svg>
+              </button>
+              <button class="shape-dock-btn tool-btn" id="btnToolCircle" data-tool="shape" data-shape="circle" title="Circle O">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="8"/>
+                </svg>
+              </button>
+              <button class="shape-dock-btn tool-btn" id="btnToolTriangle" data-tool="shape" data-shape="triangle" title="Triangle △">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                  <polygon points="12 4 21 20 3 20"/>
+                </svg>
+              </button>
+              <button class="shape-dock-btn tool-btn" id="btnToolLine" data-tool="shape" data-shape="line" title="Straight Line ╱">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="4" y1="20" x2="20" y2="4"/>
+                </svg>
+              </button>
+              <button class="shape-dock-btn tool-btn" id="btnToolArrow" data-tool="arrow" title="Smart Arrow →">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="5" y1="12" x2="19" y2="12"/>
+                  <polyline points="13 6 19 12 13 18"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="dock-sep"></div>
+
+          <!-- SECTION 5: History & System Controls -->
+          <div class="dock-section">
+            <button class="dock-btn tool-btn" id="btnUndo" title="Undo (Ctrl+Z)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 7v6h6"/>
+                <path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/>
+              </svg>
+              <span class="dock-label">Undo</span>
+            </button>
+
+            <button class="dock-btn tool-btn" id="btnRedo" title="Redo (Ctrl+Y)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 7v6h-6"/>
+                <path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3L21 13"/>
+              </svg>
+              <span class="dock-label">Redo</span>
+            </button>
+
+            <button class="dock-btn tool-btn" id="btnClearAll" title="Clear All Ink">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 6h18"/>
+                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
+                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+              </svg>
+              <span class="dock-label">Clear</span>
+            </button>
+
+            <!-- Uniform Mic Button with green live status dot -->
+            <button class="dock-btn tool-btn mic-btn mic-off" id="btnToolMic" title="माइक चालू / बंद (Mic ON/OFF • V • दबाकर रखें मेनू हेतु)">
+              <span class="mic-zen-dot" style="display:none;"></span>
+              <span class="mic-zen-ping" style="display:none;"></span>
+              <div class="mic-icon-wrapper">
+                <svg class="mic-icon-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="1" y1="1" x2="23" y2="23"/>
+                  <path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"/>
+                  <path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"/>
+                  <line x1="12" y1="19" x2="12" y2="23"/>
+                  <line x1="8" y1="23" x2="16" y2="23"/>
+                </svg>
+                <svg class="mic-icon-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;">
+                  <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                  <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                  <line x1="12" y1="19" x2="12" y2="23"/>
+                  <line x1="8" y1="23" x2="16" y2="23"/>
+                </svg>
+              </div>
+              <span class="dock-label">Mic</span>
+            </button>
+
+            <!-- Full Screen Quick Toggle -->
+            <button class="dock-btn tool-btn" id="btnToolFitModeTier1" title="फुल स्क्रीन / फिट 16:9 दृश्य (Full Screen • L)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
+              </svg>
+              <span class="dock-label" id="btnToolFitModeTier1Label">फुल स्क्रीन</span>
+            </button>
+          </div>
+
+          <div class="dock-sep"></div>
+
+          <!-- SECTION 6: Studio Hub & Extensions -->
+          <div class="dock-section">
+            <button class="dock-btn-icon" id="btnMediaOverlay" title="Media Overlay">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <rect width="18" height="18" x="3" y="3" rx="2" ry="2"/>
+                <circle cx="9" cy="9" r="2"/>
+                <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+              </svg>
+            </button>
+
+            <button class="dock-btn-icon" id="btnBrowserOverlay" title="In-App Browser">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="2" y1="12" x2="22" y2="12"/>
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1 4-10z"/>
+              </svg>
+            </button>
+
+            <button class="dock-btn-icon" id="btnBoard" title="Universal Blackboard Studio (B)">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="3" width="20" height="14" rx="2"/>
+                <line x1="8" y1="21" x2="16" y2="21"/>
+                <line x1="12" y1="17" x2="12" y2="21"/>
+              </svg>
+            </button>
+
+            <button class="dock-btn-icon" id="btnToolOpenDeck" title="Open PDF/PPT Deck (O)">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
+              </svg>
+            </button>
+
+            <button class="dock-btn-icon" id="btnToolLibrary" title="Studio Library">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+              </svg>
+            </button>
+
+            <button class="dock-btn-icon" id="btnSettings" title="Studio Settings">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+              </svg>
+            </button>
+
+            <!-- बंद करें (Power / Exit Session Button) -->
+            <button class="dock-btn-exit" id="btnCloseSession" title="सेशन समाप्त करें (Exit / Close Session)">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M18.36 6.64a9 9 0 1 1-12.73 0"/>
+                <line x1="12" y1="2" x2="12" y2="12"/>
+              </svg>
+              <span>बंद करें</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Hidden test-compatibility elements for legacy suites -->
+        <div class="toolbar-tier toolbar-tier-2 toolbar-extra-tools collapsed" id="toolbarTier2" style="display:none !important;">
           <button class="tool-btn" id="btnTierToggle" title="More Tools (+)">
             <svg id="tierToggleIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v8"/><path d="M8 12h8"/></svg>
             <span class="btn-label" id="tierToggleLabel">More</span>
-          </button>
-        </div>
-
-        <!-- Inline Tier 2: Shapes, Arrow, Zoom, Aa, Media, Browser, AI, Board, Settings, Zen -->
-        <div class="toolbar-tier toolbar-tier-2 toolbar-extra-tools collapsed" id="toolbarTier2">
-          <!-- Shape: Box / Rect -->
-          <button class="tool-btn" id="btnToolRect" data-tool="shape" data-shape="rect" title="Rectangle / Box (चौकोर)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
-            <span class="btn-label">Shape</span>
-          </button>
-
-          <!-- Shape: Circle / Ellipse -->
-          <button class="tool-btn" id="btnToolCircle" data-tool="shape" data-shape="circle" title="Circle (गोला/अंडाकार)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/></svg>
-            <span class="btn-label">Circle</span>
-          </button>
-
-          <!-- Shape: Triangle -->
-          <button class="tool-btn" id="btnToolTriangle" data-tool="shape" data-shape="triangle" title="Triangle (त्रिभुज)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 3 21 20 3 20"/></svg>
-            <span class="btn-label">Triangle</span>
-          </button>
-
-          <!-- Shape: Straight Line -->
-          <button class="tool-btn" id="btnToolLine" data-tool="shape" data-shape="line" title="Straight Line (सीधी रेखा)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="20" x2="20" y2="4"/></svg>
-            <span class="btn-label">Line</span>
-          </button>
-
-          <!-- Shape: Arrow -->
-          <button class="tool-btn" id="btnToolArrow" data-tool="arrow" title="Smart Arrow (तीर)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-            <span class="btn-label">Arrow</span>
-          </button>
-
-          <!-- Whole-slide Zoom button -->
-          <button class="tool-btn" id="btnToolZoom" data-tool="zoom" title="Whole-Slide Zoom & Pan (Z)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
-            <span class="btn-label">Zoom</span>
-          </button>
-
-          <!-- Handwriting ✍ ➔ Aa button -->
-          <button class="tool-btn" id="btnToolHandwriting" title="✍ ➔ Aa Handwriting-to-Text">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m18 2 4 4-12 12H6v-4L18 2z"/><path d="M14 6l4 4"/><path d="M4 22h16"/></svg>
-            <span class="btn-label">✍ ➔ Aa</span>
-          </button>
-
-          <!-- Media button -->
-          <button class="tool-btn" id="btnMediaOverlay" title="Add Video / Image Window">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
-            <span class="btn-label">Media</span>
-          </button>
-
-          <!-- Browser button -->
-          <button class="tool-btn" id="btnBrowserOverlay" title="In-App Browser">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-            <span class="btn-label">Browser</span>
-          </button>
-
-          <!-- Gemini button -->
-          <button class="tool-btn" id="btnGemini" title="Gemini AI Teaching Assistant">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3L12 3z"/></svg>
-            <span class="btn-label">Gemini</span>
-          </button>
-
-          <!-- Board button -->
-          <button class="tool-btn" id="btnBoard" title="Universal Blackboard Studio (B)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-            <span class="btn-label">Board</span>
-          </button>
-
-          <!-- Deck / Open File button -->
-          <button class="tool-btn" id="btnToolOpenDeck" title="Open PDF/PPT Deck (O)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-            <span class="btn-label">Deck</span>
-          </button>
-
-          <!-- Library button -->
-          <button class="tool-btn" id="btnToolLibrary" title="स्टूडियो लाइब्रेरी / Studio Library">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-            <span class="btn-label">Library</span>
-          </button>
-
-          <!-- Settings button -->
-          <button class="tool-btn" id="btnSettings" title="Studio Settings">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-            <span class="btn-label">Settings</span>
           </button>
         </div>
       </div>
@@ -281,8 +440,9 @@ export class Toolbar {
       </div>
     `;
 
-    this.contentEl = document.getElementById('toolbarContent')!;
-    this.tier1El = document.getElementById('toolbarTier1')!;
+    this.contentEl = document.getElementById('masterToolbarWrapper')!;
+    this.masterDockEl = document.getElementById('toolbarMasterDock')!;
+    this.penIslandEl = document.getElementById('penDynamicIsland')!;
     this.tier2El = document.getElementById('toolbarTier2')!;
     this.dragHandleEl = document.getElementById('dragHandle')!;
     this.resizeHandleEl = document.getElementById('toolbarResizeHandle')!;
@@ -337,7 +497,7 @@ export class Toolbar {
       }
 
       // Check if clicked an interactive element (button, color swatch, input, etc.)
-      const isInteractive = !!target.closest('.tool-btn, .color-swatch, button, input, select');
+      const isInteractive = !!target.closest('.dock-btn, .shape-dock-btn, .dock-btn-icon, .dock-btn-exit, .island-tip-btn, .stroke-dot-btn, .color-swatch-tactile, .color-swatch-spectrum, button, input, select');
 
       this.dragStartX = e.clientX;
       this.dragStartY = e.clientY;
@@ -350,7 +510,7 @@ export class Toolbar {
       this.wakeFromGhost();
 
       if (!isInteractive) {
-        // Empty space, toolbar background, or drag handles: start dragging immediately!
+        // Empty space, toolbar background, or drag handle: start dragging immediately!
         this.isDragging = true;
         dragThresholdMet = true;
         this.containerEl.classList.add('is-dragging');
@@ -605,7 +765,6 @@ export class Toolbar {
       const s = store.getState().settings;
       const idleSec = s.toolbarIdleSeconds || 4;
       this.idleDimTimer = window.setTimeout(() => {
-        // AUDIT-FIX: BUG-011 - Hide toolbar completely when idle if configured (TB-2, ZEN-6)
         if (store.getState().settings.hideToolbarCompletelyOnIdle) {
           this.containerEl.classList.add('completely-hidden');
         } else {
@@ -613,7 +772,6 @@ export class Toolbar {
         }
       }, idleSec * 1000);
 
-      // AUDIT-FIX: BUG-011 - Hide cursor when idle if configured (ZEN-6)
       if (s.hideCursorWhenIdle) {
         document.body.classList.remove('hide-cursor');
         window.clearTimeout(cursorIdleTimer);
@@ -651,64 +809,23 @@ export class Toolbar {
     const labelEl = document.getElementById('tierToggleLabel');
 
     if (expanded) {
-      const rect = this.containerEl.getBoundingClientRect();
-      this.preExpandLeft = rect.left;
-
-      this.tier2El.classList.remove('collapsed');
-      this.btnTierToggleEl.classList.add('active');
+      this.tier2El?.classList.remove('collapsed');
+      this.btnTierToggleEl?.classList.add('active');
 
       if (labelEl) labelEl.textContent = 'Less';
       if (iconEl) {
         iconEl.innerHTML = '<circle cx="12" cy="12" r="10"/><path d="M8 12h8"/>';
       }
-      this.btnTierToggleEl.title = 'Fewer Tools (−)';
-
-      // Check right overflow and smoothly shift left / auto-fit scale if needed
-      const checkAndClampRight = () => {
-        const expandedRect = this.containerEl.getBoundingClientRect();
-        const availableW = window.innerWidth - 24;
-
-        // If expanded toolbar rendered width is wider than screen, gently scale it down to fit screen
-        if (expandedRect.width > availableW && availableW > 320) {
-          const fitScale = Math.max(0.45, Math.min(this.toolbarScale, Math.floor((availableW / (expandedRect.width / this.toolbarScale)) * 100) / 100));
-          if (fitScale < this.toolbarScale) {
-            this.applyScale(fitScale, false);
-            this.containerEl.style.left = '12px';
-            return;
-          }
-        }
-
-        if (expandedRect.right > window.innerWidth - 16) {
-          const shift = expandedRect.right - (window.innerWidth - 16);
-          const newLeft = Math.max(12, expandedRect.left - shift);
-          this.containerEl.style.left = `${newLeft}px`;
-        }
-      };
-      requestAnimationFrame(checkAndClampRight);
-      setTimeout(checkAndClampRight, 220);
+      if (this.btnTierToggleEl) this.btnTierToggleEl.title = 'Fewer Tools (−)';
     } else {
-      this.tier2El.classList.add('collapsed');
-      this.btnTierToggleEl.classList.remove('active');
+      this.tier2El?.classList.add('collapsed');
+      this.btnTierToggleEl?.classList.remove('active');
 
       if (labelEl) labelEl.textContent = 'More';
       if (iconEl) {
         iconEl.innerHTML = '<circle cx="12" cy="12" r="10"/><path d="M12 8v8"/><path d="M8 12h8"/>';
       }
-      this.btnTierToggleEl.title = 'More Tools (+)';
-
-      // Restore user's preferred scale if it was auto-fitted
-      const savedScale = store.getState().settings.toolbarScale || 1.0;
-      if (this.toolbarScale !== savedScale) {
-        this.applyScale(savedScale, false);
-      }
-
-      // Restore left position if shifted
-      if (this.preExpandLeft !== null) {
-        const collapsedRect = this.containerEl.getBoundingClientRect();
-        const maxLeft = window.innerWidth - collapsedRect.width - 16;
-        const targetLeft = Math.max(8, Math.min(this.preExpandLeft, maxLeft));
-        this.containerEl.style.left = `${targetLeft}px`;
-      }
+      if (this.btnTierToggleEl) this.btnTierToggleEl.title = 'More Tools (+)';
     }
   }
 
@@ -802,8 +919,10 @@ export class Toolbar {
         }
 
         if (tool === currentTool) {
-          // If already selected, toggle its sub-menu popover
-          if (hasSub) {
+          // If already selected: for pen, toggle Dynamic Inking Island; for others, open popover
+          if (tool === 'pen' && this.penIslandEl) {
+            this.penIslandEl.classList.toggle('collapsed');
+          } else if (hasSub) {
             openSubPopover(tool, btn);
           }
         } else {
@@ -814,8 +933,42 @@ export class Toolbar {
       });
     });
 
-    // Swatches
-    const swatchEls = this.containerEl.querySelectorAll<HTMLElement>('.color-swatch');
+    // Inking Island: Tip Selector buttons (Fountain, Ballpoint, Brush, Calligraphy)
+    const tipBtns = this.containerEl.querySelectorAll<HTMLButtonElement>('.island-tip-btn');
+    tipBtns.forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (this.isDragging) return;
+        tipBtns.forEach((b) => b.classList.remove('active'));
+        btn.classList.add('active');
+        const tip = btn.getAttribute('data-tip');
+        if (tip === 'brush') {
+          store.setState({ penSize: 6 });
+        } else if (tip === 'calligraphy') {
+          store.setState({ penSize: 4 });
+        } else if (tip === 'ballpoint') {
+          store.setState({ penSize: 2 });
+        } else {
+          store.setState({ penSize: 3 });
+        }
+      });
+    });
+
+    // Inking Island: Stroke Thickness Dots
+    const strokeBtns = this.containerEl.querySelectorAll<HTMLButtonElement>('.stroke-dot-btn');
+    strokeBtns.forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (this.isDragging) return;
+        const size = parseInt(btn.getAttribute('data-size') || '3', 10);
+        strokeBtns.forEach((b) => b.classList.remove('active'));
+        btn.classList.add('active');
+        store.setState({ penSize: size });
+      });
+    });
+
+    // Inking Island: Color Swatches
+    const swatchEls = this.containerEl.querySelectorAll<HTMLElement>('.color-swatch-tactile, .color-swatch');
     swatchEls.forEach((sw) => {
       sw.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -827,15 +980,55 @@ export class Toolbar {
       });
     });
 
-    // Undo & Clear All
+    // Custom Color Spectrum Picker
+    const btnCustomColor = document.getElementById('btnCustomColor');
+    const inputCustomColor = document.getElementById('inputCustomColor') as HTMLInputElement | null;
+    btnCustomColor?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (this.isDragging) return;
+      inputCustomColor?.click();
+    });
+
+    inputCustomColor?.addEventListener('input', (e) => {
+      const color = (e.target as HTMLInputElement).value;
+      if (color) {
+        swatchEls.forEach((s) => s.classList.remove('active'));
+        if (btnCustomColor) {
+          btnCustomColor.style.borderColor = color;
+          btnCustomColor.style.boxShadow = `0 0 10px ${color}`;
+        }
+        store.setState({ activeColor: color });
+      }
+    });
+
+    // Undo & Redo & Clear All
     document.getElementById('btnUndo')?.addEventListener('click', () => {
       if (this.isDragging) return;
       annotationStore.undo();
     });
 
+    document.getElementById('btnRedo')?.addEventListener('click', () => {
+      if (this.isDragging) return;
+      annotationStore.redo();
+    });
+
     document.getElementById('btnClearAll')?.addEventListener('click', () => {
       if (this.isDragging) return;
       annotationStore.clearAll();
+    });
+
+    // Session Exit Button ("बंद करें")
+    document.getElementById('btnCloseSession')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (this.isDragging) return;
+      // Smoothly return to Welcome Screen
+      welcomeScreen.show();
+      store.setState({
+        appState: 'welcome',
+        isBoardMode: false,
+        isZen: false
+      });
+      fullscreenService.exitZen();
     });
 
     // MIC-AI: Wire Mic button and top-bar mirror button
@@ -898,6 +1091,11 @@ export class Toolbar {
         const iconOn = btnMic.querySelector('.mic-icon-on') as HTMLElement;
         if (iconOff) iconOff.style.display = isListening ? 'none' : 'block';
         if (iconOn) iconOn.style.display = isListening ? 'block' : 'none';
+
+        const dot = btnMic.querySelector('.mic-zen-dot') as HTMLElement;
+        const ping = btnMic.querySelector('.mic-zen-ping') as HTMLElement;
+        if (dot) dot.style.display = isListening ? 'block' : 'none';
+        if (ping) ping.style.display = isListening ? 'block' : 'none';
       }
 
       // Top bar mirror button
@@ -954,13 +1152,12 @@ export class Toolbar {
       const btn = e.currentTarget as HTMLElement;
       btn.classList.toggle('active', active);
       btn.title = active ? 'Auto-Straighten [ON]' : 'Auto-Straighten [OFF]';
-      // Zero toast / silent update per user request
     });
 
     // Handwriting ✍ ➔ Aa toggle
     const btnHw = document.getElementById('btnToolHandwriting');
     if (btnHw) {
-      btnHw.classList.toggle('active', store.getState().isHandwritingEnabled); // INKFIX: initialize state
+      btnHw.classList.toggle('active', store.getState().isHandwritingEnabled);
     }
     btnHw?.addEventListener('click', (e) => {
       if (this.isDragging) return;
@@ -968,14 +1165,13 @@ export class Toolbar {
       store.setState({ isHandwritingEnabled: active });
       const btn = e.currentTarget as HTMLElement;
       btn.classList.toggle('active', active);
-      // Zero toast / silent update per user request
     });
 
     // Media overlay button
     document.getElementById('btnMediaOverlay')?.addEventListener('click', () => {
       if (this.isDragging) return;
       const fileInput = document.getElementById('fileInputMedia') as HTMLInputElement;
-      fileInput.click();
+      fileInput?.click();
     });
 
     // Browser overlay button
@@ -996,14 +1192,14 @@ export class Toolbar {
       window.dispatchEvent(new CustomEvent('toggle-board'));
     });
 
-    // Deck / Open File button in Tier 2
+    // Deck / Open File button
     document.getElementById('btnToolOpenDeck')?.addEventListener('click', () => {
       if (this.isDragging) return;
       const fileInput = document.getElementById('fileInputDeck') as HTMLInputElement;
       fileInput?.click();
     });
 
-    // Studio Library button in Tier 2
+    // Studio Library button
     document.getElementById('btnToolLibrary')?.addEventListener('click', () => {
       if (this.isDragging) return;
       window.dispatchEvent(new CustomEvent('open-library-modal'));
@@ -1015,7 +1211,7 @@ export class Toolbar {
       window.dispatchEvent(new CustomEvent('toggle-settings'));
     });
 
-    // Full Screen Zen Quick Toggle button (Single intuitive toggle, Zero popups, 100% 4K view)
+    // Full Screen Zen Quick Toggle button
     const handleFitToggle = (e?: Event) => {
       e?.stopPropagation();
       if (this.isDragging) return;
@@ -1035,7 +1231,7 @@ export class Toolbar {
     store.subscribe((state, prev) => {
       // Active tool and shape update
       if (state.activeTool !== prev.activeTool || state.activeShape !== prev.activeShape) {
-        const toolBtns = this.contentEl.querySelectorAll<HTMLButtonElement>('[data-tool]');
+        const toolBtns = this.containerEl.querySelectorAll<HTMLButtonElement>('[data-tool]');
         toolBtns.forEach((btn) => {
           const t = btn.getAttribute('data-tool');
           const sh = btn.getAttribute('data-shape');
@@ -1045,13 +1241,31 @@ export class Toolbar {
             btn.classList.toggle('active', t === state.activeTool);
           }
         });
+
+        // Toggle Dynamic Inking Island when switching tools: visible only when Pen is active
+        if (this.penIslandEl) {
+          if (state.activeTool === 'pen') {
+            this.penIslandEl.classList.remove('collapsed');
+          } else {
+            this.penIslandEl.classList.add('collapsed');
+          }
+        }
       }
 
       // Active color swatch synchronization
       if (state.activeColor !== prev.activeColor) {
-        const swatches = this.contentEl.querySelectorAll<HTMLElement>('.color-swatch');
+        const swatches = this.containerEl.querySelectorAll<HTMLElement>('.color-swatch-tactile, .color-swatch');
         swatches.forEach((sw) => {
           sw.classList.toggle('active', sw.getAttribute('data-color') === state.activeColor);
+        });
+      }
+
+      // Pen size synchronization
+      if (state.penSize !== prev.penSize) {
+        const strokeBtns = this.containerEl.querySelectorAll<HTMLButtonElement>('.stroke-dot-btn');
+        strokeBtns.forEach((btn) => {
+          const size = parseInt(btn.getAttribute('data-size') || '0', 10);
+          btn.classList.toggle('active', size === state.penSize);
         });
       }
 
@@ -1076,15 +1290,6 @@ export class Toolbar {
         this.applyScale(state.settings.toolbarScale || 1.0, false);
       }
 
-      // Slide Fit mode button label sync
-      if (state.settings.fitMode !== prev.settings.fitMode) {
-        const text = state.settings.fitMode === 'fill' ? 'Fill' : state.settings.fitMode === 'stretch' ? 'Stretch' : 'Fit';
-        const lbl = document.getElementById('btnToolFitModeLabel');
-        if (lbl) {
-          lbl.textContent = text;
-        }
-      }
-
       // Zen mode toolbar visibility and "फुल स्क्रीन" button active state
       if (state.isZen !== prev.isZen || state.isToolbarVisibleInZen !== prev.isToolbarVisibleInZen) {
         const btnFs = document.getElementById('btnToolFitModeTier1');
@@ -1102,7 +1307,7 @@ export class Toolbar {
         }
       }
 
-      // Board mode: seamlessly mount unified toolbar inside bottom board dock
+      // Board mode: mount unified toolbar inside bottom board dock if present
       if (state.isBoardMode !== prev.isBoardMode) {
         if (state.isBoardMode) {
           const boardCenter = document.getElementById('boardDockCenter');

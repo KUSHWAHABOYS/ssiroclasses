@@ -37,6 +37,7 @@ export interface Stroke {
 export class AnnotationStore {
   private strokes: Stroke[] = [];
   private undoStack: Stroke[][] = [];
+  private redoStack: Stroke[][] = [];
   private perSlideStorage: Map<number, Stroke[]> = new Map();
   private boardStrokes: Stroke[] = [];
   private boardUndoStack: Stroke[][] = [];
@@ -120,6 +121,7 @@ export class AnnotationStore {
 
   addStroke(stroke: Stroke): void {
     this.saveSnapshot();
+    this.redoStack = [];
     this.strokes.push(stroke);
     this.redrawAll();
   }
@@ -135,14 +137,25 @@ export class AnnotationStore {
   undo(): boolean {
     if (this.undoStack.length === 0) {
       if (this.strokes.length > 0) {
+        this.redoStack.push(this.strokes.map((s) => ({ ...s, points: [...s.points] })));
         this.strokes = [];
         this.redrawAll();
         return true;
       }
       return false;
     }
+    this.redoStack.push(this.strokes.map((s) => ({ ...s, points: [...s.points] })));
     const previous = this.undoStack.pop()!;
     this.strokes = previous;
+    this.redrawAll();
+    return true;
+  }
+
+  redo(): boolean {
+    if (this.redoStack.length === 0) return false;
+    this.undoStack.push(this.strokes.map((s) => ({ ...s, points: [...s.points] })));
+    const next = this.redoStack.pop()!;
+    this.strokes = next;
     this.redrawAll();
     return true;
   }
