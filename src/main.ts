@@ -35,6 +35,7 @@ import { keyVault } from './ai/keyVault';
 // AI-TRANSLATE: Import translator overlay and card managers
 import { translatorOverlayManager } from './ui/translatorOverlay';
 import { translatorCardManager } from './ui/translatorCard';
+import { pwaInstallManager } from './core/pwaInstall';
 
 // NETLIFY-KILLER: Eradicate Netlify Badge / Watermark Completely
 function eradicateNetlifyBadges(): void {
@@ -126,6 +127,8 @@ class SmartStudioApp {
     // SSIRO-UPDATE: Launch Welcome Screen immediately
     welcomeScreen.show();
 
+    // PWA: Initialize install prompt manager
+    pwaInstallManager.init();
     // Initialize core layers and presentation view
     // AUDIT-FIX: BUG-006 - Init gesture watchdog
     gestureWatchdog.init();

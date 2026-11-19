@@ -166,8 +166,58 @@ export const DEFAULT_SETTINGS: AppSettings = {
   autoRevertToPenSeconds: 15
 };
 
+export function generateSyncUrl(settings?: AppSettings): string {
+  try {
+    const s = settings || loadSettings();
+    const jsonStr = JSON.stringify(s);
+    const encoded = btoa(encodeURIComponent(jsonStr));
+    const base = window.location.origin + window.location.pathname;
+    return `${base}#sync=${encoded}`;
+  } catch {
+    return window.location.href;
+  }
+}
+
 export function loadSettings(): AppSettings {
   try {
+    // Check if URL contains sync payload from PC (e.g. #sync=... or ?sync=...)
+    if (typeof window !== 'undefined' && window.location) {
+      let syncPayload: string | null = null;
+      if (window.location.hash && window.location.hash.includes('sync=')) {
+        const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+        syncPayload = hashParams.get('sync');
+      } else if (window.location.search && window.location.search.includes('sync=')) {
+        const searchParams = new URLSearchParams(window.location.search);
+        syncPayload = searchParams.get('sync');
+      }
+
+      if (syncPayload) {
+        try {
+          const jsonStr = decodeURIComponent(atob(syncPayload));
+          const imported = JSON.parse(jsonStr);
+          if (imported && typeof imported === 'object') {
+            const merged = { ...DEFAULT_SETTINGS, ...imported };
+            saveSettings(merged);
+            // Clean URL hash/query so the URL stays pristine
+            window.history.replaceState({}, document.title, window.location.pathname);
+            window.setTimeout(() => {
+              window.dispatchEvent(
+                new CustomEvent('app-toast', {
+                  detail: {
+                    message: '✅ PC की सेटिंग्स डिजिटल बोर्ड पर सफलतापूर्वक लोड हो गईं! (Settings Synced)',
+                    isError: false
+                  }
+                })
+              );
+            }, 800);
+            return merged;
+          }
+        } catch (e) {
+          console.warn('Sync payload parse failed:', e);
+        }
+      }
+    }
+
     const raw = localStorage.getItem(SETTINGS_STORAGE_KEY);
     if (!raw) return { ...DEFAULT_SETTINGS };
     const parsed = JSON.parse(raw);

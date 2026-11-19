@@ -1,7 +1,7 @@
 import { store } from '../state/store';
 import { keyVault } from '../ai/keyVault';
 import { slideView } from '../presenter/slideView';
-import { DEFAULT_SETTINGS, AppSettings } from '../state/settings';
+import { DEFAULT_SETTINGS, AppSettings, generateSyncUrl } from '../state/settings';
 import { slideRenderer } from '../presenter/renderer';
 import { changeLogoModal } from './changeLogoModal';
 
@@ -295,6 +295,29 @@ export class SettingsPanel {
                 <button type="button" id="btnSettingsCloseDeck" style="min-height:48px; padding:0 20px; border-radius:12px; background:rgba(239,68,68,0.18); border:1px solid rgba(239,68,68,0.4); color:#fca5a5; font-size:13.5px; font-weight:600; cursor:pointer;">
                   ✕ डेक बंद करें (Close Deck)
                 </button>
+              </div>
+
+              <!-- Cross-Device Settings Sync (PC ➔ Digital Board) -->
+              <div class="stitch-card" style="background:rgba(20,48,107,0.35); border:1px solid rgba(255,215,106,0.25);">
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                  <div style="display:flex; flex-direction:column; gap:4px;">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                      <span class="material-symbols-outlined" style="color:#ffd76a; font-size:20px;">sync</span>
+                      <span style="font-size:15px; font-weight:700; color:#fff7eb;">सेटिंग्स सिंक करें / Sync to Digital Board</span>
+                    </div>
+                    <span style="font-size:12.5px; color:#d0c5b1;">PC पर की गई सेटिंग्स (चैनल नाम, पेन मोटाई, थीम आदि) को डिजिटल बोर्ड पर 1-क्लिक में ट्रांसफर करें</span>
+                  </div>
+                  <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                    <button type="button" id="btnCopySyncLink" class="stitch-seg-btn active" style="min-height:46px; padding:0 20px;">
+                      <span class="material-symbols-outlined" style="font-size:18px;">content_copy</span>
+                      <span>🔗 सिंक लिंक कॉपी करें</span>
+                    </button>
+                    <button type="button" id="btnSettingsInstallPwa" class="btn-pwa-install stitch-seg-btn" style="min-height:46px; padding:0 18px; border:1px solid rgba(255,215,106,0.4); color:#ffd76a;">
+                      <span class="material-symbols-outlined" style="font-size:18px;">install_desktop</span>
+                      <span>📲 ऐप इंस्टॉल करें</span>
+                    </button>
+                  </div>
+                </div>
               </div>
             </section>
 
@@ -927,6 +950,24 @@ export class SettingsPanel {
     // 4. Change Logo Modal Button
     this.modalEl.querySelector('#btnChangeLogoModal')?.addEventListener('click', () => {
       changeLogoModal.show();
+    });
+
+    // 4b. Copy Settings Sync Link (PC to Digital Board)
+    this.modalEl.querySelector('#btnCopySyncLink')?.addEventListener('click', async () => {
+      const syncUrl = generateSyncUrl();
+      try {
+        await navigator.clipboard.writeText(syncUrl);
+        window.dispatchEvent(
+          new CustomEvent('app-toast', {
+            detail: {
+              message: '📋 सिंक लिंक कॉपी हो गया! इसे डिजिटल बोर्ड के Chrome में एक बार खोलें—सभी सेटिंग्स तुरंत आ जाएंगी।',
+              isError: false
+            }
+          })
+        );
+      } catch {
+        window.prompt('सिंक लिंक (इसे कॉपी करके डिजिटल बोर्ड के Chrome में खोलें):', syncUrl);
+      }
     });
 
     // 5. Teaching Language Mode Pills

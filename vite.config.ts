@@ -114,6 +114,8 @@ export default defineConfig({
         background_color: '#0A1633',
         display: 'fullscreen',
         orientation: 'landscape',
+        start_url: './',
+        scope: './',
         icons: [
           {
             src: 'icons/icon-192.png',

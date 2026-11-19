@@ -175,6 +175,28 @@
     .welcome-open-btn:active {
       transform: translateY(1px) scale(0.98);
     }
+    .welcome-install-btn {
+      min-height: 48px;
+      padding: 0 24px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 215, 106, 0.35);
+      border-radius: 28px;
+      color: #ffd76a;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      backdrop-filter: blur(8px);
+      transition: all 180ms ease;
+    }
+    .welcome-install-btn:hover {
+      background: rgba(255, 215, 106, 0.2);
+      transform: translateY(-1px);
+      border-color: rgba(255, 215, 106, 0.6);
+    }
     /* WELCOME-CLEANUP: Removed .welcome-drop-hint CSS */
     /* WELCOME-FIX: Compact layout when "Show welcome screen" is off */
     .welcome-screen.is-compact .welcome-logo-container {
@@ -379,6 +401,10 @@
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
           <span class="btn-text">Open Deck</span>
         </button>
+        <button id="btnInstallHeader" class="header-btn btn-pwa-install" title="ऐप इंस्टॉल करें (Install App • PC / Digital Board)" aria-label="Install App">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <span class="btn-text">Install</span>
+        </button>
         <!-- WELCOME-FIX: Close Deck button visible in state-deck -->
         <button id="btnCloseDeckHeader" class="header-btn btn-close-deck" title="Close Deck" aria-label="Close Presentation Deck">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -507,6 +533,10 @@
           <button id="btnWelcomeOpenDeck" class="welcome-open-btn" aria-label="Open Presentation Deck">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
             <span>डेक खोलें / Open Deck</span>
+          </button>
+          <button id="btnWelcomeInstallApp" class="welcome-install-btn btn-pwa-install" aria-label="Install App" title="Chrome में ऐप इंस्टॉल करें (Install App on PC / Digital Board)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span>📲 ऐप इंस्टॉल करें / Install App</span>
           </button>
         </div>
       </div>
