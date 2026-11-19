@@ -11,7 +11,7 @@
 ### Step 1: GitHub पर Code Push करें
 
 ```bash
-cd C:\Users\rnran\.gemini\antigravity\scratch\smart-studio
+cd D:\Smart-Studio-Project
 git init
 git add .
 git commit -m "feat: Smart Studio Presenter Pro – initial APK build"
@@ -33,7 +33,7 @@ GitHub → Repository → **Settings → Secrets and variables → Actions → N
 
 **Keystore को Base64 में बदलने का तरीका (Windows PowerShell):**
 ```powershell
-[Convert]::ToBase64String([IO.File]::ReadAllBytes("C:\Users\rnran\.gemini\antigravity\scratch\smart-studio\smart-studio-release.jks")) | Set-Clipboard
+[Convert]::ToBase64String([IO.File]::ReadAllBytes("D:\Smart-Studio-Project\smart-studio-release.jks")) | Set-Clipboard
 # Clipboard में copy हो गया — GitHub Secret में paste करें
 ```
 
@@ -159,8 +159,8 @@ adb install -r Smart-Studio-v1.0.1-release.apk
 > 🔴 **यह files backup करें — इनके बिना app update नहीं होगा:**
 
 ```
-C:\Users\rnran\.gemini\antigravity\scratch\smart-studio\smart-studio-release.jks
-C:\Users\rnran\.gemini\antigravity\scratch\smart-studio\android\keystore.properties
+D:\Smart-Studio-Project\smart-studio-release.jks
+D:\Smart-Studio-Project\android\keystore.properties
 ```
 
 **Backup कहाँ करें:**
@@ -174,7 +174,7 @@ C:\Users\rnran\.gemini\antigravity\scratch\smart-studio\android\keystore.propert
 ## 🏗️ फिर से Build करने के Commands / Rebuild Commands
 
 ```bash
-cd C:\Users\rnran\.gemini\antigravity\scratch\smart-studio
+cd D:\Smart-Studio-Project
 
 # Local web build
 npm ci
