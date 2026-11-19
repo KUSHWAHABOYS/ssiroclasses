@@ -36,6 +36,7 @@ import { keyVault } from './ai/keyVault';
 import { translatorOverlayManager } from './ui/translatorOverlay';
 import { translatorCardManager } from './ui/translatorCard';
 import { pwaInstallManager } from './core/pwaInstall';
+import { libraryModal } from './ui/libraryModal';
 
 // NETLIFY-KILLER: Eradicate Netlify Badge / Watermark Completely
 function eradicateNetlifyBadges(): void {
@@ -157,6 +158,8 @@ class SmartStudioApp {
     zoomGestureHandler.init();
     // AI-TRANSLATE: Initialize Translator Overlay Manager
     translatorOverlayManager.init();
+    // STUDIO-LIBRARY: Initialize Studio Library modal (in-device persistent storage)
+    libraryModal.init();
 
     // SSIRO-UPDATE: touch-action:none on stage while Magnifier/Zoom are active per C7
     store.subscribe((state, prev) => {
@@ -194,6 +197,7 @@ class SmartStudioApp {
     w.__SMART_STUDIO_DRAW_ENGINE__ = drawingEngine;
     w.__SMART_STUDIO_TRANSLATOR_OVERLAY__ = translatorOverlayManager;
     w.__SMART_STUDIO_TRANSLATOR_CARD__ = translatorCardManager;
+    w.__SMART_STUDIO_LIBRARY_MODAL__ = libraryModal;
 
     console.log('✅ Smart Studio Presenter Pro ready.');
   }

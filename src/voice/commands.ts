@@ -269,6 +269,11 @@ export class VoiceCommandService {
         blackboardStudio.toggleBoard();
         return true;
       }
+      if (/library|लाइब्रेरी/i.test(clean)) {
+        this.showIconFeedback('📁');
+        window.dispatchEvent(new CustomEvent('open-library-modal'));
+        return true;
+      }
       if (/open|खोलो|खोलें/i.test(clean)) {
         this.showIconFeedback('📂');
         const fileInput = document.getElementById('fileInputDeck') as HTMLInputElement;
@@ -395,6 +400,11 @@ export class VoiceCommandService {
 
       case 'board':
         blackboardStudio.toggleBoard();
+        break;
+
+      case 'library':
+      case 'library:open':
+        window.dispatchEvent(new CustomEvent('open-library-modal'));
         break;
 
       case 'magnifier':

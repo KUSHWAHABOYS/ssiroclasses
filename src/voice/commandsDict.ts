@@ -160,6 +160,11 @@ export const COMMANDS_REGISTRY: VoiceCommandDef[] = [
     synonyms: ['board', 'ब्लैकबोर्ड', 'बोर्ड', 'blackboard', 'whiteboard', 'greenboard']
   },
   {
+    action: 'library',
+    icon: '📁',
+    synonyms: ['library', 'लाइब्रेरी', 'लाइब्रेरी खोलो', 'मेरी लाइब्रेरी', 'खोल लाइब्रेरी', 'open library', 'studio library', 'स्टूडियो लाइब्रेरी']
+  },
+  {
     action: 'magnifier',
     icon: '🔍',
     synonyms: ['magnifier', 'lens', 'मैग्नीफ़ायर', 'मैग्नीफायर', 'लेंस', 'chashma']
@@ -327,6 +332,9 @@ export function matchCommandFromDict(phrase: string): { action: string; icon: st
   }
 
   // 8. Board & Zoom & Fullscreen
+  if (/library|लाइब्रेरी/i.test(norm)) {
+    return { action: 'library', icon: '📁' };
+  }
   if (/बोर्ड|blackboard|board|श्वेतपट्ट/i.test(norm)) {
     return { action: 'board:toggle', icon: '📋' };
   }
