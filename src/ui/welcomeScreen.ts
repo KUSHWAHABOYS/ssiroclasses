@@ -16,13 +16,13 @@ export class WelcomeScreen {
     // Update dynamic text lines from settings or brand constants
     const line1El = this.element.querySelector('.welcome-line-1');
     const line2El = this.element.querySelector('.welcome-line-2');
-    if (line1El) line1El.textContent = settings.welcomeLine1 || WELCOME_LINE_1;
-    if (line2El) line2El.textContent = settings.welcomeLine2 || WELCOME_LINE_2;
+    if (line1El && settings.welcomeLine1) line1El.textContent = settings.welcomeLine1;
+    if (line2El && settings.welcomeLine2) line2El.textContent = settings.welcomeLine2;
 
     // AUDIT-FIX: BUG-007 - Render custom logo if saved on device
-    const logoContainer = this.element.querySelector('.welcome-logo-container') as HTMLElement;
-    if (logoContainer && settings.customLogo) {
-      logoContainer.innerHTML = `<img src="${settings.customLogo}" style="width:100%; height:100%; object-fit:contain; border-radius:24px;" alt="Logo" />`;
+    const logoImg = this.element.querySelector('#welcomeLogoImg') as HTMLImageElement;
+    if (logoImg && settings.customLogo) {
+      logoImg.src = settings.customLogo;
     }
 
     // If "Show welcome screen" is turned off, use compact version per requirement 9
@@ -46,31 +46,54 @@ export class WelcomeScreen {
     if (!this.element) return;
 
     // AUDIT-FIX: BUG-007 - Click logo opens Change Logo modal per WEL-6
-    const logoContainer = this.element.querySelector('.welcome-logo-container') as HTMLElement;
-    logoContainer?.addEventListener('click', (e) => {
+    const logoWrapper = this.element.querySelector('#welcomeLogoWrapper, .welcome-logo-container') as HTMLElement;
+    logoWrapper?.addEventListener('click', (e) => {
       e.stopPropagation();
       import('./changeLogoModal').then(({ changeLogoModal }) => {
         changeLogoModal.show();
       });
     });
-    if (logoContainer) {
-      logoContainer.style.cursor = 'pointer';
-      logoContainer.title = 'लोगो व संस्था नाम बदलने के लिए क्लिक करें (Click to change logo)';
+    if (logoWrapper) {
+      logoWrapper.style.cursor = 'pointer';
+      logoWrapper.title = 'लोगो व संस्था नाम बदलने के लिए क्लिक करें (Click to change logo)';
     }
 
-    // Open Deck Button inside Welcome Screen
+    // Open Deck Button inside Welcome Screen with loading animation
     this.openDeckBtn = this.element.querySelector('#btnWelcomeOpenDeck');
     this.openDeckBtn?.addEventListener('click', (e) => {
       e.stopPropagation();
+      const btn = this.openDeckBtn;
+      if (btn) {
+        const origContent = btn.innerHTML;
+        btn.innerHTML = `
+          <span class="material-symbols-outlined font-bold" style="animation: welcomeSpin 1s linear infinite;">sync</span>
+          <span>Loading Decks...</span>
+        `;
+        setTimeout(() => {
+          if (btn) btn.innerHTML = origContent;
+        }, 1200);
+      }
       const fileInput = document.getElementById('fileInputDeck') as HTMLInputElement;
       fileInput?.click();
     });
 
-    // WELCOME-CLEANUP: Removed #btnWelcomeConnect and drag-and-drop deck loading handlers
+    // Library button in Welcome Screen
+    const libBtn = this.element.querySelector('#btnWelcomeLibrary');
+    libBtn?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      window.dispatchEvent(new CustomEvent('open-library-modal'));
+    });
+
+    // Help & Privacy link in Welcome footer opens Studio Settings
+    const helpLink = this.element.querySelector('#btnWelcomeHelp');
+    helpLink?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      window.dispatchEvent(new CustomEvent('toggle-settings'));
+    });
 
     // Requirement 3 & 5: Stray taps and clicks on the welcome screen must do nothing
     this.element.addEventListener('pointerdown', (e: PointerEvent) => {
-      if ((e.target as HTMLElement).closest('.welcome-open-btn, .header-btn, .welcome-logo-container')) return;
+      if ((e.target as HTMLElement).closest('.welcome-open-btn, .header-btn, .welcome-logo-container, #welcomeLogoWrapper, .welcome-btn-secondary, .welcome-btn-tertiary, #btnWelcomeHelp')) return;
       e.stopPropagation();
     });
   }

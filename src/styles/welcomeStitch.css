@@ -1,0 +1,515 @@
+/* ==========================================================================
+   SSIRO CLASSES - MODERN STITCH WELCOME SCREEN (2025/2026 UI)
+   Calibrated for Android Smart Boards (65"-86" 4K) & PC Chrome Desktop
+   Exact Color Tokens, Typography, Glassmorphism, and Animations
+   ========================================================================== */
+
+:root {
+  --w-surface: #10131a;
+  --w-surface-container-lowest: #0b0e15;
+  --w-surface-container-low: #191b23;
+  --w-surface-container: #1d1f27;
+  --w-surface-container-high: #272a32;
+  --w-surface-container-highest: #32353d;
+  --w-surface-bright: #363941;
+  --w-on-surface: #e1e2ec;
+  --w-on-surface-variant: #c2c6d6;
+  --w-outline: #8c909f;
+  --w-outline-variant: #424754;
+  --w-primary: #adc6ff;
+  --w-primary-container: #4d8eff;
+  --w-on-primary: #002e6a;
+  --w-on-primary-container: #00285d;
+  --w-primary-fixed: #d8e2ff;
+  --w-primary-fixed-dim: #adc6ff;
+  --w-secondary: #ffb95f;
+  --w-secondary-container: #ee9800;
+  --w-on-secondary-container: #5b3800;
+  --w-secondary-fixed: #ffddb8;
+  --w-secondary-fixed-dim: #ffb95f;
+  --w-tertiary: #c0c1ff;
+  --w-tertiary-container: #8083ff;
+}
+
+/* Fullscreen Welcome Container */
+.welcome-screen {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100dvh;
+  background-color: var(--w-surface) !important;
+  color: var(--w-on-surface);
+  font-family: 'Inter', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow-y: auto;
+  overflow-x: hidden;
+  touch-action: pan-y;
+  user-select: none;
+  transition: opacity 300ms ease, visibility 300ms ease;
+  padding: env(safe-area-inset-top, 16px) 16px env(safe-area-inset-bottom, 16px) 16px;
+  box-sizing: border-box;
+}
+
+.welcome-screen.fade-out {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* Main inner wrapper */
+.welcome-stitch-root {
+  width: 100%;
+  max-width: 480px;
+  min-height: min(760px, 92vh);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  margin: auto;
+  padding: 12px 16px 24px 16px;
+  box-sizing: border-box;
+}
+
+/* Atmospheric Glow Rings */
+.welcome-glow-top {
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 280px;
+  height: 280px;
+  background: rgba(173, 198, 255, 0.12);
+  border-radius: 9999px;
+  filter: blur(64px);
+  pointer-events: none;
+}
+
+.welcome-glow-subtle {
+  position: absolute;
+  top: 120px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 220px;
+  height: 220px;
+  background: rgba(238, 152, 0, 0.14);
+  border-radius: 9999px;
+  filter: blur(48px);
+  pointer-events: none;
+}
+
+/* Minimal Live Pill Indicator */
+.welcome-live-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  background: rgba(39, 42, 50, 0.9);
+  color: var(--w-on-surface-variant);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  margin-bottom: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.welcome-live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: var(--w-secondary);
+  box-shadow: 0 0 8px var(--w-secondary);
+  animation: welcomePulse 1.8s ease-in-out infinite;
+}
+
+.welcome-live-text {
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--w-secondary);
+}
+
+@keyframes welcomePulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.85); }
+}
+
+@keyframes welcomeSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Hero Logo with Glassmorphic Rim */
+.welcome-logo-wrapper {
+  position: relative;
+  margin-bottom: 18px;
+  cursor: pointer;
+  outline: none;
+}
+
+.welcome-logo-glow {
+  position: absolute;
+  inset: -8px;
+  background: linear-gradient(135deg, rgba(173, 198, 255, 0.35) 0%, rgba(255, 185, 95, 0.35) 100%);
+  border-radius: 24px;
+  filter: blur(16px);
+  opacity: 0.75;
+  transition: opacity 0.4s ease;
+}
+
+.welcome-logo-wrapper:hover .welcome-logo-glow {
+  opacity: 1;
+}
+
+.welcome-logo-container {
+  position: relative;
+  width: 112px;
+  height: 112px;
+  border-radius: 22px;
+  background: var(--w-surface-container-low);
+  padding: 10px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.welcome-logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+  border-radius: 14px;
+}
+
+/* Typography Hierarchy */
+.welcome-headline {
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  font-size: clamp(26px, 4vw, 34px);
+  line-height: 1.25;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--w-on-surface);
+  margin: 0;
+  text-align: center;
+}
+
+.welcome-gradient-text {
+  background: linear-gradient(90deg, #ffb95f 0%, #ffddb8 50%, #adc6ff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+}
+
+.welcome-subtitle {
+  font-family: 'Inter', sans-serif;
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--w-on-surface-variant);
+  max-width: 320px;
+  margin: 8px auto 0 auto;
+  text-align: center;
+}
+
+/* Horizontal Value Badges */
+.welcome-badges-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 18px;
+  max-width: 380px;
+}
+
+.welcome-chip-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  background: var(--w-surface-container);
+  color: var(--w-on-surface);
+  font-size: 12px;
+  font-weight: 500;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.welcome-chip-badge .material-symbols-outlined {
+  font-size: 15px;
+}
+
+/* Quick Stats Mini Showcase Card */
+.welcome-showcase-card {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  max-width: 380px;
+  margin-top: 22px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: rgba(29, 31, 39, 0.65);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+  box-sizing: border-box;
+}
+
+.welcome-showcase-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.welcome-showcase-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.welcome-showcase-icon-box {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  background: var(--w-surface-container-high);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--w-primary);
+  border: 1px solid rgba(173, 198, 255, 0.2);
+}
+
+.welcome-showcase-icon-box .material-symbols-outlined {
+  font-size: 22px;
+}
+
+.welcome-showcase-title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--w-on-surface);
+  line-height: 1.3;
+}
+
+.welcome-showcase-sub {
+  font-size: 12.5px;
+  color: var(--w-outline);
+  line-height: 1.3;
+}
+
+.welcome-showcase-rating {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--w-surface-container-highest);
+  padding: 4px 10px;
+  border-radius: 9999px;
+  color: var(--w-secondary);
+  font-size: 12px;
+  font-weight: 700;
+  border: 1px solid rgba(255, 185, 95, 0.25);
+}
+
+.welcome-showcase-rating .material-symbols-outlined {
+  font-size: 14px;
+}
+
+/* Interactive Call-To-Action Stack */
+.welcome-cta-stack {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  max-width: 380px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+/* Primary Button: Open Study Deck */
+.welcome-btn-primary {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 0 20px;
+  border-radius: 14px;
+  background: linear-gradient(90deg, #ee9800 0%, #ffb95f 50%, #ffddb8 100%);
+  color: #472a00;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 15.5px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 10px 24px rgba(238, 152, 0, 0.35);
+  transition: transform 150ms ease, box-shadow 150ms ease;
+  outline: none;
+}
+
+.welcome-btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 30px rgba(238, 152, 0, 0.45);
+}
+
+.welcome-btn-primary:active {
+  transform: scale(0.98);
+}
+
+.welcome-btn-primary .material-symbols-outlined {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.welcome-btn-primary .cta-arrow {
+  margin-left: auto;
+  font-size: 18px;
+}
+
+/* Secondary Button: Browse Library */
+.welcome-btn-secondary {
+  position: relative;
+  width: 100%;
+  min-height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 0 20px;
+  border-radius: 14px;
+  background: rgba(39, 42, 50, 0.85);
+  color: var(--w-on-surface);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  transition: all 180ms ease;
+  outline: none;
+}
+
+.welcome-btn-secondary:hover {
+  background: var(--w-surface-container-highest);
+  border-color: rgba(173, 198, 255, 0.35);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.welcome-btn-secondary:active {
+  transform: scale(0.98);
+}
+
+.welcome-btn-secondary .material-symbols-outlined {
+  font-size: 20px;
+}
+
+.welcome-btn-secondary .cta-chevron {
+  margin-left: auto;
+  font-size: 18px;
+  color: var(--w-outline);
+}
+
+/* Tertiary Button: Install Web App */
+.welcome-btn-tertiary {
+  width: 100%;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 6px 16px;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--w-on-surface-variant);
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: all 150ms ease;
+  outline: none;
+}
+
+.welcome-btn-tertiary:hover {
+  color: var(--w-on-surface);
+  background: rgba(25, 27, 35, 0.6);
+}
+
+.welcome-btn-tertiary .material-symbols-outlined {
+  font-size: 18px;
+  color: var(--w-tertiary);
+}
+
+/* System Status & Legal Footer */
+.welcome-footer {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin-top: 24px;
+  text-align: center;
+}
+
+.welcome-footer-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--w-outline);
+}
+
+.welcome-footer-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 9999px;
+  background: var(--w-outline-variant);
+}
+
+.welcome-footer-link {
+  color: var(--w-primary);
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 150ms ease;
+}
+
+.welcome-footer-link:hover {
+  text-decoration: underline;
+  color: #d8e2ff;
+}
+
+.welcome-footer-copy {
+  font-size: 11px;
+  color: var(--w-outline-variant);
+  margin: 0;
+}
+
+/* 4K IFP & Large Screen Polish */
+@media (min-width: 1400px) and (min-height: 800px) {
+  .welcome-stitch-root {
+    max-width: 540px;
+    transform: scale(1.08);
+  }
+}
