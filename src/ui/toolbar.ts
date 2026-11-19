@@ -16,6 +16,7 @@ export class Toolbar {
   private tier2El!: HTMLElement;
   private dragHandleEl!: HTMLElement;
   private resizeHandleEl!: HTMLElement;
+  private scaleBadgeEl: HTMLElement | null = null;
   private btnTierToggleEl!: HTMLButtonElement;
 
   private idleDimTimer: number = 0;
@@ -47,11 +48,18 @@ export class Toolbar {
     this.renderToolbar();
     this.bindDragging();
     this.bindResizing();
-    this.bindContentPanning();
     this.bindGhostMode();
     this.bindEvents();
     this.bindStore();
     this.restorePositionAndScale();
+
+    // Ensure initial tool in UI matches store (Pen active by default)
+    const initialTool = store.getState().activeTool || 'pen';
+    const toolBtns = this.contentEl?.querySelectorAll<HTMLButtonElement>('[data-tool]');
+    toolBtns?.forEach((btn) => {
+      const t = btn.getAttribute('data-tool');
+      btn.classList.toggle('active', t === initialTool);
+    });
 
     // Prevent touch/swipe gestures on toolbar from bubbling to stage (so PPT slides don't change on toolbar swipe)
     this.containerEl.addEventListener('touchstart', (e) => e.stopPropagation(), { passive: true });
@@ -82,12 +90,12 @@ export class Toolbar {
             <span class="btn-label">Auto</span>
           </button>
 
-          <button class="tool-btn active" id="btnToolSelect" data-tool="select" title="Select / Move Media & Shapes">
+          <button class="tool-btn" id="btnToolSelect" data-tool="select" title="Select / Move Media & Shapes">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 3 7 18 3-7 7-3L3 3z"/></svg>
             <span class="btn-label">Select</span>
           </button>
 
-          <button class="tool-btn" id="btnToolPen" data-tool="pen" data-has-sub="true" title="पेन (Pen • टैप या दबाकर रखें सेटिंग्स हेतु)">
+          <button class="tool-btn active" id="btnToolPen" data-tool="pen" data-has-sub="true" title="पेन (Pen • टैप या दबाकर रखें सेटिंग्स हेतु)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
             <span class="btn-label">Pen <span class="tool-sub-indicator">▾</span></span>
           </button>
@@ -137,7 +145,7 @@ export class Toolbar {
             <span class="btn-label">Clear</span>
           </button>
 
-          <!-- MIC-AI: 🎙 Mic Button in Tier 1 -->
+          <!-- MIC-AI: Sleek Uniform Mic Button in Tier 1 -->
           <button class="tool-btn mic-btn mic-off" id="btnToolMic" title="माइक चालू / बंद (Mic ON/OFF • V • दबाकर रखें मेनू के लिए)">
             <div class="mic-icon-wrapper">
               <svg class="mic-icon-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -153,22 +161,16 @@ export class Toolbar {
                 <line x1="12" y1="19" x2="12" y2="23"/>
                 <line x1="8" y1="23" x2="16" y2="23"/>
               </svg>
-              <span class="mic-error-badge">!</span>
             </div>
-            <div class="mic-level-meter" id="micLevelMeter">
-              <span class="mic-bar bar-1"></span>
-              <span class="mic-bar bar-2"></span>
-              <span class="mic-bar bar-3"></span>
-            </div>
-            <span class="btn-label">माइक / Mic</span>
+            <span class="btn-label">Mic</span>
           </button>
 
-          <!-- Slide Fit / Full View Quick Toggle (In Tier 1, always visible) -->
-          <button class="tool-btn" id="btnToolFitModeTier1" title="स्लाइड दृश्य मोड बदलें (Full / Fit / Stretch • L)">
+          <!-- Slide Fit / Full View Quick Toggle (Single intuitive toggle in Tier 1) -->
+          <button class="tool-btn" id="btnToolFitModeTier1" title="फुल स्क्रीन / फिट 16:9 दृश्य (Full Screen • L)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
             </svg>
-            <span class="btn-label" id="btnToolFitModeTier1Label">फुल व्यू</span>
+            <span class="btn-label" id="btnToolFitModeTier1Label">फुल स्क्रीन</span>
           </button>
 
           <!-- More / Less Button -->
@@ -246,31 +248,28 @@ export class Toolbar {
             <span class="btn-label">Board</span>
           </button>
 
+          <!-- Deck / Open File button -->
+          <button class="tool-btn" id="btnToolOpenDeck" title="Open PDF/PPT Deck (O)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <span class="btn-label">Deck</span>
+          </button>
+
           <!-- Settings button -->
           <button class="tool-btn" id="btnSettings" title="Studio Settings">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
             <span class="btn-label">Settings</span>
           </button>
-
-          <!-- Slide Fit / Full View Quick Toggle -->
-          <button class="tool-btn" id="btnToolFitMode" title="स्लाइड दृश्य मोड बदलें (Fit: 16:9 / Fill View)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
-            <span class="btn-label" id="btnToolFitModeLabel">${store.getState().settings.fitMode === 'fill' ? 'Fill' : 'Fit'}</span>
-          </button>
-
-          <!-- Fullscreen Zen button -->
-          <button class="tool-btn" id="btnFullscreen" title="Fullscreen Zen Mode (F)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
-            <span class="btn-label">Zen</span>
-          </button>
         </div>
       </div>
 
+      <!-- Scale feedback badge -->
+      <div class="toolbar-scale-badge" id="toolbarScaleBadge">100%</div>
+
       <!-- Resize Handle (Corner grip, >= 44px touch target) -->
-      <div class="toolbar-resize-handle" id="toolbarResizeHandle" title="Resize Toolbar (खींचकर आकार बदलें)">
+      <div class="toolbar-resize-handle" id="toolbarResizeHandle" title="टूलबार का आकार बदलें (Resize Toolbar • खींचकर छोटा-बड़ा करें • डबल-टैप से 100%)">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5">
-          <line x1="20" y1="8" x2="8" y2="20"/>
-          <line x1="20" y1="13" x2="13" y2="20"/>
+          <line x1="20" y1="6" x2="6" y2="20"/>
+          <line x1="20" y1="12" x2="12" y2="20"/>
           <line x1="20" y1="18" x2="18" y2="20"/>
         </svg>
       </div>
@@ -281,89 +280,154 @@ export class Toolbar {
     this.tier2El = document.getElementById('toolbarTier2')!;
     this.dragHandleEl = document.getElementById('dragHandle')!;
     this.resizeHandleEl = document.getElementById('toolbarResizeHandle')!;
+    this.scaleBadgeEl = document.getElementById('toolbarScaleBadge');
     this.btnTierToggleEl = document.getElementById('btnTierToggle') as HTMLButtonElement;
   }
 
   private bindDragging(): void {
-    const handle = this.dragHandleEl;
+    let pendingDrag = false;
+    let pendingPointerId: number | null = null;
+    let dragThresholdMet = false;
 
     const stopDrag = (e?: PointerEvent) => {
-      if (!this.isDragging) return;
+      if (!this.isDragging && !pendingDrag) return;
+
+      const wasDragging = this.isDragging || dragThresholdMet;
       this.isDragging = false;
+      pendingDrag = false;
+      dragThresholdMet = false;
       this.containerEl.classList.remove('is-dragging');
       gestureWatchdog.unregisterGesture('toolbar-drag');
-      if (e) {
+
+      if (pendingPointerId !== null) {
         try {
-          handle.releasePointerCapture(e.pointerId);
+          this.containerEl.releasePointerCapture(pendingPointerId);
         } catch {}
       }
+      pendingPointerId = null;
 
-      // Persist position
-      const rect = this.containerEl.getBoundingClientRect();
-      store.updateSettings({
-        toolbarPos: { x: Math.round(rect.left), y: Math.round(rect.top) }
-      });
+      if (wasDragging) {
+        // Suppress any click event from firing on buttons underneath
+        const suppressClick = (ev: MouseEvent) => {
+          ev.stopPropagation();
+          ev.preventDefault();
+        };
+        window.addEventListener('click', suppressClick, { capture: true, once: true });
+        setTimeout(() => window.removeEventListener('click', suppressClick, { capture: true }), 150);
+
+        // Persist position
+        const rect = this.containerEl.getBoundingClientRect();
+        store.updateSettings({
+          toolbarPos: { x: Math.round(rect.left), y: Math.round(rect.top) }
+        });
+      }
     };
 
-    handle.addEventListener('pointerdown', (e: PointerEvent) => {
-      this.isDragging = true;
-      handle.setPointerCapture(e.pointerId);
-      this.containerEl.classList.add('is-dragging');
+    this.containerEl.addEventListener('pointerdown', (e: PointerEvent) => {
+      // Don't drag if interacting with the resize handle
+      const target = e.target as HTMLElement;
+      if (target.closest('#toolbarResizeHandle, .toolbar-resize-handle')) {
+        return;
+      }
+
+      // Check if clicked an interactive element (button, color swatch, input, etc.)
+      const isInteractive = !!target.closest('.tool-btn, .color-swatch, button, input, select');
+
       this.dragStartX = e.clientX;
       this.dragStartY = e.clientY;
+      pendingPointerId = e.pointerId;
 
       const rect = this.containerEl.getBoundingClientRect();
       this.initialToolbarLeft = rect.left;
       this.initialToolbarTop = rect.top;
 
-      gestureWatchdog.registerGesture('toolbar-drag', () => stopDrag(), e.pointerId);
       this.wakeFromGhost();
+
+      if (!isInteractive) {
+        // Empty space, toolbar background, or drag handles: start dragging immediately!
+        this.isDragging = true;
+        dragThresholdMet = true;
+        this.containerEl.classList.add('is-dragging');
+        try {
+          this.containerEl.setPointerCapture(e.pointerId);
+        } catch {}
+        gestureWatchdog.registerGesture('toolbar-drag', () => stopDrag(), e.pointerId);
+      } else {
+        // On a button or swatch: wait for slight movement (> 5px) to distinguish tap from drag
+        pendingDrag = true;
+        dragThresholdMet = false;
+      }
     });
 
-    handle.addEventListener('pointermove', (e: PointerEvent) => {
-      if (!this.isDragging) return;
-      gestureWatchdog.recordActivity('toolbar-drag');
+    window.addEventListener('pointermove', (e: PointerEvent) => {
+      if (!this.isDragging && !pendingDrag) return;
+      if (pendingPointerId !== null && e.pointerId !== pendingPointerId) return;
 
       const dx = e.clientX - this.dragStartX;
       const dy = e.clientY - this.dragStartY;
 
-      let newLeft = this.initialToolbarLeft + dx;
-      let newTop = this.initialToolbarTop + dy;
+      if (pendingDrag && !this.isDragging) {
+        const dist = Math.hypot(dx, dy);
+        if (dist > 5) {
+          this.isDragging = true;
+          dragThresholdMet = true;
+          pendingDrag = false;
+          this.containerEl.classList.add('is-dragging');
+          try {
+            this.containerEl.setPointerCapture(e.pointerId);
+          } catch {}
+          gestureWatchdog.registerGesture('toolbar-drag', () => stopDrag(), e.pointerId);
+        }
+      }
 
-      // Clamp to viewport so toolbar is never dragged off-screen
-      const rect = this.containerEl.getBoundingClientRect();
-      const maxLeft = window.innerWidth - rect.width - 8;
-      const maxTop = window.innerHeight - rect.height - 8;
+      if (this.isDragging) {
+        gestureWatchdog.recordActivity('toolbar-drag');
 
-      newLeft = Math.max(8, Math.min(newLeft, maxLeft));
-      newTop = Math.max(8, Math.min(newTop, maxTop));
+        let newLeft = this.initialToolbarLeft + dx;
+        let newTop = this.initialToolbarTop + dy;
 
-      this.containerEl.style.left = `${newLeft}px`;
-      this.containerEl.style.top = `${newTop}px`;
-      this.containerEl.style.transform = 'scale(var(--toolbar-scale, 1))';
-      this.preExpandLeft = newLeft;
+        // Clamp to viewport so toolbar is never dragged off-screen
+        const rect = this.containerEl.getBoundingClientRect();
+        const maxLeft = window.innerWidth - rect.width - 8;
+        const maxTop = window.innerHeight - rect.height - 8;
+
+        newLeft = Math.max(8, Math.min(newLeft, maxLeft));
+        newTop = Math.max(8, Math.min(newTop, maxTop));
+
+        this.containerEl.style.left = `${newLeft}px`;
+        this.containerEl.style.top = `${newTop}px`;
+        this.containerEl.style.transform = 'scale(var(--toolbar-scale, 1))';
+        this.preExpandLeft = newLeft;
+      }
     });
 
-    // AUDIT-FIX: BUG-006 - Handle pointerup, pointercancel, and lostpointercapture
-    handle.addEventListener('pointerup', stopDrag);
-    handle.addEventListener('pointercancel', stopDrag);
-    handle.addEventListener('lostpointercapture', () => stopDrag());
+    window.addEventListener('pointerup', stopDrag);
+    window.addEventListener('pointercancel', stopDrag);
+    this.containerEl.addEventListener('lostpointercapture', () => stopDrag());
   }
 
   private bindResizing(): void {
     const handle = this.resizeHandleEl;
     if (!handle) return;
 
+    let resizePointerId: number | null = null;
+    let startX = 0;
+    let initialScale = 1.0;
+    let unscaledWidth = 0;
+    let originLeft = 0;
+
     const stopResize = (e?: PointerEvent) => {
       if (!this.isResizing) return;
       this.isResizing = false;
       this.containerEl.classList.remove('is-dragging');
+      this.containerEl.classList.remove('is-resizing');
       gestureWatchdog.unregisterGesture('toolbar-resize');
-      if (e) {
+      if (resizePointerId !== null) {
         try {
-          handle.releasePointerCapture(e.pointerId);
+          handle.releasePointerCapture(resizePointerId);
         } catch {}
       }
+      resizePointerId = null;
 
       this.applyScale(this.toolbarScale, true);
       this.clampToViewport();
@@ -371,134 +435,116 @@ export class Toolbar {
 
     handle.addEventListener('pointerdown', (e: PointerEvent) => {
       e.stopPropagation();
+      e.preventDefault();
       this.isResizing = true;
-      handle.setPointerCapture(e.pointerId);
+      resizePointerId = e.pointerId;
+      try {
+        handle.setPointerCapture(e.pointerId);
+      } catch {}
+
       this.containerEl.classList.add('is-dragging');
-      this.resizeStartX = e.clientX;
-      this.resizeStartY = e.clientY;
-      this.initialScale = this.toolbarScale;
+      this.containerEl.classList.add('is-resizing');
+      startX = e.clientX;
+      initialScale = this.toolbarScale || 1.0;
 
       const rect = this.containerEl.getBoundingClientRect();
-      this.unscaledWidth = rect.width / this.toolbarScale;
+      originLeft = rect.left;
+      unscaledWidth = rect.width / initialScale;
 
       gestureWatchdog.registerGesture('toolbar-resize', () => stopResize(), e.pointerId);
       this.wakeFromGhost();
     });
 
-    handle.addEventListener('pointermove', (e: PointerEvent) => {
+    window.addEventListener('pointermove', (e: PointerEvent) => {
       if (!this.isResizing) return;
       gestureWatchdog.recordActivity('toolbar-resize');
 
-      const dx = e.clientX - this.resizeStartX;
-      const dy = e.clientY - this.resizeStartY;
-      const delta = (dx + dy) / 2;
-
-      const currentWidth = this.unscaledWidth * this.initialScale;
-      const targetWidth = currentWidth + delta;
-      const newScale = targetWidth / this.unscaledWidth;
-
-      this.applyScale(newScale, false);
-    });
-
-    // AUDIT-FIX: BUG-006 - Handle pointerup, pointercancel, and lostpointercapture
-    handle.addEventListener('pointerup', stopResize);
-    handle.addEventListener('pointercancel', stopResize);
-    handle.addEventListener('lostpointercapture', () => stopResize());
-  }
-
-  private bindContentPanning(): void {
-    const content = this.contentEl;
-    if (!content) return;
-
-    let isPointerDown = false;
-    let isPanning = false;
-    let startX = 0;
-    let scrollStart = 0;
-    let lastX = 0;
-    let lastTime = 0;
-    let velocity = 0;
-    let animId = 0;
-
-    content.addEventListener('pointerdown', (e: PointerEvent) => {
-      // Don't initiate toolbar panning if clicking drag handle
-      if ((e.target as HTMLElement).closest('#dragHandle, .drag-handle')) {
-        return;
-      }
-      cancelAnimationFrame(animId);
-      isPointerDown = true;
-      isPanning = false;
-      startX = e.clientX;
-      lastX = e.clientX;
-      lastTime = performance.now();
-      scrollStart = content.scrollLeft;
-      velocity = 0;
-    });
-
-    window.addEventListener('pointermove', (e: PointerEvent) => {
-      if (!isPointerDown) return;
       const dx = e.clientX - startX;
+      const targetRenderedWidth = (unscaledWidth * initialScale) + dx;
+      const newScale = targetRenderedWidth / Math.max(100, unscaledWidth);
 
-      // 6px movement threshold distinguishes tap/click from pan
-      if (!isPanning && Math.abs(dx) > 6) {
-        isPanning = true;
-        content.classList.add('is-panning');
-      }
+      // Clamp scale between 0.55 and 2.00
+      const clampedScale = Math.max(0.55, Math.min(2.0, Math.round(newScale * 100) / 100));
+      this.applyScale(clampedScale, false);
 
-      if (isPanning) {
-        content.scrollLeft = scrollStart - (e.clientX - startX);
-        const now = performance.now();
-        const dt = now - lastTime;
-        if (dt > 10) {
-          velocity = (e.clientX - lastX) / dt;
-          lastX = e.clientX;
-          lastTime = now;
-        }
+      // If enlarged beyond viewport right boundary, shift left so it stays on screen
+      const currentRenderedWidth = unscaledWidth * clampedScale;
+      const maxLeft = window.innerWidth - currentRenderedWidth - 8;
+      const curLeft = parseFloat(this.containerEl.style.left) || originLeft;
+      if (curLeft > maxLeft && maxLeft > 8) {
+        this.containerEl.style.left = `${maxLeft}px`;
       }
     });
 
-    const stopPan = () => {
-      if (!isPointerDown) return;
-      isPointerDown = false;
+    window.addEventListener('pointerup', (e: PointerEvent) => {
+      if (this.isResizing) stopResize(e);
+    });
+    window.addEventListener('pointercancel', (e: PointerEvent) => {
+      if (this.isResizing) stopResize(e);
+    });
+    handle.addEventListener('lostpointercapture', () => stopResize());
 
-      if (isPanning) {
-        setTimeout(() => {
-          content.classList.remove('is-panning');
-        }, 50);
+    // Double-click/double-tap to reset to 100% (1.0)
+    handle.addEventListener('dblclick', (e) => {
+      e.stopPropagation();
+      this.applyScale(1.0, true);
+      this.clampToViewport();
+    });
 
-        // Smooth momentum glide
-        if (Math.abs(velocity) > 0.08) {
-          let currVel = velocity * 14;
-          const glide = () => {
-            if (Math.abs(currVel) > 0.4) {
-              content.scrollLeft -= currVel;
-              currVel *= 0.92;
-              animId = requestAnimationFrame(glide);
-            }
-          };
-          animId = requestAnimationFrame(glide);
+    // Touch pinch-to-scale for 2-finger multi-touch boards
+    let initialPinchDist = 0;
+    let initialPinchScale = 1.0;
+    let isPinching = false;
+
+    this.containerEl.addEventListener('touchstart', (e: TouchEvent) => {
+      if (e.touches.length === 2) {
+        isPinching = true;
+        initialPinchScale = this.toolbarScale || 1.0;
+        initialPinchDist = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+        this.containerEl.classList.add('is-resizing');
+      }
+    }, { passive: true });
+
+    this.containerEl.addEventListener('touchmove', (e: TouchEvent) => {
+      if (isPinching && e.touches.length === 2) {
+        const currentDist = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+        if (initialPinchDist > 10) {
+          const factor = currentDist / initialPinchDist;
+          const newScale = Math.max(0.55, Math.min(2.0, Math.round(initialPinchScale * factor * 100) / 100));
+          this.applyScale(newScale, false);
         }
+      }
+    }, { passive: true });
+
+    const endPinch = () => {
+      if (isPinching) {
+        isPinching = false;
+        this.containerEl.classList.remove('is-resizing');
+        this.applyScale(this.toolbarScale, true);
+        this.clampToViewport();
       }
     };
 
-    window.addEventListener('pointerup', stopPan);
-    window.addEventListener('pointercancel', stopPan);
-
-    // Capture-phase click suppressor: If user was panning, prevent tool button click!
-    content.addEventListener('click', (e: MouseEvent) => {
-      if (isPanning) {
-        e.stopPropagation();
-        e.preventDefault();
-        isPanning = false;
-      }
-    }, true);
+    this.containerEl.addEventListener('touchend', endPinch, { passive: true });
+    this.containerEl.addEventListener('touchcancel', endPinch, { passive: true });
   }
 
   public applyScale(scale: number, saveToStore = false): void {
-    const clamped = Math.max(0.50, Math.min(2.50, Math.round(scale * 100) / 100));
+    const clamped = Math.max(0.55, Math.min(2.0, Math.round(scale * 100) / 100));
     this.toolbarScale = clamped;
     this.containerEl.style.setProperty('--toolbar-scale', String(clamped));
     this.containerEl.style.transform = 'scale(var(--toolbar-scale, 1))';
     this.containerEl.style.transformOrigin = 'top left';
+
+    if (this.scaleBadgeEl) {
+      this.scaleBadgeEl.textContent = `${Math.round(clamped * 100)}%`;
+    }
 
     if (saveToStore) {
       store.updateSettings({ toolbarScale: clamped });
@@ -611,15 +657,29 @@ export class Toolbar {
       }
       this.btnTierToggleEl.title = 'Fewer Tools (−)';
 
-      // Check right overflow and smoothly shift left if needed
-      requestAnimationFrame(() => {
+      // Check right overflow and smoothly shift left / auto-fit scale if needed
+      const checkAndClampRight = () => {
         const expandedRect = this.containerEl.getBoundingClientRect();
+        const availableW = window.innerWidth - 24;
+
+        // If expanded toolbar rendered width is wider than screen, gently scale it down to fit screen
+        if (expandedRect.width > availableW && availableW > 320) {
+          const fitScale = Math.max(0.45, Math.min(this.toolbarScale, Math.floor((availableW / (expandedRect.width / this.toolbarScale)) * 100) / 100));
+          if (fitScale < this.toolbarScale) {
+            this.applyScale(fitScale, false);
+            this.containerEl.style.left = '12px';
+            return;
+          }
+        }
+
         if (expandedRect.right > window.innerWidth - 16) {
           const shift = expandedRect.right - (window.innerWidth - 16);
-          const newLeft = Math.max(16, expandedRect.left - shift);
+          const newLeft = Math.max(12, expandedRect.left - shift);
           this.containerEl.style.left = `${newLeft}px`;
         }
-      });
+      };
+      requestAnimationFrame(checkAndClampRight);
+      setTimeout(checkAndClampRight, 220);
     } else {
       this.tier2El.classList.add('collapsed');
       this.btnTierToggleEl.classList.remove('active');
@@ -629,6 +689,12 @@ export class Toolbar {
         iconEl.innerHTML = '<circle cx="12" cy="12" r="10"/><path d="M12 8v8"/><path d="M8 12h8"/>';
       }
       this.btnTierToggleEl.title = 'More Tools (+)';
+
+      // Restore user's preferred scale if it was auto-fitted
+      const savedScale = store.getState().settings.toolbarScale || 1.0;
+      if (this.toolbarScale !== savedScale) {
+        this.applyScale(savedScale, false);
+      }
 
       // Restore left position if shifted
       if (this.preExpandLeft !== null) {
@@ -683,6 +749,7 @@ export class Toolbar {
         btn.addEventListener('pointerdown', () => {
           isLongPressed = false;
           pressTimer = window.setTimeout(() => {
+            if (this.isDragging) return;
             isLongPressed = true;
             try { navigator.vibrate?.(40); } catch {}
             store.setState({ activeTool: tool });
@@ -704,6 +771,7 @@ export class Toolbar {
         btn.addEventListener('contextmenu', (e) => {
           e.preventDefault();
           e.stopPropagation();
+          if (this.isDragging) return;
           store.setState({ activeTool: tool });
           openSubPopover(tool, btn, true);
         });
@@ -711,6 +779,7 @@ export class Toolbar {
 
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
+        if (this.isDragging) return;
         if (isLongPressed) {
           isLongPressed = false;
           return;
@@ -744,6 +813,7 @@ export class Toolbar {
     swatchEls.forEach((sw) => {
       sw.addEventListener('click', (e) => {
         e.stopPropagation();
+        if (this.isDragging) return;
         const color = sw.getAttribute('data-color')!;
         swatchEls.forEach((s) => s.classList.remove('active'));
         sw.classList.add('active');
@@ -753,10 +823,12 @@ export class Toolbar {
 
     // Undo & Clear All
     document.getElementById('btnUndo')?.addEventListener('click', () => {
+      if (this.isDragging) return;
       annotationStore.undo();
     });
 
     document.getElementById('btnClearAll')?.addEventListener('click', () => {
+      if (this.isDragging) return;
       annotationStore.clearAll();
     });
 
@@ -775,6 +847,7 @@ export class Toolbar {
         micController.handlePushToTalkDown();
       } else {
         pressTimer = window.setTimeout(() => {
+          if (this.isDragging) return;
           didLongPress = true;
           if (btnMic) popoverManager.showMicPopover(btnMic);
         }, 500);
@@ -786,6 +859,7 @@ export class Toolbar {
         clearTimeout(pressTimer);
         pressTimer = null;
       }
+      if (this.isDragging) return;
       const s = store.getState().settings;
       if (s.pushToTalk) {
         micController.handlePushToTalkUp();
@@ -855,6 +929,7 @@ export class Toolbar {
 
     // Tier 2 toggle (More / Less)
     this.btnTierToggleEl?.addEventListener('click', () => {
+      if (this.isDragging) return;
       this.toggleTier2();
     });
 
@@ -867,20 +942,13 @@ export class Toolbar {
     }
     btnStraighten?.addEventListener('click', (e) => {
       e.stopPropagation();
+      if (this.isDragging) return;
       const active = !store.getState().isAutoStraightenEnabled;
       store.setState({ isAutoStraightenEnabled: active });
       const btn = e.currentTarget as HTMLElement;
       btn.classList.toggle('active', active);
       btn.title = active ? 'Auto-Straighten [ON]' : 'Auto-Straighten [OFF]';
-      window.dispatchEvent(
-        new CustomEvent('app-toast', {
-          detail: {
-            message: active
-              ? '✨ स्वतः सीधी रेखा चालू (Auto-Straighten [ON])'
-              : 'स्वतः सीधी रेखा बंद (Auto-Straighten [OFF])'
-          }
-        })
-      );
+      // Zero toast / silent update per user request
     });
 
     // Handwriting ✍ ➔ Aa toggle
@@ -889,75 +957,66 @@ export class Toolbar {
       btnHw.classList.toggle('active', store.getState().isHandwritingEnabled); // INKFIX: initialize state
     }
     btnHw?.addEventListener('click', (e) => {
+      if (this.isDragging) return;
       const active = !store.getState().isHandwritingEnabled;
       store.setState({ isHandwritingEnabled: active });
       const btn = e.currentTarget as HTMLElement;
       btn.classList.toggle('active', active);
-      window.dispatchEvent(
-        new CustomEvent('app-toast', {
-          detail: {
-            message: active
-              ? 'हस्तलेखन रूपांतरण सक्रिय (Handwriting-to-Text ON)'
-              : 'हस्तलेखन रूपांतरण निष्क्रिय (OFF)'
-          }
-        })
-      );
+      // Zero toast / silent update per user request
     });
 
     // Media overlay button
     document.getElementById('btnMediaOverlay')?.addEventListener('click', () => {
+      if (this.isDragging) return;
       const fileInput = document.getElementById('fileInputMedia') as HTMLInputElement;
       fileInput.click();
     });
 
     // Browser overlay button
     document.getElementById('btnBrowserOverlay')?.addEventListener('click', () => {
+      if (this.isDragging) return;
       window.dispatchEvent(new CustomEvent('toggle-web-overlay'));
     });
 
     // Gemini AI button
     document.getElementById('btnGemini')?.addEventListener('click', () => {
+      if (this.isDragging) return;
       window.dispatchEvent(new CustomEvent('toggle-gemini'));
     });
 
     // Board button
     document.getElementById('btnBoard')?.addEventListener('click', () => {
+      if (this.isDragging) return;
       window.dispatchEvent(new CustomEvent('toggle-board'));
+    });
+
+    // Deck / Open File button in Tier 2
+    document.getElementById('btnToolOpenDeck')?.addEventListener('click', () => {
+      if (this.isDragging) return;
+      const fileInput = document.getElementById('fileInputDeck') as HTMLInputElement;
+      fileInput?.click();
     });
 
     // Settings button
     document.getElementById('btnSettings')?.addEventListener('click', () => {
+      if (this.isDragging) return;
       window.dispatchEvent(new CustomEvent('toggle-settings'));
     });
 
-    // Slide Fit / Fill View Mode Toggle button
+    // Full Screen Zen Quick Toggle button (Single intuitive toggle, Zero popups, 100% 4K view)
     const handleFitToggle = (e?: Event) => {
       e?.stopPropagation();
-      const current = store.getState().settings.fitMode;
-      const nextMode = current === 'fill' ? 'stretch' : current === 'stretch' ? 'fit' : 'fill';
-      store.updateSettings({ fitMode: nextMode });
-      const labels: Record<string, string> = {
-        fill: 'स्लाइड दृश्य: पूर्ण पर्दा (Fill 100%)',
-        stretch: 'स्लाइड दृश्य: 100% बोर्ड खिंचाव (Stretch)',
-        fit: 'स्लाइड दृश्य: प्राकृतिक फिट (Fit 16:9)'
-      };
-      window.dispatchEvent(
-        new CustomEvent('app-toast', {
-          detail: {
-            message: labels[nextMode] || nextMode
-          }
-        })
-      );
+      if (this.isDragging) return;
+      const isCurrentlyZen = store.getState().isZen;
+      if (!isCurrentlyZen) {
+        store.updateSettings({ fitMode: 'fill' });
+        fullscreenService.enterZen();
+      } else {
+        fullscreenService.exitZen();
+      }
     };
 
-    document.getElementById('btnToolFitMode')?.addEventListener('click', handleFitToggle);
     document.getElementById('btnToolFitModeTier1')?.addEventListener('click', handleFitToggle);
-    document.getElementById('btnFitToggleHeader')?.addEventListener('click', handleFitToggle);
-
-    // Fullscreen button
-    document.getElementById('btnFullscreen')?.addEventListener('click', () => {
-      fullscreenService.toggleZen();
-    });
   }
 
   private bindStore(): void {
@@ -1012,14 +1071,18 @@ export class Toolbar {
         if (lbl) {
           lbl.textContent = text;
         }
-        const lbl1 = document.getElementById('btnToolFitModeTier1Label');
-        if (lbl1) {
-          lbl1.textContent = text === 'Fill' ? 'Fill 100%' : text;
-        }
       }
 
-      // Zen mode toolbar visibility
+      // Zen mode toolbar visibility and "फुल स्क्रीन" button active state
       if (state.isZen !== prev.isZen || state.isToolbarVisibleInZen !== prev.isToolbarVisibleInZen) {
+        const btnFs = document.getElementById('btnToolFitModeTier1');
+        const lblFs = document.getElementById('btnToolFitModeTier1Label');
+        if (btnFs) {
+          btnFs.classList.toggle('active', state.isZen);
+        }
+        if (lblFs) {
+          lblFs.textContent = state.isZen ? 'फुल स्क्रीन बंद' : 'फुल स्क्रीन';
+        }
         if (state.isZen && !state.isToolbarVisibleInZen) {
           this.containerEl.classList.add('zen-hidden');
         } else {

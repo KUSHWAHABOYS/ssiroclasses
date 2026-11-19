@@ -13,60 +13,34 @@ export interface TranslationResult {
 export class TranslatorService {
   private cachedWorkingModel: string | null = null;
   private readonly fallbackCandidates = [
-    'gemini-3.5-flash',
-    'gemini-3.5-flash-lite',
-    'gemini-3.1-flash-lite',
-    'gemini-flash-latest',
+    'gemini-2.0-flash',
+    'gemini-1.5-flash',
     'gemini-2.5-flash',
-    'gemini-2.5-pro',
-    'gemini-pro-latest'
+    'gemini-2.0-flash-lite',
+    'gemini-1.5-flash-latest',
+    'gemini-1.5-pro'
   ];
 
   /**
-   * Automatically resolves the best active Gemini model without requiring manual user selection
+   * Automatically resolves the best active Gemini model with zero network discovery delay
    */
   async resolveWorkingModel(apiKey: string, forceFresh = false): Promise<string> {
-    if (!forceFresh && this.cachedWorkingModel && !this.cachedWorkingModel.includes('1.5')) {
+    if (!forceFresh && this.cachedWorkingModel) {
       return this.cachedWorkingModel;
     }
 
     if (!forceFresh) {
       try {
         const saved = localStorage.getItem('smart_studio_working_gemini_model');
-        if (saved && saved.startsWith('gemini') && !saved.includes('1.5')) {
+        if (saved && saved.startsWith('gemini') && (saved.includes('2.0') || saved.includes('1.5') || saved.includes('2.5'))) {
           this.cachedWorkingModel = saved;
           return saved;
         }
       } catch {}
     }
 
-    // Auto-discover available models from user's Gemini API key
-    try {
-      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
-      if (res.ok) {
-        const data = await res.json();
-        const available: string[] = (data.models || [])
-          .filter((m: any) => Array.isArray(m.supportedGenerationMethods) && m.supportedGenerationMethods.includes('generateContent'))
-          .map((m: any) => m.name.replace(/^models\//, ''));
-
-        for (const pref of this.fallbackCandidates) {
-          if (available.includes(pref)) {
-            this.setWorkingModel(pref);
-            return pref;
-          }
-        }
-
-        const anyFlash = available.find((m) => m.includes('flash') && !m.includes('image') && !m.includes('tts'));
-        if (anyFlash) {
-          this.setWorkingModel(anyFlash);
-          return anyFlash;
-        }
-      }
-    } catch (e) {
-      console.warn('Auto model discovery query failed, falling back to default:', e);
-    }
-
-    const defaultModel = 'gemini-3.5-flash';
+    // Default directly to fastest gemini-2.0-flash for sub-second responses
+    const defaultModel = 'gemini-2.0-flash';
     this.setWorkingModel(defaultModel);
     return defaultModel;
   }
@@ -99,29 +73,22 @@ export class TranslatorService {
       ...this.fallbackCandidates.filter((m) => m !== initialModel)
     ];
 
-    const systemPrompt = `You are a distinguished scholar and master translator of Ancient Indian Epigraphy, Indology, Philosophy, Sanskrit, Pali, and English academic texts.
-The user is a teacher lecturing live on a digital smart board to Indian students and YouTube audience.
-
-Examine the provided image (which contains academic screenshots, text passages, Sanskrit shlokas, or Pali suttas/gathas).
+    const systemPrompt = `You are a distinguished scholar and master translator. The user is a teacher lecturing live on a digital smart board to Indian students.
+Examine the provided image (academic screenshot, book passage, Sanskrit shloka, or Pali sutta).
 
 Instructions:
-1. Identify the source language: English, Sanskrit (Devanagari or Roman/IAST), Pali (Devanagari, Roman/IAST), or Mixed.
-2. Transcribe the essential text from the image accurately into "originalText".
-3. Provide a clear, natural, dignified, and fluent Hindi translation in "hindiTranslation".
-   - Keep the tone scholarly, engaging, and clear so the lecturer can explain it effortlessly to viewers.
-   - For shlokas or gathas, give both the direct sentence-by-sentence meaning and overall spiritual/philosophical essence.
-4. If there are technical, philosophical, or difficult terms (such as Paṭiccasamuppāda, Anattā, Epistemology, Nirvāna, Dharma, etc.), explain 2 to 4 of them in the "keyGlossary" array with brief Hindi meanings.
-5. Provide a 1-sentence takeaway summary in Hindi.
+1. Provide a clear, natural, and fluent Hindi translation in "hindiTranslation".
+2. If there are technical, philosophical, or difficult terms, provide 1 to 4 of them in the "keyGlossary" array with brief Hindi meanings.
+3. Keep the response concise, high-speed, direct, and ready for immediate teaching.
 
-Return ONLY a valid JSON object with this exact structure (no markdown fences, no extra text):
+Return ONLY a valid JSON object with this exact structure:
 {
-  "detectedLanguage": "string (e.g. 'अंग्रेजी (English)', 'पालि (Pali)', 'संस्कृत (Sanskrit)', or 'English + Pali')",
-  "hindiTranslation": "string (fluent Hindi translation)",
-  "summary": "string (1-sentence essence in Hindi)",
+  "detectedLanguage": "string",
+  "hindiTranslation": "string (pure, clear, fluent Hindi translation)",
   "keyGlossary": [
     { "term": "term", "meaning": "Hindi explanation" }
   ],
-  "originalText": "string (transcribed source text, keep concise)"
+  "originalText": "string (transcribed source text)"
 }`;
 
     const requestBody = {
@@ -141,7 +108,7 @@ Return ONLY a valid JSON object with this exact structure (no markdown fences, n
       generationConfig: {
         responseMimeType: 'application/json',
         temperature: 0.1,
-        maxOutputTokens: 4096
+        maxOutputTokens: 1024
       }
     };
 

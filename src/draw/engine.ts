@@ -9,19 +9,27 @@ import { shapeSelector } from './shapeSelector';
 import { detectAndStraightenLine } from './autoStraighten';
 // AUDIT-FIX: BUG-006 - Central gesture watchdog integration
 import { gestureWatchdog } from '../core/gestureWatchdog';
+import { navigationController } from '../presenter/navigation';
 
 export class DrawingEngine {
   private isDrawing = false;
+  private lastStrokeCommittedTime = 0;
   private currentStrokePoints: Point[] = [];
   private startPoint: Point | null = null;
   private activePointerId: number | null = null;
-  private hasStylusEverBeenUsed = false;
   private eraserCursorEl: HTMLElement | null = null;
+  private autoRevertTimer: number | null = null;
 
   // Handwriting grouping hook
   private onStrokeFinishedCallbacks: Array<(stroke: Stroke) => void> = [];
 
   init(): void {
+    try {
+      if (typeof localStorage !== 'undefined') {
+        localStorage.removeItem('smart_studio_stylus_detected');
+      }
+    } catch {}
+
     const canvas = layerManager.annotationCanvas;
     canvas.style.touchAction = 'none';
 
@@ -57,9 +65,37 @@ export class DrawingEngine {
       if (state.activeTool !== prev.activeTool && this.isDrawing) {
         this.cancelCurrentStroke();
       }
+
+      // TEACHER-FLOW: Auto-revert idle fallback: if switched to temporary tool, return to Pen after idle
+      if (state.activeTool !== prev.activeTool) {
+        if (state.activeTool === 'eraser' || state.activeTool === 'shape' || state.activeTool === 'arrow') {
+          this.scheduleAutoRevertToPen(8000);
+        } else if (state.activeTool === 'highlighter') {
+          this.scheduleAutoRevertToPen(10000);
+        } else if (state.activeTool === 'pen') {
+          this.cancelAutoRevert();
+        }
+      }
     });
 
     this.createEraserCursor();
+  }
+
+  scheduleAutoRevertToPen(delayMs: number = 1500): void {
+    this.cancelAutoRevert();
+    this.autoRevertTimer = window.setTimeout(() => {
+      const current = store.getState().activeTool;
+      if (current === 'eraser' || current === 'shape' || current === 'arrow' || current === 'highlighter') {
+        store.setState({ activeTool: 'pen' });
+      }
+    }, delayMs);
+  }
+
+  cancelAutoRevert(): void {
+    if (this.autoRevertTimer) {
+      window.clearTimeout(this.autoRevertTimer);
+      this.autoRevertTimer = null;
+    }
   }
 
   onStrokeFinished(cb: (stroke: Stroke) => void): void {
@@ -126,15 +162,21 @@ export class DrawingEngine {
     // SSIRO-UPDATE: Magnifier, Zoom & Translate tools do not draw ink
     if (state.activeTool === 'magnifier' || state.activeTool === 'zoom' || state.activeTool === 'translate') return;
 
-    // Palm rejection: reject secondary touches while drawing (resting palm on board)
-    if (this.isDrawing) return;
+    // Reset auto-revert timer when an active stroke is initiated
+    this.cancelAutoRevert();
+
+    // Palm rejection & multi-touch swipe: cancel drawing if secondary finger touches board
+    if (this.isDrawing) {
+      if (!e.isPrimary && e.pointerType === 'touch') {
+        this.cancelCurrentStroke();
+      }
+      return;
+    }
     if (!e.isPrimary && e.pointerType === 'touch') return;
 
-    // Palm rejection: reject wide contact areas typical of resting palm/hand (>24px)
-    if (e.pointerType === 'pen') {
-      this.hasStylusEverBeenUsed = true;
-    } else if (e.pointerType === 'touch') {
-      if ((e.width && e.width > 24) || (e.height && e.height > 24)) {
+    // Palm rejection: reject wide contact areas typical of resting palm/hand (>40px)
+    if (e.pointerType === 'touch') {
+      if ((e.width && e.width > 40) || (e.height && e.height > 40)) {
         return; // Reject palm contact
       }
     }
@@ -322,6 +364,8 @@ export class DrawingEngine {
       // Finished eraser stroke - guarantee residual cursor circle is removed
       this.updateEraserCursor(0, 0, 0, false);
       this.currentStrokePoints = [];
+      // Auto-revert back to Pen 1.5 seconds after erasing stops
+      this.scheduleAutoRevertToPen(1500);
       return;
     }
 
@@ -357,6 +401,9 @@ export class DrawingEngine {
           timestamp: Date.now()
         };
         annotationStore.addStroke(stroke);
+        this.lastStrokeCommittedTime = performance.now();
+        // Auto-revert back to Pen after drawing shape
+        this.scheduleAutoRevertToPen(400);
       }
     } else if (state.activeTool === 'arrow' && this.startPoint) {
       const dist = Math.hypot(currentPt.x - this.startPoint.x, currentPt.y - this.startPoint.y);
@@ -379,6 +426,9 @@ export class DrawingEngine {
           timestamp: Date.now()
         };
         annotationStore.addStroke(stroke);
+        this.lastStrokeCommittedTime = performance.now();
+        // Auto-revert back to Pen after drawing arrow
+        this.scheduleAutoRevertToPen(400);
       }
     } else if (state.activeTool === 'pen' || state.activeTool === 'highlighter') {
       if (this.currentStrokePoints.length > 0) {
@@ -428,6 +478,12 @@ export class DrawingEngine {
         };
 
         annotationStore.addStroke(stroke);
+        this.lastStrokeCommittedTime = performance.now();
+
+        // Auto-revert back to Pen after highlighting
+        if (isHighlighter) {
+          this.scheduleAutoRevertToPen(2500);
+        }
 
         // ECON: Notify Smart Ink for pen or highlighter when smartInkEnabled is true (pure code features work offline)
         if (state.settings.smartInkEnabled && !stroke.shapeType && (state.activeTool === 'pen' || state.activeTool === 'highlighter')) {
@@ -571,6 +627,14 @@ export class DrawingEngine {
 
     annotationStore.drawArrow(ctx, start, current, state.penSize * wf);
     ctx.restore();
+  }
+
+  isStrokeInProgress(): boolean {
+    return this.isDrawing;
+  }
+
+  wasStrokeJustCommitted(thresholdMs: number = 450): boolean {
+    return (performance.now() - this.lastStrokeCommittedTime) < thresholdMs;
   }
 }
 

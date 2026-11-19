@@ -151,8 +151,14 @@ export class TranslatorOverlayManager {
 
   private captureRegionAsBase64(rect: { x: number; y: number; width: number; height: number }): string {
     const offscreen = document.createElement('canvas');
-    const targetW = Math.max(1, Math.round(rect.width));
-    const targetH = Math.max(1, Math.round(rect.height));
+    const maxDim = 1200;
+    let targetW = Math.max(1, Math.round(rect.width));
+    let targetH = Math.max(1, Math.round(rect.height));
+    if (targetW > maxDim || targetH > maxDim) {
+      const scale = Math.min(maxDim / targetW, maxDim / targetH);
+      targetW = Math.round(targetW * scale);
+      targetH = Math.round(targetH * scale);
+    }
     offscreen.width = targetW;
     offscreen.height = targetH;
     const ctx = offscreen.getContext('2d');
@@ -201,9 +207,9 @@ export class TranslatorOverlayManager {
     this.overlayEl.classList.add('hidden');
     if (this.snipBoxEl) this.snipBoxEl.style.display = 'none';
 
-    // If user closed overlay while tool was translate, return to select tool
+    // If user closed overlay while tool was translate, return to primary pen tool
     if (store.getState().activeTool === 'translate') {
-      store.setState({ activeTool: 'select' });
+      store.setState({ activeTool: 'pen' });
     }
   }
 }

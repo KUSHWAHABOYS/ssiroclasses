@@ -26,6 +26,35 @@
   <!-- WELCOME-CLEANUP: Removed connectModal.css link -->
 
   <style>
+    /* NETLIFY-KILLER: Complete elimination of Netlify Badge / Watermark */
+    [id*="netlify" i],
+    [class*="netlify" i],
+    [data-netlify],
+    iframe[src*="netlify" i],
+    a[href*="netlify" i],
+    div[class*="feedback" i],
+    .netlify-badge,
+    #netlify-badge,
+    netlify-badge,
+    body > div[style*="fixed"][style*="bottom"],
+    body > a[style*="fixed"][style*="bottom"],
+    body > a[href*="netlify" i] {
+      display: none !important;
+      opacity: 0 !important;
+      visibility: hidden !important;
+      pointer-events: none !important;
+      width: 0 !important;
+      height: 0 !important;
+      max-width: 0 !important;
+      max-height: 0 !important;
+      position: absolute !important;
+      left: -99999px !important;
+      top: -99999px !important;
+      z-index: -99999 !important;
+      transform: scale(0) !important;
+      overflow: hidden !important;
+    }
+
     /* SSIRO-UPDATE: Critical inline CSS for zero-flash Welcome Screen */
     .welcome-screen {
       position: fixed;
@@ -187,6 +216,23 @@
     body.state-deck #btnCloseDeckHeader {
       display: inline-flex !important;
     }
+    /* PRESENTATION MODE: Zero clutter over PPT - Header hidden, Popups/Toasts suppressed */
+    body.state-deck #header {
+      transform: translateY(-100%);
+      opacity: 0;
+      pointer-events: none;
+      transition: transform 0.25s ease, opacity 0.25s ease;
+    }
+    body.state-deck #header:hover,
+    body.state-deck #header.header-visible {
+      transform: translateY(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+    body.state-deck #toastContainer {
+      display: none !important;
+      pointer-events: none !important;
+    }
     body.state-board #welcomeScreen,
     body.state-board #navLeftZone,
     body.state-board #navRightZone,
@@ -218,7 +264,7 @@
         animation: none !important;
         opacity: 1 !important;
         transform: none !important;
-    /* MIC-AI: Microphone control styles */
+    /* MIC-AI: Sleek Microphone button matching other toolbar tools */
     .mic-btn {
       position: relative;
       transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
@@ -232,78 +278,36 @@
     .mic-btn.mic-off,
     .btn-mic-header.mic-off {
       color: var(--text-muted, #94a3b8);
-      background: rgba(255, 255, 255, 0.06);
+      background: transparent;
     }
     .mic-btn.mic-listening,
     .btn-mic-header.mic-listening {
-      background: #ef4444 !important;
-      color: #ffffff !important;
-      box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
-      animation: micPulse 1.8s infinite;
+      color: #ef4444 !important;
+      background: rgba(239, 68, 68, 0.2) !important;
+      border: 1px solid rgba(239, 68, 68, 0.6) !important;
+      box-shadow: 0 0 10px rgba(239, 68, 68, 0.35) !important;
+    }
+    .mic-btn.mic-listening svg,
+    .btn-mic-header.mic-listening svg {
+      color: #ef4444 !important;
+      filter: drop-shadow(0 0 3px rgba(239, 68, 68, 0.8));
     }
     .mic-btn.mic-error,
     .btn-mic-header.mic-error {
-      background: rgba(245, 158, 11, 0.25) !important;
+      background: rgba(245, 158, 11, 0.2) !important;
       color: #f59e0b !important;
       border: 1px solid #f59e0b !important;
     }
     .mic-error-badge {
-      display: none;
-      position: absolute;
-      top: -4px;
-      right: -6px;
-      background: #f59e0b;
-      color: #000;
-      font-size: 10px;
-      font-weight: 900;
-      width: 14px;
-      height: 14px;
-      border-radius: 50%;
-      line-height: 14px;
-      text-align: center;
+      display: none !important;
     }
-    .mic-error .mic-error-badge {
-      display: inline-block;
-    }
-    /* Ghost mode: when toolbar dims, mic button stays at least 60% visible while listening */
-    .toolbar-container.dimmed .mic-btn.mic-listening {
-      opacity: 0.8 !important;
-    }
-    @keyframes micPulse {
-      0% {
-        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
-      }
-      70% {
-        box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
-      }
-      100% {
-        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
-      }
-    }
-    /* 3-bar input-level meter animation */
     .mic-level-meter {
-      display: none;
-      align-items: flex-end;
-      gap: 2px;
-      height: 10px;
-      margin-top: 2px;
+      display: none !important;
     }
-    .mic-listening .mic-level-meter {
-      display: inline-flex;
+    /* Ghost mode: when toolbar dims, mic button stays visible while listening */
+    .toolbar-container.dimmed .mic-btn.mic-listening {
+      opacity: 0.85 !important;
     }
-    .mic-bar {
-      width: 3px;
-      background: #ffffff;
-      border-radius: 1px;
-      transition: height 0.15s ease;
-      height: 3px;
-    }
-    .mic-btn[data-level="1"] .bar-1 { height: 6px; }
-    .mic-btn[data-level="2"] .bar-1 { height: 8px; }
-    .mic-btn[data-level="2"] .bar-2 { height: 6px; }
-    .mic-btn[data-level="3"] .bar-1 { height: 10px; }
-    .mic-btn[data-level="3"] .bar-2 { height: 8px; }
-    .mic-btn[data-level="3"] .bar-3 { height: 10px; }
     /* Zen mode mic dot: 12px pulsing red dot at top-right of stage */
     .mic-zen-dot {
       position: fixed;
@@ -324,6 +328,41 @@
       100% { transform: scale(0.9); opacity: 0.8; }
     }
   </style>
+  <script>
+    /* NETLIFY-KILLER: Immediate Script-level Purge before page renders */
+    (function() {
+      function eradicateNetlify() {
+        try {
+          var els = document.querySelectorAll('[id*="netlify" i], [class*="netlify" i], a[href*="netlify" i], iframe[src*="netlify" i], netlify-badge, .netlify-badge');
+          for (var i = 0; i < els.length; i++) {
+            els[i].remove();
+          }
+          if (document.body) {
+            var kids = document.body.children;
+            for (var j = kids.length - 1; j >= 0; j--) {
+              var k = kids[j];
+              if (k.id !== 'stage' && k.id !== 'app' && k.tagName !== 'SCRIPT' && k.tagName !== 'STYLE') {
+                var txt = (k.textContent || '').toLowerCase();
+                if (txt.indexOf('netlify') !== -1 || (k.querySelector && k.querySelector('a[href*="netlify" i]'))) {
+                  k.remove();
+                }
+              }
+            }
+          }
+        } catch (e) {}
+      }
+      eradicateNetlify();
+      if (typeof MutationObserver !== 'undefined') {
+        var obs = new MutationObserver(eradicateNetlify);
+        if (document.documentElement) {
+          obs.observe(document.documentElement, { childList: true, subtree: true });
+        }
+      }
+      document.addEventListener('DOMContentLoaded', eradicateNetlify);
+      window.addEventListener('load', eradicateNetlify);
+      setInterval(eradicateNetlify, 250);
+    })();
+  </script>
 </head>
 <body class="state-welcome">
   <!-- Stage fills whole viewport: 100vw x 100dvh, margin 0, padding 0, background #000 -->
@@ -349,12 +388,6 @@
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
           <span class="btn-text">Board</span>
         </button>
-        <!-- Quick Fit / View Mode Toggle -->
-        <button id="btnFitModeHeader" class="header-btn" title="स्लाइड दृश्य मोड बदलें (Toggle Fit: 16:9 / Fill View)" aria-label="Toggle Fit Mode">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
-          <span class="btn-text" id="btnFitModeText">Fit</span>
-        </button>
-        <!-- WELCOME-CLEANUP: Removed btnConnectBoardHeader -->
         <!-- MIC-AI: Top Bar Mirror Mic Button -->
         <button id="btnMicHeader" class="header-btn btn-mic-header mic-off" title="माइक चालू / बंद (Mic ON/OFF • V)" aria-label="Toggle Microphone">
           <svg class="mic-icon-off" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -372,13 +405,6 @@
           </svg>
           <span class="btn-text">Mic</span>
         </button>
-        <button id="btnFitToggleHeader" class="header-btn" title="Slide Layout / Full View (L)" aria-label="Toggle Fullscreen Slide Layout">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
-          <span class="btn-text">Full View</span>
-        </button>
-        <button id="btnZenToggle" class="header-btn" title="Fullscreen Zen Mode (F)" aria-label="Toggle Zen Fullscreen">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
-        </button>
       </div>
     </header>
 
@@ -390,15 +416,15 @@
       <!-- Layer 10: slideCanvas (rendered PDF / image / board bg) -->
       <canvas id="slideCanvas" class="canvas-layer z-slide"></canvas>
 
-      <!-- Layer 20: mediaLayer (floating video/image windows) -->
-      <div id="mediaLayer" class="media-layer z-media"></div>
-
       <!-- Layer 30: annotationCanvas (committed strokes, shapes, typeset text) -->
       <canvas id="annotationCanvas" class="canvas-layer z-annotation"></canvas>
 
       <!-- Layer 35: previewCanvas (live in-progress stroke / shape / eraser preview) -->
       <canvas id="previewCanvas" class="canvas-layer z-preview"></canvas>
     </div>
+
+    <!-- SSIRO-UPDATE: Layer 36: mediaLayer (floating video/image windows independent of slide zoom/pan) -->
+    <div id="mediaLayer" class="media-layer z-media"></div>
 
     <!-- SSIRO-UPDATE: Layer 37: Spotlight Dim Layer -->
     <canvas id="spotlightLayer" class="spotlight-layer z-spotlight hidden"></canvas>

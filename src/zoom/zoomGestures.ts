@@ -36,6 +36,11 @@ export class ZoomGestureHandler {
 
   private bindTouchGestures(stage: HTMLElement): void {
     stage.addEventListener('touchstart', (e: TouchEvent) => {
+      // Do not process slide gestures if touch originated on media overlay, toolbar, or cards
+      if ((e.target as HTMLElement)?.closest('.media-window, #mediaLayer, .toolbar-container, .translation-card, .settings-modal, .web-overlay')) {
+        return;
+      }
+
       const state = store.getState();
 
       if (e.touches.length === 2) {
@@ -182,6 +187,9 @@ export class ZoomGestureHandler {
   private bindMouseAndWheel(stage: HTMLElement): void {
     // Wheel zoom: Ctrl+wheel or plain wheel with Zoom tool
     stage.addEventListener('wheel', (e: WheelEvent) => {
+      if ((e.target as HTMLElement)?.closest('.media-window, #mediaLayer, .toolbar-container, .translation-card')) {
+        return;
+      }
       const state = store.getState();
       const isZoomTool = state.activeTool === 'zoom';
 
@@ -203,8 +211,8 @@ export class ZoomGestureHandler {
     stage.addEventListener('mousedown', (e: MouseEvent) => {
       const state = store.getState();
       if (e.button === 1 || (e.button === 0 && state.activeTool === 'zoom')) {
-        // Don't drag if clicked on UI
-        if ((e.target as HTMLElement).closest('.toolbar-container, .popover, .header, .settings-modal')) return;
+        // Don't drag if clicked on UI or media window
+        if ((e.target as HTMLElement).closest('.toolbar-container, .popover, .header, .settings-modal, .media-window, #mediaLayer, .translation-card')) return;
 
         e.preventDefault();
         this.isMiddleMouseDown = true;

@@ -40,7 +40,7 @@
 }
 
 .z-media {
-  z-index: 20;
+  z-index: 36;
 }
 
 .z-annotation {
@@ -198,30 +198,30 @@
   pointer-events: none;
 }
 
-.stage[data-active-tool="select"] #mediaLayer {
-  pointer-events: auto;
-}
-
-/* Mode: drawing tools -> annotation canvas captures pointers, mediaLayer is click-through */
-.stage:not([data-active-tool="select"]) #annotationCanvas {
-  pointer-events: auto;
-  cursor: crosshair;
-}
-
-.stage:not([data-active-tool="select"]) #mediaLayer {
+/* Mode: select -> annotation canvases are transparent to pointers */
+.stage[data-active-tool="select"] #annotationCanvas,
+.stage[data-active-tool="select"] #previewCanvas {
   pointer-events: none;
 }
 
-.stage:not([data-active-tool="select"]) #mediaLayer .media-window {
-  pointer-events: none !important;
+/* Mode: drawing tools -> annotation canvas captures pointers (normal mouse arrow cursor) */
+.stage:not([data-active-tool="select"]) #annotationCanvas {
+  pointer-events: auto;
+  cursor: default;
 }
 
-/* Media Layer container */
+/* Media Layer container: sits at Layer 36, pointer-events pass through except on media windows */
 .media-layer {
   position: absolute;
   inset: 0;
   overflow: hidden;
   pointer-events: none;
+  z-index: 36;
+}
+
+/* Media windows are fully interactive and autonomous at all times */
+.media-layer .media-window {
+  pointer-events: auto !important;
 }
 
 /* Modals & Overlays (z-indices 50, 60, 70) */
@@ -239,4 +239,33 @@
 
 .hidden {
   display: none !important;
+}
+
+/* NETLIFY-KILLER: Complete elimination of Netlify Badge / Feedback widget */
+[id*="netlify" i],
+[class*="netlify" i],
+[data-netlify],
+iframe[src*="netlify" i],
+a[href*="netlify" i],
+div[class*="feedback" i],
+.netlify-badge,
+#netlify-badge,
+netlify-badge,
+body > div[style*="fixed"][style*="bottom"],
+body > a[style*="fixed"][style*="bottom"],
+body > a[href*="netlify" i] {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  max-width: 0 !important;
+  max-height: 0 !important;
+  position: absolute !important;
+  left: -99999px !important;
+  top: -99999px !important;
+  z-index: -99999 !important;
+  transform: scale(0) !important;
+  overflow: hidden !important;
 }

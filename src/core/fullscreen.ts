@@ -34,15 +34,19 @@ class FullscreenService {
   async enterZen(): Promise<void> {
     const stage = document.getElementById('stage');
     try {
-      if (stage && !document.fullscreenElement) {
-        if (stage.requestFullscreen) {
+      if (!document.fullscreenElement) {
+        if (stage && stage.requestFullscreen) {
           await stage.requestFullscreen();
-        } else if ((stage as any).webkitRequestFullscreen) {
+        } else if (stage && (stage as any).webkitRequestFullscreen) {
           await (stage as any).webkitRequestFullscreen();
+        } else if (document.documentElement.requestFullscreen) {
+          await document.documentElement.requestFullscreen();
+        } else if ((document.documentElement as any).webkitRequestFullscreen) {
+          await (document.documentElement as any).webkitRequestFullscreen();
         }
       }
     } catch (err) {
-      console.warn('Browser fullscreen request failed (allowed if user gesture restricted):', err);
+      console.warn('Browser fullscreen request fallback:', err);
     }
     store.setState({ isZen: true, isToolbarVisibleInZen: true });
     setTimeout(() => {
@@ -62,7 +66,7 @@ class FullscreenService {
         }
       }
     } catch (err) {
-      console.warn('Browser exit fullscreen failed:', err);
+      console.warn('Browser exit fullscreen fallback:', err);
     }
     store.setState({ isZen: false, isToolbarVisibleInZen: true });
     setTimeout(() => {

@@ -14,6 +14,7 @@ export class VoiceCommandService {
   private recognition: any = null;
   private isListening = false;
   private shouldRestart = false;
+  private lastNavigationTime = 0;
 
   init(): void {
     console.log('🎙️ VoiceCommandService initialized (mic is OFF by default, local grammar active).');
@@ -56,7 +57,7 @@ export class VoiceCommandService {
 
         const rec = new SpeechRec();
         rec.continuous = true;
-        rec.interimResults = false;
+        rec.interimResults = true; // Instant recognition during conversational teaching
         rec.lang = store.getState().settings.voiceLang || 'hi-IN';
 
         rec.onaudiostart = () => micController.setInputLevel(1);
@@ -141,21 +142,16 @@ export class VoiceCommandService {
   private cleanTranscript(phrase: string): string {
     let clean = phrase.toLowerCase().replace(/[।.,!?]/g, ' ').trim();
     for (const f of FILLER_WORDS) {
-      const reg = new RegExp(`\\b${f}\\b`, 'gi');
-      clean = clean.replace(reg, ' ');
+      clean = clean.split(f).join(' ');
     }
     return clean.replace(/\s+/g, ' ').trim();
   }
 
   /**
-   * Icon-only feedback per Part E (no transcripts on screen or in storage)
+   * Feedback suppressed per user request: "कोई गंदा सा पॉपअप नहीं आना चाहिए"
    */
-  private showIconFeedback(icon: string): void {
-    window.dispatchEvent(
-      new CustomEvent('app-toast', {
-        detail: { message: `🎙️ ${icon}` }
-      })
-    );
+  private showIconFeedback(_icon: string): void {
+    // Zero popups over PPT presentation!
   }
 
   public processVoiceCommand(phrase: string, force = false): boolean {
@@ -202,21 +198,47 @@ export class VoiceCommandService {
       return false; // ignore other commands silently
     }
 
-    // 3. Navigation: Slide & Page Next ('Page Next', 'Slide Next', 'Next Page', 'Next Slide', 'पेज नेक्स्ट', 'स्लाइड नेक्स्ट', etc.)
-    if (
-      /\b(next\s*slide|slide\s*next|next\s*page|page\s*next|अगली\s*स्लाइड|स्लाइड\s*अगली|अगला\s*पेज|पेज\s*अगला|स्लाइड\s*नेक्स्ट|नेक्स्ट\s*स्लाइड|पेज\s*नेक्स्ट|नेक्स्ट\s*पेज|पेज\s*नेक्सट|स्लाइड\s*नेक्सट|पेज\s*नैकस्ट|स्लाइड\s*नैकस्ट|स्लाइड\s*आगे|पेज\s*आगे|आगे\s*चलो|आगे\s*बढ़ो|aage\s*chalo|aage\s*badho|agla\s*page|agli\s*slide|page\s*aage|slide\s*aage)\b/i.test(clean) ||
-      /^(next|अगला|अगली|आगे|नेक्स्ट|agla|agli|aage)$/i.test(clean)
-    ) {
-      this.executeAction('next', '➡️');
+    const testText = `${phrase} ${clean}`.toLowerCase();
+
+    // 3. Navigation: Slide & Page Next
+    // Conversational Hindi teacher phrases:
+    // "चलिए अब आगे बढ़ते हैं नेक्स्ट स्लाइड पर", "चलिए आगे बढ़ते हैं", "आगे बढ़ते हैं", "नेक्स्ट स्लाइड पर",
+    // "अगली स्लाइड पर", "अगली स्लाइड", "अगला पेज", "next slide", "slide next", etc.
+    const isNext = 
+      /चलिए\s*(अब\s*)?आगे\s*(बढ़ते|चलते|बढ़ें|चलें)/i.test(testText) ||
+      /आगे\s*(बढ़ते\s*हैं|चलते\s*हैं|बढ़ें|चलें|बढ़ो|चलो|badho|chalo)/i.test(testText) ||
+      /(नेक्स्ट|अगली|अगला|next)\s*(स्लाइड|पेज|slide|page)(\s*पर)?/i.test(testText) ||
+      /(स्लाइड|पेज|slide|page)\s*(नेक्स्ट|अगली|अगला|आगे|next|aage)/i.test(testText) ||
+      /^(next|अगला|अगली|आगे|नेक्स्ट|agla|agli|aage)$/i.test(testText) ||
+      /\b(next\s*slide|slide\s*next|next\s*page|page\s*next|forward)\b/i.test(testText);
+
+    if (isNext) {
+      const now = Date.now();
+      if (now - this.lastNavigationTime > 1200) {
+        this.lastNavigationTime = now;
+        this.executeAction('next', '➡️');
+      }
       return true;
     }
 
-    // 4. Navigation: Slide & Page Back ('Page Back', 'Slide Back', 'Previous Page', 'Previous Slide', 'पेज बैक', 'स्लाइड बैक', etc.)
-    if (
-      /\b(previous\s*slide|slide\s*previous|previous\s*page|page\s*previous|prev\s*slide|slide\s*prev|prev\s*page|page\s*prev|back\s*slide|slide\s*back|back\s*page|page\s*back|पिछली\s*स्लाइड|स्लाइड\s*पिछली|पिछला\s*पेज|पेज\s*पिछला|स्लाइड\s*बैक|बैक\s*स्लाइड|पेज\s*बैक|बैक\s*पेज|स्लाइड\s*पीछे|पेज\s*पीछे|पीछे\s*चलो|पीछे\s*जाओ|peeche\s*chalo|piche\s*chalo|pichla\s*page|pichli\s*slide|page\s*piche|slide\s*piche)\b/i.test(clean) ||
-      /^(back|previous|prev|पिछला|पिछली|पीछे|बैक|प्रीवियस|pichla|pichli|peeche|piche)$/i.test(clean)
-    ) {
-      this.executeAction('prev', '⬅️');
+    // 4. Navigation: Slide & Page Back
+    // Conversational Hindi teacher phrases:
+    // "पिछली स्लाइड पर जो देखा", "पिछली स्लाइड पर", "वापस पिछली स्लाइड", "पीछे वाली स्लाइड", "पिछली स्लाइड",
+    // "पिछला पेज", "पीछे चलते हैं", "पीछे चलो", "वापस चलो", "previous slide", "slide back", etc.
+    const isPrev = 
+      /(पिछली|पिछला|पिछले|previous|prev|back|pichla|pichli)\s*(स्लाइड|पेज|slide|page)(\s*पर)?(\s*जो\s*देखा)?/i.test(testText) ||
+      /(स्लाइड|पेज|slide|page)\s*(पिछली|पिछला|पिछले|पीछे|back|previous|piche)/i.test(testText) ||
+      /(वापस\s*(पिछली|पीछे|चलो|जाओ))/i.test(testText) ||
+      /(पीछे\s*(वाली\s*स्लाइड|चलते\s*हैं|चलें|चलो|जाओ|लें|लो|chalo))/i.test(testText) ||
+      /^(back|previous|prev|पिछला|पिछली|पीछे|बैक|प्रीवियस|pichla|pichli|peeche|piche)$/i.test(testText) ||
+      /\b(previous\s*slide|slide\s*previous|prev\s*slide|slide\s*prev|back\s*slide|slide\s*back|back\s*page|page\s*back)\b/i.test(testText);
+
+    if (isPrev) {
+      const now = Date.now();
+      if (now - this.lastNavigationTime > 1200) {
+        this.lastNavigationTime = now;
+        this.executeAction('prev', '⬅️');
+      }
       return true;
     }
 

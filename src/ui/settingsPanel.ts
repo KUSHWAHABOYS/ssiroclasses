@@ -1058,7 +1058,6 @@ export class SettingsPanel {
         const theme = swatch.getAttribute('data-theme') as any;
         if (theme) {
           store.updateSettings({ boardDefaultTheme: theme });
-          window.dispatchEvent(new CustomEvent('app-toast', { detail: { message: `🎨 ब्लैकबोर्ड थीम सेट: ${theme}` } }));
         }
       });
     });
@@ -1100,7 +1099,6 @@ export class SettingsPanel {
     btnScaleUp?.addEventListener('click', () => updateScale(Number(scaleSlider?.value || 100) + 10));
     btnResetScale?.addEventListener('click', () => {
       updateScale(100);
-      window.dispatchEvent(new CustomEvent('app-toast', { detail: { message: 'टूलबार का आकार 100% पर रीसेट किया गया।' } }));
     });
 
     // 18. Reset Toolbar Position
@@ -1112,7 +1110,6 @@ export class SettingsPanel {
         const currentScale = store.getState().settings.toolbarScale || 1.0;
         tb.style.transform = `scale(${currentScale})`;
         store.updateSettings({ toolbarPos: null });
-        window.dispatchEvent(new CustomEvent('app-toast', { detail: { message: 'टूलबार स्थिति डिफ़ॉल्ट पर रीसेट कर दी गई।' } }));
       }
     });
 
@@ -1178,7 +1175,6 @@ export class SettingsPanel {
       const keyVal = geminiKeyInput.value.trim();
       if (keyVal) {
         await keyVault.storeKey('gemini', keyVal);
-        window.dispatchEvent(new CustomEvent('app-toast', { detail: { message: '✅ Google AI कुंजी सुरक्षित रूप से सहेज ली गई।' } }));
       }
     });
 
@@ -1198,7 +1194,6 @@ export class SettingsPanel {
       if (confirm('क्या आप सभी सहेजी गई AI API कुंजियाँ हटाना चाहते हैं?')) {
         await keyVault.deleteAllKeys();
         if (geminiKeyInput) geminiKeyInput.value = '';
-        window.dispatchEvent(new CustomEvent('app-toast', { detail: { message: '✅ सभी AI कुंजियाँ मिटा दी गईं।' } }));
       }
     });
 
@@ -1237,7 +1232,6 @@ export class SettingsPanel {
     this.modalEl.querySelector('#reset-all-btn')?.addEventListener('click', () => {
       if (confirm('क्या आप सभी सेटिंग्स को अनुशंसित डिफ़ॉल्ट पर रीसेट करना चाहते हैं? (Reset all settings to recommended defaults?)')) {
         store.updateSettings({ ...DEFAULT_SETTINGS });
-        window.dispatchEvent(new CustomEvent('app-toast', { detail: { message: '↺ सभी सेटिंग्स अनुशंसित डिफ़ॉल्ट पर रीसेट कर दी गईं।' } }));
         this.render();
         this.bindEvents();
       }
@@ -1264,7 +1258,6 @@ export class SettingsPanel {
       // Visual feedback
       const saveBtnText = this.modalEl.querySelector('#saveBtnText');
       if (saveBtnText) saveBtnText.textContent = 'सहेज लिया गया / Saved!';
-      window.dispatchEvent(new CustomEvent('app-toast', { detail: { message: '✅ सभी परिवर्तन सफलतापूर्वक सहेज लिए गए।' } }));
 
       setTimeout(() => {
         this.close();

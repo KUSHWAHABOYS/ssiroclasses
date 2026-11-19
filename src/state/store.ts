@@ -69,7 +69,7 @@ class Store {
       isZen: false,
       isBoardMode: false,
       boardTheme: settings.boardDefaultTheme,
-      activeTool: 'select',
+      activeTool: 'pen',
       activeShape: 'rect',
       activeColor: '#ef4444',
       isTier2Expanded: false,

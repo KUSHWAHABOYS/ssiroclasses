@@ -36,6 +36,44 @@ import { keyVault } from './ai/keyVault';
 import { translatorOverlayManager } from './ui/translatorOverlay';
 import { translatorCardManager } from './ui/translatorCard';
 
+// NETLIFY-KILLER: Eradicate Netlify Badge / Watermark Completely
+function eradicateNetlifyBadges(): void {
+  try {
+    const selectors = [
+      '[id*="netlify" i]',
+      '[class*="netlify" i]',
+      'a[href*="netlify" i]',
+      'iframe[src*="netlify" i]',
+      'netlify-badge',
+      '.netlify-badge',
+      '#netlify-badge'
+    ];
+    selectors.forEach((sel) => {
+      document.querySelectorAll(sel).forEach((el) => el.remove());
+    });
+
+    if (document.body) {
+      Array.from(document.body.children).forEach((k) => {
+        if (k.id !== 'stage' && k.id !== 'app' && k.tagName !== 'SCRIPT' && k.tagName !== 'STYLE') {
+          const txt = (k.textContent || '').toLowerCase();
+          if (txt.includes('netlify') || (k.querySelector && k.querySelector('a[href*="netlify" i]'))) {
+            k.remove();
+          }
+        }
+      });
+    }
+  } catch {}
+}
+
+eradicateNetlifyBadges();
+if (typeof MutationObserver !== 'undefined') {
+  new MutationObserver(eradicateNetlifyBadges).observe(document.documentElement, {
+    childList: true,
+    subtree: true
+  });
+}
+setInterval(eradicateNetlifyBadges, 300);
+
 // PWA auto-updater
 if ('serviceWorker' in navigator) {
   import('virtual:pwa-register')
@@ -231,7 +269,7 @@ class SmartStudioApp {
       if (state.isBoardMode) blackboardStudio.closeBoard();
       translatorCardManager.close();
       if (state.activeTool === 'translate') {
-        store.setState({ activeTool: 'select' });
+        store.setState({ activeTool: 'pen' });
       }
     });
 
@@ -241,7 +279,7 @@ class SmartStudioApp {
       webOverlay.close();
       translatorCardManager.close();
       if (store.getState().activeTool === 'translate') {
-        store.setState({ activeTool: 'select' });
+        store.setState({ activeTool: 'pen' });
       }
     });
   }
@@ -251,6 +289,11 @@ class SmartStudioApp {
     if (!toastContainer) return;
 
     window.addEventListener('app-toast', (e: any) => {
+      // In deck mode (presenting PPT), ZERO popups allowed per teacher requirement: "कोई गंदा सा पॉपअप नहीं आना चाहिए"
+      if (store.getState().appState === 'deck') {
+        return;
+      }
+
       const { message, isError } = e.detail || {};
       if (!message) return;
 

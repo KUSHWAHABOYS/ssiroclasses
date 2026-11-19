@@ -100,6 +100,7 @@ function inAppBrowserProxyPlugin(): Plugin {
 }
 
 export default defineConfig({
+  base: './',
   plugins: [
     inAppBrowserProxyPlugin(),
     VitePWA({

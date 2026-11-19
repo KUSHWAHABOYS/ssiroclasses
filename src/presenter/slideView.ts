@@ -87,10 +87,6 @@ export class SlideView {
         const pageNum = parseInt(input.trim(), 10);
         if (!isNaN(pageNum) && pageNum >= 1 && pageNum <= state.totalPages) {
           navigationController.goToPage(pageNum);
-        } else if (!isNaN(pageNum)) {
-          window.dispatchEvent(new CustomEvent('app-toast', {
-            detail: { message: `अमान्य स्लाइड संख्या (Slide 1–${state.totalPages})`, isError: true }
-          }));
         }
       }
     });
@@ -115,14 +111,16 @@ export class SlideView {
       navigationController.nextPage();
     });
 
-    // AUDIT-FIX: BUG-008 - Edge clicks for mouse navigation while in select/read mode per NAV-1
+    // Edge clicks / touch taps for instant slide turning on digital board
     const stage = document.getElementById('stage');
     stage?.addEventListener('click', (e: MouseEvent) => {
       const state = store.getState();
-      if (state.appState !== 'deck' || state.activeTool !== 'select') return;
-      if ((e.target as HTMLElement).closest('.toolbar-container, .header, .chevron-btn, .popover, .media-window, .gemini-panel, .settings-modal')) return;
+      if (state.appState !== 'deck') return;
+      // When in Pen / drawing modes, clicks/touches on stage must NEVER change the slide
+      if (state.activeTool !== 'select') return;
+      if ((e.target as HTMLElement).closest('.toolbar-container, .header, .chevron-btn, .popover, .media-window, .gemini-panel, .settings-modal, .translation-card')) return;
       const x = e.clientX;
-      const edgeThreshold = 48; // 48px from screen edge
+      const edgeThreshold = 64; // 64px comfortable digital board edge zone
       if (x <= edgeThreshold) {
         navigationController.prevPage();
       } else if (x >= window.innerWidth - edgeThreshold) {
@@ -186,12 +184,13 @@ export class SlideView {
 
   applyDeck(deck: any): void {
     slideRenderer.clearCache();
-    // WELCOME-FIX: Transition appState to 'deck' and dismiss welcome screen
+    // WELCOME-FIX: Transition appState to 'deck', dismiss welcome screen, and activate Pen tool ready for teaching
     store.setState({
       appState: 'deck',
       currentDeck: deck,
       currentPage: 1,
-      totalPages: deck.totalPages
+      totalPages: deck.totalPages,
+      activeTool: 'pen'
     });
 
     this.fileNameEl.textContent = deck.name;
@@ -257,7 +256,6 @@ export class SlideView {
     const nextMode = current === 'fill' ? 'fit' : 'fill';
     store.updateSettings({ fitMode: nextMode });
     this.updateFitModeUI(nextMode);
-    this.showToast(nextMode === 'fill' ? 'स्लाइड दृश्य: पूर्ण पर्दा (Fill Screen)' : 'स्लाइड दृश्य: प्राकृतिक फिट (Fit 16:9)');
   }
 
   updateFitModeUI(mode: string): void {

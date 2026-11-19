@@ -108,15 +108,8 @@ export class MicController {
     this.stopAutoOffCheck();
     this.setInputLevel(0);
     voiceCommandService.stopListening();
-    this.updateState('error', true);
-
-    if (msg) {
-      window.dispatchEvent(
-        new CustomEvent('app-toast', {
-          detail: { message: msg, isError: true }
-        })
-      );
-    }
+    this.updateState('error', false);
+    if (msg) console.warn('[MicController error]', msg);
   }
 
   // Push-to-talk handlers
@@ -149,48 +142,7 @@ export class MicController {
       } catch {}
     }
 
-    // Debounced toast notifications
-    if (showToast) {
-      const now = Date.now();
-      const debounceMs = 2000;
-
-      if (newState === 'listening') {
-        if (this.lastToastType !== 'on' || now - this.lastToastTime > debounceMs) {
-          this.lastToastTime = now;
-          this.lastToastType = 'on';
-          window.dispatchEvent(
-            new CustomEvent('app-toast', {
-              detail: { message: '🎙️ माइक चालू / Mic ON' }
-            })
-          );
-        }
-      } else if (newState === 'off') {
-        if (isAutoOff) {
-          window.dispatchEvent(
-            new CustomEvent('app-toast', {
-              detail: { message: '⏱️ निष्क्रियता के कारण माइक बंद / Mic auto-off (idle)' }
-            })
-          );
-        } else if (this.lastToastType !== 'off' || now - this.lastToastTime > debounceMs) {
-          this.lastToastTime = now;
-          this.lastToastType = 'off';
-          window.dispatchEvent(
-            new CustomEvent('app-toast', {
-              detail: { message: '🔇 माइक बंद / Mic OFF' }
-            })
-          );
-        }
-      } else if (newState === 'error') {
-        window.dispatchEvent(
-          new CustomEvent('app-toast', {
-            detail: {
-              message: '⚠️ माइक अवरुद्ध या अनुपलब्ध / Microphone blocked or unavailable',
-              isError: true
-            }
-          })
-        );
-      }
-    }
+    // Zero toasts on screen per user requirement: mic button state & indicator provide clean visual feedback
   }
 
   private bindWindowEvents(): void {
