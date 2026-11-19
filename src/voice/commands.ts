@@ -15,6 +15,7 @@ export class VoiceCommandService {
   private isListening = false;
   private shouldRestart = false;
   private lastNavigationTime = 0;
+  private handledResultIndices = new Set<number>();
 
   init(): void {
     console.log('🎙️ VoiceCommandService initialized (mic is OFF by default, local grammar active).');
@@ -55,6 +56,7 @@ export class VoiceCommandService {
           this.recognition = null;
         }
 
+        this.handledResultIndices.clear();
         const rec = new SpeechRec();
         rec.continuous = true;
         rec.interimResults = true; // Instant recognition during conversational teaching
@@ -70,13 +72,22 @@ export class VoiceCommandService {
           micController.setInputLevel(2);
           micController.reportActivity();
           for (let i = event.resultIndex || 0; i < event.results.length; i++) {
+            if (this.handledResultIndices.has(i)) continue;
             const res = event.results[i];
             if (res && res[0]) {
               const transcript = res[0].transcript.trim();
               if (transcript) {
-                this.processVoiceCommand(transcript);
+                const executed = this.processVoiceCommand(transcript);
+                if (executed) {
+                  // Mark this result index as consumed to prevent multiple triggers
+                  this.handledResultIndices.add(i);
+                }
               }
             }
+          }
+          if (this.handledResultIndices.size > 100) {
+            const arr = Array.from(this.handledResultIndices).slice(-30);
+            this.handledResultIndices = new Set(arr);
           }
           setTimeout(() => micController.setInputLevel(0), 400);
         };
@@ -148,6 +159,80 @@ export class VoiceCommandService {
   }
 
   /**
+   * Senses specific slide jump targets from spoken phrases (Hindi & English)
+   * Handles:
+   * - "पहली स्लाइड", "पहला पेज", "first slide"
+   * - "पाँचवीं स्लाइड", "पांचवी स्लाइड", "5th slide"
+   * - "लास्ट स्लाइड", "आखिरी स्लाइड", "अंतिम स्लाइड", "last slide"
+   * - "स्लाइड 15", "पेज 22", "15 नंबर स्लाइड", "45वीं स्लाइड"
+   */
+  private parseSlideJumpTarget(clean: string, totalPages: number): number | null {
+    // 1. First slide
+    if (/(पहली|पहला|प्रथम|first|start)\s*(स्लाइड|पेज|slide|page)/i.test(clean) ||
+        /^(पहली|पहला|प्रथम|first|start)\s*(स्लाइड|पेज|slide|page)?$/i.test(clean) ||
+        /(स्लाइड|पेज|slide|page)\s*(1|एक|first|पहला|पहली)/i.test(clean)) {
+      return 1;
+    }
+
+    // 2. Last slide
+    if (/(लास्ट|आखिरी|आख़िरी|अंतिम|last|final|end)\s*(स्लाइड|पेज|slide|page)/i.test(clean) ||
+        /^(लास्ट|आखिरी|आख़िरी|अंतिम|last|final|end)\s*(स्लाइड|पेज|slide|page)?$/i.test(clean) ||
+        /(स्लाइड|पेज|slide|page)\s*(लास्ट|आखिरी|आख़िरी|अंतिम|last|final|end)/i.test(clean)) {
+      return totalPages;
+    }
+
+    // 3. Digit match with slide/page context (e.g. "स्लाइड 15", "पेज 8", "15 नंबर स्लाइड", "5वीं स्लाइड", "slide 25")
+    const digitMatch = clean.match(/(?:स्लाइड|slide|page|पेज|पृष्ठ)\s*(?:नंबर\s*)?(\d+)/i) ||
+                       clean.match(/(\d+)\s*(?:नंबर\s*)?(?:वीं|वां|th|st|nd|rd)?\s*(?:स्लाइड|slide|page|पेज)/i) ||
+                       clean.match(/(?:गो\s*टू|go\s*to)\s*(?:slide\s*|स्लाइड\s*)?(\d+)/i);
+    if (digitMatch) {
+      const n = parseInt(digitMatch[1], 10);
+      if (!isNaN(n) && n >= 1) {
+        return Math.max(1, Math.min(n, totalPages));
+      }
+    }
+
+    // 4. Hindi ordinals and number words
+    const ordinalsMap: Record<string, number> = {
+      'पहली': 1, 'पहला': 1, 'प्रथम': 1, 'एक': 1, 'first': 1, 'ek': 1,
+      'दूसरी': 2, 'दूसरा': 2, 'द्वितीय': 2, 'दो': 2, 'second': 2, 'do': 2,
+      'तीसरी': 3, 'तीसरा': 3, 'तृतीय': 3, 'तीन': 3, 'third': 3, 'teen': 3,
+      'चौथी': 4, 'चौथा': 4, 'चतुर्थ': 4, 'चार': 4, 'fourth': 4, 'chaar': 4,
+      'पांचवीं': 5, 'पाँचवीं': 5, 'पांचवी': 5, 'पाँचवी': 5, 'पांचवा': 5, 'पाँचवा': 5, 'पांच': 5, 'पाँच': 5, 'fifth': 5, 'paanch': 5,
+      'छठी': 6, 'छठा': 6, 'छह': 6, 'छः': 6, 'sixth': 6, 'chhah': 6,
+      'सातवीं': 7, 'सातवां': 7, 'सात': 7, 'seventh': 7, 'saat': 7,
+      'आठवीं': 8, 'आठवां': 8, 'आठ': 8, 'eighth': 8, 'aath': 8,
+      'नौवीं': 9, 'नौवां': 9, 'नौ': 9, 'ninth': 9, 'nau': 9,
+      'दसवीं': 10, 'दसवां': 10, 'दस': 10, 'tenth': 10, 'das': 10,
+      'ग्यारहवीं': 11, 'ग्यारह': 11, 'eleven': 11,
+      'बारहवीं': 12, 'बारह': 12, 'twelve': 12,
+      'तेरहवीं': 13, 'तेरह': 13, 'thirteen': 13,
+      'चौदहवीं': 14, 'चौदह': 14, 'fourteen': 14,
+      'पंद्रहवीं': 15, 'पंद्रहवां': 15, 'पंद्रह': 15, 'fifteen': 15,
+      'सोलहवीं': 16, 'सोलह': 16, 'sixteen': 16,
+      'सत्रहवीं': 17, 'सत्रह': 17, 'seventeen': 17,
+      'अठारहवीं': 18, 'अठारह': 18, 'eighteen': 18,
+      'उन्नीसवीं': 19, 'उन्नीस': 19, 'nineteen': 19,
+      'बीसवीं': 20, 'बीस': 20, 'twenty': 20,
+      'पच्चीसवीं': 25, 'पच्चीस': 25,
+      'तीसवीं': 30, 'तीस': 30,
+      'चालीसवीं': 40, 'चालीस': 40,
+      'पचासवीं': 50, 'पचास': 50
+    };
+
+    const tokens = clean.split(/\s+/);
+    for (const tok of tokens) {
+      if (ordinalsMap[tok] !== undefined) {
+        if (clean.includes('स्लाइड') || clean.includes('slide') || clean.includes('page') || clean.includes('पेज') || clean.includes('चलो') || clean.includes('खोलो')) {
+          return Math.max(1, Math.min(ordinalsMap[tok], totalPages));
+        }
+      }
+    }
+
+    return null;
+  }
+
+  /**
    * Feedback suppressed per user request: "कोई गंदा सा पॉपअप नहीं आना चाहिए"
    */
   private showIconFeedback(_icon: string): void {
@@ -200,73 +285,52 @@ export class VoiceCommandService {
 
     const testText = `${phrase} ${clean}`.toLowerCase();
 
-    // 3. Navigation: Slide & Page Next
-    // Conversational Hindi teacher phrases:
-    // "चलिए अब आगे बढ़ते हैं नेक्स्ट स्लाइड पर", "चलिए आगे बढ़ते हैं", "आगे बढ़ते हैं", "नेक्स्ट स्लाइड पर",
-    // "अगली स्लाइड पर", "अगली स्लाइड", "अगला पेज", "next slide", "slide next", etc.
-    const isNext = 
-      /चलिए\s*(अब\s*)?आगे\s*(बढ़ते|चलते|बढ़ें|चलें)/i.test(testText) ||
-      /आगे\s*(बढ़ते\s*हैं|चलते\s*हैं|बढ़ें|चलें|बढ़ो|चलो|badho|chalo)/i.test(testText) ||
-      /(नेक्स्ट|अगली|अगला|next)\s*(स्लाइड|पेज|slide|page)(\s*पर)?/i.test(testText) ||
-      /(स्लाइड|पेज|slide|page)\s*(नेक्स्ट|अगली|अगला|आगे|next|aage)/i.test(testText) ||
-      /^(next|अगला|अगली|आगे|नेक्स्ट|agla|agli|aage)$/i.test(testText) ||
-      /\b(next\s*slide|slide\s*next|next\s*page|page\s*next|forward)\b/i.test(testText);
-
-    if (isNext) {
+    // 3. Navigation: Direct Slide Jumps ("पहली स्लाइड", "पाँचवीं स्लाइड", "लास्ट स्लाइड", "स्लाइड 15")
+    const totalPages = state.totalPages || 1;
+    const jumpTarget = this.parseSlideJumpTarget(clean, totalPages);
+    if (jumpTarget !== null) {
       const now = Date.now();
-      if (now - this.lastNavigationTime > 1200) {
+      if (now - this.lastNavigationTime > 900) {
         this.lastNavigationTime = now;
-        this.executeAction('next', '➡️');
+        this.showIconFeedback(`📄 ${jumpTarget}`);
+        navigationController.goToPage(jumpTarget, 'jump');
       }
       return true;
     }
 
-    // 4. Navigation: Slide & Page Back
-    // Conversational Hindi teacher phrases:
-    // "पिछली स्लाइड पर जो देखा", "पिछली स्लाइड पर", "वापस पिछली स्लाइड", "पीछे वाली स्लाइड", "पिछली स्लाइड",
-    // "पिछला पेज", "पीछे चलते हैं", "पीछे चलो", "वापस चलो", "previous slide", "slide back", etc.
+    // 4. Navigation: Slide & Page Back (Strictly 1 slide back)
     const isPrev = 
-      /(पिछली|पिछला|पिछले|previous|prev|back|pichla|pichli)\s*(स्लाइड|पेज|slide|page)(\s*पर)?(\s*जो\s*देखा)?/i.test(testText) ||
+      /^(back|previous|prev|पिछला|पिछली|पीछे|बैक|बॅक|बैग|वापस|प्रीवियस|pichla|pichli|peeche|piche|wapas|vapas)$/i.test(clean) ||
+      /(पिछली|पिछला|पिछले|previous|prev|back|pichla|pichli|wapas|vapas)\s*(स्लाइड|पेज|slide|page)(\s*पर)?(\s*जो\s*देखा)?/i.test(testText) ||
       /(स्लाइड|पेज|slide|page)\s*(पिछली|पिछला|पिछले|पीछे|back|previous|piche)/i.test(testText) ||
       /(वापस\s*(पिछली|पीछे|चलो|जाओ))/i.test(testText) ||
       /(पीछे\s*(वाली\s*स्लाइड|चलते\s*हैं|चलें|चलो|जाओ|लें|लो|chalo))/i.test(testText) ||
-      /^(back|previous|prev|पिछला|पिछली|पीछे|बैक|प्रीवियस|pichla|pichli|peeche|piche)$/i.test(testText) ||
       /\b(previous\s*slide|slide\s*previous|prev\s*slide|slide\s*prev|back\s*slide|slide\s*back|back\s*page|page\s*back)\b/i.test(testText);
 
     if (isPrev) {
       const now = Date.now();
-      if (now - this.lastNavigationTime > 1200) {
+      if (now - this.lastNavigationTime > 900) {
         this.lastNavigationTime = now;
         this.executeAction('prev', '⬅️');
       }
       return true;
     }
 
-    // 5. Navigation: Slide jumps with ordinals / numbers up to 50
-    // Examples: "तीसरी स्लाइड पर चलो", "स्लाइड पाँच", "slide 7", "पांचवी स्लाइड"
-    const slideJumpMatch = clean.match(
-      /(?:स्लाइड|slide|page|पृष्ठ|नंबर|number)?\s*([^\s]+)\s*(?:स्लाइड|slide|page|पृष्ठ)?\s*(?:पर चलो|खोलो|दिखाओ|par chalo)?/i
-    );
+    // 5. Navigation: Slide & Page Next (Strictly 1 slide forward)
+    const isNext = 
+      /^(next|अगला|अगली|आगे|नेक्स्ट|नेक्सट|नैकस्ट|agla|agli|aage|forward)$/i.test(clean) ||
+      /चलिए\s*(अब\s*)?आगे\s*(बढ़ते|चलते|बढ़ें|चलें)/i.test(testText) ||
+      /आगे\s*(बढ़ते\s*हैं|चलते\s*हैं|बढ़ें|चलें|बढ़ो|चलो|badho|chalo)/i.test(testText) ||
+      /(नेक्स्ट|अगली|अगला|next)\s*(स्लाइड|पेज|slide|page)(\s*पर)?/i.test(testText) ||
+      /(स्लाइड|पेज|slide|page)\s*(नेक्स्ट|अगली|अगला|आगे|next|aage)/i.test(testText) ||
+      /\b(next\s*slide|slide\s*next|next\s*page|page\s*next|forward)\b/i.test(testText);
 
-    // Check tokens for number words / ordinals
-    const tokens = clean.split(/\s+/);
-    for (const tok of tokens) {
-      if (NUMBER_WORDS[tok] !== undefined) {
-        const pageNum = NUMBER_WORDS[tok];
-        if (clean.includes('स्लाइड') || clean.includes('slide') || clean.includes('page') || clean.includes('चलो')) {
-          this.showIconFeedback(`📄 ${pageNum}`);
-          navigationController.goToPage(pageNum);
-          return true;
-        }
+    if (isNext) {
+      const now = Date.now();
+      if (now - this.lastNavigationTime > 900) {
+        this.lastNavigationTime = now;
+        this.executeAction('next', '➡️');
       }
-    }
-
-    // Direct digit check (e.g. "slide 12" or "12")
-    const digitMatch = clean.match(/\b([1-9]|[1-4][0-9]|50)\b/);
-    if (digitMatch && (clean.includes('slide') || clean.includes('स्लाइड') || clean.includes('page'))) {
-      const num = parseInt(digitMatch[1], 10);
-      this.showIconFeedback(`📄 ${num}`);
-      navigationController.goToPage(num);
       return true;
     }
 

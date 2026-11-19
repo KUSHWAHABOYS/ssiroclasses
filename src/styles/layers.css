@@ -31,6 +31,53 @@
   touch-action: none;
   image-rendering: -webkit-optimize-contrast;
   image-rendering: crisp-edges;
+  will-change: transform, opacity;
+}
+
+/* Premium hardware-accelerated slide shift animations */
+.slide-anim-next {
+  animation: slideGliderNext 280ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.slide-anim-prev {
+  animation: slideGliderPrev 280ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.slide-anim-jump {
+  animation: slideGliderJump 280ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes slideGliderNext {
+  0% {
+    transform: translate3d(55px, 0, 0);
+    opacity: 0.6;
+  }
+  100% {
+    transform: translate3d(0, 0, 0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideGliderPrev {
+  0% {
+    transform: translate3d(-55px, 0, 0);
+    opacity: 0.6;
+  }
+  100% {
+    transform: translate3d(0, 0, 0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideGliderJump {
+  0% {
+    transform: scale(0.96);
+    opacity: 0.65;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 /* z-index mapping */

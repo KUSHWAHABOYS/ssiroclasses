@@ -485,6 +485,25 @@ export class SettingsPanel {
                 </label>
               </div>
 
+              <!-- Auto-revert to Pen after Shape/Tool -->
+              <div class="stitch-card">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <div style="display:flex; flex-direction:column; gap:4px;">
+                    <span style="font-size:14.5px; font-weight:600; color:#fff7eb;">आकृतियों के बाद पेन पर वापसी / Return to Pen after Shape</span>
+                    <span style="font-size:12.5px; color:#d0c5b1;">शेप/आकृतियां बनाने के बाद पेन टूल पर कितने समय बाद लौटें</span>
+                  </div>
+                  <span id="revert-timer-badge" style="font-size:13.5px; font-weight:700; color:#e9c258;">
+                    ${s.autoRevertToPenSeconds === 0 ? 'कभी नहीं (हमेशा वही टूल)' : `${s.autoRevertToPenSeconds || 15} सेकंड`}
+                  </span>
+                </div>
+                <div class="stitch-segmented" style="grid-template-columns:1fr 1fr 1fr 1fr; margin-top:10px;">
+                  <button type="button" class="stitch-seg-btn revert-opt ${(s.autoRevertToPenSeconds || 15) === 10 ? 'active' : ''}" data-revert="10">10s</button>
+                  <button type="button" class="stitch-seg-btn revert-opt ${(s.autoRevertToPenSeconds || 15) === 15 ? 'active' : ''}" data-revert="15">15s (डिफ़ॉल्ट)</button>
+                  <button type="button" class="stitch-seg-btn revert-opt ${(s.autoRevertToPenSeconds || 15) === 30 ? 'active' : ''}" data-revert="30">30s</button>
+                  <button type="button" class="stitch-seg-btn revert-opt ${s.autoRevertToPenSeconds === 0 ? 'active' : ''}" data-revert="0">कभी नहीं (Stay)</button>
+                </div>
+              </div>
+
               <!-- Digital Blackboard Theme Swatches -->
               <div class="stitch-card">
                 <span style="font-size:14.5px; font-weight:600; color:#fff7eb;">डिजिटल श्यामपट्ट थीम / Blackboard Preset Theme</span>
@@ -1047,6 +1066,21 @@ export class SettingsPanel {
     const keepPerSlide = this.modalEl.querySelector('#settingKeepPerSlide') as HTMLInputElement;
     keepPerSlide?.addEventListener('change', () => {
       store.updateSettings({ keepAnnotationsPerSlide: keepPerSlide.checked });
+    });
+
+    // 14b. Auto-revert to pen timer segmented control
+    const revertBtns = this.modalEl.querySelectorAll<HTMLButtonElement>('.revert-opt');
+    const revertBadge = this.modalEl.querySelector('#revert-timer-badge');
+    revertBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        revertBtns.forEach((b) => b.classList.remove('active'));
+        btn.classList.add('active');
+        const seconds = parseInt(btn.getAttribute('data-revert') || '15', 10);
+        store.updateSettings({ autoRevertToPenSeconds: seconds });
+        if (revertBadge) {
+          revertBadge.textContent = seconds === 0 ? 'कभी नहीं (हमेशा वही टूल)' : `${seconds} सेकंड`;
+        }
+      });
     });
 
     // 15. Blackboard Swatches

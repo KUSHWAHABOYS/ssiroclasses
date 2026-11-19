@@ -81,14 +81,17 @@ export class DrawingEngine {
     this.createEraserCursor();
   }
 
-  scheduleAutoRevertToPen(delayMs: number = 1500): void {
+  scheduleAutoRevertToPen(delayMs?: number): void {
     this.cancelAutoRevert();
+    const settingSec = store.getState().settings.autoRevertToPenSeconds ?? 15;
+    if (settingSec === 0) return; // 0 disables auto-revert (stay on tool)
+    const effectiveMs = delayMs !== undefined ? delayMs : (settingSec * 1000);
     this.autoRevertTimer = window.setTimeout(() => {
       const current = store.getState().activeTool;
       if (current === 'eraser' || current === 'shape' || current === 'arrow' || current === 'highlighter') {
         store.setState({ activeTool: 'pen' });
       }
-    }, delayMs);
+    }, effectiveMs);
   }
 
   cancelAutoRevert(): void {
@@ -364,8 +367,8 @@ export class DrawingEngine {
       // Finished eraser stroke - guarantee residual cursor circle is removed
       this.updateEraserCursor(0, 0, 0, false);
       this.currentStrokePoints = [];
-      // Auto-revert back to Pen 1.5 seconds after erasing stops
-      this.scheduleAutoRevertToPen(1500);
+      // Auto-revert back to Pen after idle period (allows multiple erasures)
+      this.scheduleAutoRevertToPen(8000);
       return;
     }
 
@@ -402,8 +405,8 @@ export class DrawingEngine {
         };
         annotationStore.addStroke(stroke);
         this.lastStrokeCommittedTime = performance.now();
-        // Auto-revert back to Pen after drawing shape
-        this.scheduleAutoRevertToPen(400);
+        // Keep shape tool active! Sensible 15s idle timer enables drawing multiple shapes continuously
+        this.scheduleAutoRevertToPen();
       }
     } else if (state.activeTool === 'arrow' && this.startPoint) {
       const dist = Math.hypot(currentPt.x - this.startPoint.x, currentPt.y - this.startPoint.y);
@@ -427,8 +430,8 @@ export class DrawingEngine {
         };
         annotationStore.addStroke(stroke);
         this.lastStrokeCommittedTime = performance.now();
-        // Auto-revert back to Pen after drawing arrow
-        this.scheduleAutoRevertToPen(400);
+        // Keep arrow tool active! Sensible 15s idle timer enables drawing multiple arrows continuously
+        this.scheduleAutoRevertToPen();
       }
     } else if (state.activeTool === 'pen' || state.activeTool === 'highlighter') {
       if (this.currentStrokePoints.length > 0) {

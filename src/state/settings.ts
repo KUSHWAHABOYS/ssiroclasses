@@ -77,6 +77,8 @@ export interface AppSettings {
   manualCropBottom: number;
   manualCropLeft: number;
   manualCropRight: number;
+  // TOOLBAR: Shape & Tool Idle Revert (15s default, 0 = stay on tool forever)
+  autoRevertToPenSeconds?: number;
 }
 
 const SETTINGS_STORAGE_KEY = 'smart_studio_settings_v1';
@@ -160,7 +162,8 @@ export const DEFAULT_SETTINGS: AppSettings = {
   manualCropTop: 0,
   manualCropBottom: 0,
   manualCropLeft: 0,
-  manualCropRight: 0
+  manualCropRight: 0,
+  autoRevertToPenSeconds: 15
 };
 
 export function loadSettings(): AppSettings {
