@@ -685,8 +685,8 @@ export class Toolbar {
       const targetRenderedWidth = (unscaledWidth * initialScale) + dx;
       const newScale = targetRenderedWidth / Math.max(100, unscaledWidth);
 
-      // Clamp scale between 0.40 and 2.00
-      const clampedScale = Math.max(0.40, Math.min(2.0, Math.round(newScale * 100) / 100));
+      // Clamp scale between 0.50 and 2.50
+      const clampedScale = Math.max(0.50, Math.min(2.50, Math.round(newScale * 100) / 100));
       this.applyScale(clampedScale, false);
 
       // If enlarged beyond viewport right boundary, shift left so it stays on screen
@@ -738,7 +738,7 @@ export class Toolbar {
         );
         if (initialPinchDist > 10) {
           const factor = currentDist / initialPinchDist;
-          const newScale = Math.max(0.40, Math.min(2.0, Math.round(initialPinchScale * factor * 100) / 100));
+          const newScale = Math.max(0.50, Math.min(2.50, Math.round(initialPinchScale * factor * 100) / 100));
           this.applyScale(newScale, false);
         }
       }
@@ -758,7 +758,7 @@ export class Toolbar {
   }
 
   public applyScale(scale: number, saveToStore = false): void {
-    const clamped = Math.max(0.40, Math.min(2.0, Math.round(scale * 100) / 100));
+    const clamped = Math.max(0.50, Math.min(2.50, Math.round(scale * 100) / 100));
     this.toolbarScale = clamped;
     this.containerEl.style.setProperty('--toolbar-scale', String(clamped));
     this.containerEl.style.transform = 'scale(var(--toolbar-scale, 1))';

@@ -185,9 +185,9 @@ describe('Master Floating Dock & Dynamic Inking Island Suite', () => {
       expect(scaleBadge).not.toBeNull();
       expect(scaleBadge?.textContent).toBe('100%');
 
-      // Test apply scale down to 40%
-      toolbar.applyScale(0.4);
-      expect(scaleBadge?.textContent).toBe('40%');
+      // Test apply scale down to 50%
+      toolbar.applyScale(0.5);
+      expect(scaleBadge?.textContent).toBe('50%');
     });
 
     it('has removed dead Lasso tool to keep screen clean and clutter-free', () => {
