@@ -21,13 +21,13 @@ export class BlackboardStudio {
 
   private renderDock(): void {
     this.dockEl.innerHTML = `
-      <div class="board-dock-left">
+      <div class="board-dock-left" id="boardDockLeft">
         <div class="theme-selector" id="themeSelector">
           ${Object.values(BOARD_THEMES)
             .map(
               (th) => `
             <div class="theme-pill ${th.id === 'slate' ? 'active' : ''}" 
-                 style="background-color: ${th.bgColor}; border-color: ${th.isChroma ? '#000' : 'rgba(255,255,255,0.2)'};" 
+                 style="background-color: ${th.bgColor};" 
                  data-theme="${th.id}" 
                  title="${th.name}">
             </div>
@@ -37,22 +37,25 @@ export class BlackboardStudio {
         </div>
       </div>
 
-      <div class="board-dock-center" id="boardDockCenter">
-        <!-- Unified toolbar mounted dynamically -->
-      </div>
-
-      <div class="board-dock-right" style="display:flex; align-items:center; gap:8px;">
+      <div class="board-dock-right" id="boardDockRight">
         <!-- Multi-Page Blackboard Navigation -->
         <div class="board-page-controls" id="boardPageControls">
-          <button class="board-page-btn" id="btnBoardPrevPage" type="button" title="Previous Page (◀)">◀</button>
+          <button class="board-page-btn" id="btnBoardPrevPage" type="button" title="Previous Page (◀)">
+            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
           <span class="board-page-indicator" id="boardPageIndicator">1 / 1</span>
-          <button class="board-page-btn" id="btnBoardNextPage" type="button" title="Next Page (▶)">▶</button>
-          <button class="board-page-btn" id="btnBoardAddPage" type="button" title="Add New Blackboard Page (➕)">➕</button>
+          <button class="board-page-btn" id="btnBoardNextPage" type="button" title="Next Page (▶)">
+            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+          <button class="board-page-btn btn-board-add" id="btnBoardAddPage" type="button" title="Add New Page (+)">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </button>
         </div>
 
-        <button class="board-close-btn" id="btnBoardClose" title="Close Board (Return to Slide)">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-          <span>✕ Close</span>
+        <div class="board-dock-sep"></div>
+
+        <button class="board-close-btn" id="btnBoardClose" type="button" title="Close Blackboard (Return to Slide)">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
     `;

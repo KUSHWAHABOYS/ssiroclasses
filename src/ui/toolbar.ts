@@ -2279,6 +2279,14 @@ export class Toolbar {
         this.syncTier2State(state.isTier2Expanded);
       }
 
+      // Blackboard Mode active button toggle
+      if (state.isBoardMode !== prev.isBoardMode) {
+        const btnBoard = document.getElementById('btnBoard');
+        if (btnBoard) {
+          btnBoard.classList.toggle('active', state.isBoardMode);
+        }
+      }
+
       // Toolbar scale update
       if (state.settings.toolbarScale !== prev.settings.toolbarScale) {
         this.applyScale(state.settings.toolbarScale || 1.0, false);

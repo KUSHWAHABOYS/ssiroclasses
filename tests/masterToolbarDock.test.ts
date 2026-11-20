@@ -370,5 +370,23 @@ describe('Master Floating Dock & Dynamic Inking Island Suite', () => {
 
       expect(container.classList.contains('is-dragging')).toBe(false);
     });
+
+    it('keeps master toolbar active and independent on Blackboard Studio deck mode', () => {
+      const btnBoard = document.getElementById('btnBoard');
+      expect(btnBoard).not.toBeNull();
+
+      // Enter Board mode
+      store.setState({ isBoardMode: true, appState: 'board' });
+      expect(btnBoard?.classList.contains('active')).toBe(true);
+
+      const container = document.getElementById('toolbarContainer');
+      expect(container).not.toBeNull();
+      // Toolbar is not destroyed or hidden
+      expect(container?.classList.contains('hidden')).toBe(false);
+
+      // Exit Board mode
+      store.setState({ isBoardMode: false, appState: 'deck' });
+      expect(btnBoard?.classList.contains('active')).toBe(false);
+    });
   });
 });
