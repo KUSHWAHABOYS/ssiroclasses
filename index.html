@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>Smart Studio Presenter Pro — SSIRO Classes</title>
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <meta name="theme-color" content="#0A1633" />
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+  <link rel="alternate icon" href="./favicon.ico" />
+  <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32.png" />
+  <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
+  <meta name="description" content="Fullscreen 4K Teaching & Presentation Studio for Android Smart Boards & OBS/StreamYard" />
+  <!-- AUDIT-FIX: BUG-004 - PRV-1 Privacy & Security Headers: Strict CSP, No-Referrer, Permissions-Policy, Zero Remote Fonts -->
+  <meta name="referrer" content="no-referrer" />
+  <meta http-equiv="Permissions-Policy" content="microphone=(self), camera=(), geolocation=(), payment=()" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' blob:; script-src 'self' 'unsafe-eval' 'unsafe-inline' blob: https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; media-src 'self' blob:; connect-src 'self' blob: https://cdn.jsdelivr.net https://generativelanguage.googleapis.com https://api.openai.com https://api.anthropic.com https://api.groq.com https://api.deepseek.com https://openrouter.ai https://api.perplexity.ai; worker-src 'self' blob: https://cdn.jsdelivr.net; frame-src 'self' https: http:; object-src 'none';" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" />
+  <!-- WELCOME-CLEANUP: Removed connectModal.css link -->
+
+  <style>
+    /* NETLIFY-KILLER: Complete elimination of Netlify Badge / Watermark */
+    [id*="netlify" i],
+    [class*="netlify" i],
+    [data-netlify],
+    iframe[src*="netlify" i],
+    a[href*="netlify" i],
+    div[class*="feedback" i],
+    .netlify-badge,
+    #netlify-badge,
+    netlify-badge,
+    body > div[style*="fixed"][style*="bottom"],
+    body > a[style*="fixed"][style*="bottom"],
+    body > a[href*="netlify" i] {
+      display: none !important;
+      opacity: 0 !important;
+      visibility: hidden !important;
+      pointer-events: none !important;
+      width: 0 !important;
+      height: 0 !important;
+      max-width: 0 !important;
+      max-height: 0 !important;
+      position: absolute !important;
+      left: -99999px !important;
+      top: -99999px !important;
+      z-index: -99999 !important;
+      transform: scale(0) !important;
+      overflow: hidden !important;
+    }
+
+    /* SSIRO-UPDATE: Critical inline CSS for zero-flash Welcome Screen */
+    .welcome-screen {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100dvh;
+      background-color: #10131a;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow-y: auto;
+      overflow-x: hidden;
+      touch-action: pan-y;
+      user-select: none;
+      transition: opacity 300ms ease, visibility 300ms ease;
+    }
+    .welcome-screen.fade-out {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    /* WELCOME-FIX: App State Visibility Controls */
+    body.state-welcome #fileName,
+    body.state-welcome #pageCounter,
+    body.state-welcome #btnCloseDeckHeader,
+    body.state-welcome #navLeftZone,
+    body.state-welcome #navRightZone,
+    body.state-welcome #toolbarContainer,
+    body.state-welcome #boardDock,
+    body.state-welcome #zoomIndicator,
+    body.state-welcome #btnZoomReset,
+    body.state-welcome #lensCanvas,
+    body.state-welcome #spotlightLayer {
+      display: none !important;
+      pointer-events: none !important;
+    }
+    body.state-deck #welcomeScreen {
+      display: none !important;
+    }
+    body.state-deck #btnCloseDeckHeader {
+      display: inline-flex !important;
+    }
+    /* PRESENTATION MODE: Zero clutter over PPT - Header hidden, Popups/Toasts suppressed */
+    body.state-deck #header {
+      transform: translateY(-100%);
+      opacity: 0;
+      pointer-events: none;
+      transition: transform 0.25s ease, opacity 0.25s ease;
+    }
+    body.state-deck #header:hover,
+    body.state-deck #header.header-visible {
+      transform: translateY(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+    body.state-deck #toastContainer {
+      display: none !important;
+      pointer-events: none !important;
+    }
+    body.state-board #welcomeScreen,
+    body.state-board #navLeftZone,
+    body.state-board #navRightZone,
+    body.state-board #toolbarContainer {
+      display: none !important;
+    }
+    @keyframes welcomeLogoIn {
+      from { opacity: 0; transform: scale(0.85); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    @keyframes welcomeTextRise {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes welcomeUnderlineIn {
+      from { width: 0%; }
+      to { width: 80%; }
+    }
+    @keyframes welcomeGlowPulse {
+      from { opacity: 0.6; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1.1); }
+    }
+    @keyframes welcomeHintFade {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .welcome-logo-container, .welcome-line-1, .welcome-line-2, .welcome-underline, .welcome-actions {
+        animation: none !important;
+        opacity: 1 !important;
+        transform: none !important;
+    /* MIC-AI: Sleek Microphone button matching other toolbar tools */
+    .mic-btn {
+      position: relative;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .mic-icon-wrapper {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .mic-btn.mic-off,
+    .btn-mic-header.mic-off {
+      color: var(--text-muted, #94a3b8);
+      background: transparent;
+    }
+    .mic-btn.mic-listening,
+    .btn-mic-header.mic-listening {
+      color: #ef4444 !important;
+      background: rgba(239, 68, 68, 0.2) !important;
+      border: 1px solid rgba(239, 68, 68, 0.6) !important;
+      box-shadow: 0 0 10px rgba(239, 68, 68, 0.35) !important;
+    }
+    .mic-btn.mic-listening svg,
+    .btn-mic-header.mic-listening svg {
+      color: #ef4444 !important;
+      filter: drop-shadow(0 0 3px rgba(239, 68, 68, 0.8));
+    }
+    .mic-btn.mic-error,
+    .btn-mic-header.mic-error {
+      background: rgba(245, 158, 11, 0.2) !important;
+      color: #f59e0b !important;
+      border: 1px solid #f59e0b !important;
+    }
+    .mic-error-badge {
+      display: none !important;
+    }
+    .mic-level-meter {
+      display: none !important;
+    }
+    /* Ghost mode: when toolbar dims, mic button stays visible while listening */
+    .toolbar-container.dimmed .mic-btn.mic-listening {
+      opacity: 0.85 !important;
+    }
+    /* Zen mode mic dot: 12px pulsing red dot at top-right of stage */
+    .mic-zen-dot {
+      position: fixed;
+      top: 16px;
+      right: 20px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #ef4444;
+      box-shadow: 0 0 8px #ef4444;
+      animation: micDotPulse 1.4s infinite;
+      z-index: 99;
+      pointer-events: none;
+    }
+    @keyframes micDotPulse {
+      0% { transform: scale(0.9); opacity: 0.8; }
+      50% { transform: scale(1.2); opacity: 1; box-shadow: 0 0 14px #ef4444; }
+      100% { transform: scale(0.9); opacity: 0.8; }
+    }
+  </style>
+  <script>
+    /* NETLIFY-KILLER: Immediate Script-level Purge before page renders */
+    (function() {
+      function eradicateNetlify() {
+        try {
+          var els = document.querySelectorAll('[id*="netlify" i], [class*="netlify" i], a[href*="netlify" i], iframe[src*="netlify" i], netlify-badge, .netlify-badge');
+          for (var i = 0; i < els.length; i++) {
+            els[i].remove();
+          }
+          if (document.body) {
+            var kids = document.body.children;
+            for (var j = kids.length - 1; j >= 0; j--) {
+              var k = kids[j];
+              if (k.id !== 'stage' && k.id !== 'app' && k.tagName !== 'SCRIPT' && k.tagName !== 'STYLE') {
+                var txt = (k.textContent || '').toLowerCase();
+                if (txt.indexOf('netlify') !== -1 || (k.querySelector && k.querySelector('a[href*="netlify" i]'))) {
+                  k.remove();
+                }
+              }
+            }
+          }
+        } catch (e) {}
+      }
+      eradicateNetlify();
+      if (typeof MutationObserver !== 'undefined') {
+        var obs = new MutationObserver(eradicateNetlify);
+        if (document.documentElement) {
+          obs.observe(document.documentElement, { childList: true, subtree: true });
+        }
+      }
+      document.addEventListener('DOMContentLoaded', eradicateNetlify);
+      window.addEventListener('load', eradicateNetlify);
+      setInterval(eradicateNetlify, 250);
+    })();
+  </script>
+  <script type="module" crossorigin src="./assets/index-gLVXkIdK.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-BCfjY1Px.css">
+<link rel="manifest" href="./manifest.webmanifest"></head>
+<body class="state-welcome">
+  <!-- Stage fills whole viewport: 100vw x 100dvh, margin 0, padding 0, background #000 -->
+  <div id="stage" class="stage">
+    <!-- Minimalist Glassmorphic Header Status Pill (z-index 45) -->
+    <header id="header" class="header">
+      <div class="header-left">
+        <div class="header-status-pill">
+          <span class="channel-badge" id="channelName">SSIRO Classes</span>
+          <span class="file-name" id="fileName"></span>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="header-page-pill">
+          <span class="page-counter" id="pageCounter">1 / 1</span>
+        </div>
+        <!-- Hidden duplicate buttons kept in DOM strictly for legacy tests & scripts -->
+        <div class="header-legacy-support" style="display:none !important;">
+          <button id="btnOpenFile" class="header-btn" title="Open PDF/Deck"><span class="btn-text">Open Deck</span></button>
+          <button id="btnLibraryHeader" class="header-btn" title="Studio Library"><span class="btn-text">Library</span></button>
+          <button id="btnInstallHeader" class="header-btn btn-pwa-install" title="Install App"><span class="btn-text">Install</span></button>
+          <button id="btnCloseDeckHeader" class="header-btn btn-close-deck" title="Close Deck"><span class="btn-text">Close Deck</span></button>
+          <button id="btnBoardHeader" class="header-btn" title="Blackboard Studio"><span class="btn-text">Board</span></button>
+          <button id="btnMicHeader" class="header-btn btn-mic-header mic-off" title="Mic ON/OFF"><span class="btn-text">Mic</span></button>
+        </div>
+      </div>
+    </header>
+
+    <!-- MIC-AI: Discreet red mic-on dot (12px, top-right of stage) visible even in Zen mode -->
+    <div id="micZenDot" class="mic-zen-dot hidden" title="माइक सक्रिय है (Microphone LIVE)"></div>
+
+    <!-- SSIRO-UPDATE: #zoomRoot container for whole-slide zoom & panning -->
+    <div id="zoomRoot" class="zoom-root">
+      <!-- Layer 10: slideCanvas (rendered PDF / image / board bg) -->
+      <canvas id="slideCanvas" class="canvas-layer z-slide"></canvas>
+
+      <!-- Layer 30: annotationCanvas (committed strokes, shapes, typeset text) -->
+      <canvas id="annotationCanvas" class="canvas-layer z-annotation"></canvas>
+
+      <!-- Layer 35: previewCanvas (live in-progress stroke / shape / eraser preview) -->
+      <canvas id="previewCanvas" class="canvas-layer z-preview"></canvas>
+    </div>
+
+    <!-- SSIRO-UPDATE: Layer 36: mediaLayer (floating video/image windows independent of slide zoom/pan) -->
+    <div id="mediaLayer" class="media-layer z-media"></div>
+
+    <!-- SSIRO-UPDATE: Layer 37: Spotlight Dim Layer -->
+    <canvas id="spotlightLayer" class="spotlight-layer z-spotlight hidden"></canvas>
+
+    <!-- SSIRO-UPDATE: Layer 38: Magnifier Lens Canvas -->
+    <canvas id="lensCanvas" class="lens-canvas z-lens hidden"></canvas>
+
+    <!-- SSIRO-UPDATE: Floating Transient Zoom Indicator and 1x Reset Chip -->
+    <div id="zoomIndicator" class="zoom-indicator hidden">1.0×</div>
+    <button id="btnZoomReset" class="zoom-reset-chip hidden" title="Reset Zoom 1×">
+      <span>1× रीसेट</span>
+    </button>
+
+    <!-- Layer 40: Chevrons (semi-transparent on-canvas navigation) -->
+    <div id="navLeftZone" class="nav-edge-zone nav-zone-left" title="Previous Slide (← / Swipe Right)">
+      <button id="chevronLeft" class="chevron-btn chevron-left" aria-label="Previous Slide">
+        <svg viewBox="0 0 24 24" width="36" height="36" stroke="currentColor" stroke-width="2.5" fill="none"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+    </div>
+    <div id="navRightZone" class="nav-edge-zone nav-zone-right" title="Next Slide (→ / Swipe Left)">
+      <button id="chevronRight" class="chevron-btn chevron-right" aria-label="Next Slide">
+        <svg viewBox="0 0 24 24" width="36" height="36" stroke="currentColor" stroke-width="2.5" fill="none"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+    </div>
+
+    <!-- Layer 50: Floating Draggable Toolbar & Popovers -->
+    <div id="toolbarContainer" class="toolbar-container z-toolbar">
+      <!-- Toolbar rendered dynamically -->
+    </div>
+
+    <!-- Bottom Dock for Blackboard Studio (z-index 50) -->
+    <div id="boardDock" class="board-dock z-toolbar hidden">
+      <!-- Blackboard controls -->
+    </div>
+
+    <!-- Layer 60: WebOverlay (in-app browser) -->
+    <div id="webOverlay" class="web-overlay z-browser hidden">
+      <!-- In-app browser UI -->
+    </div>
+
+    <!-- Layer 70: Settings Modal / Gemini Chat Panel / Toasts -->
+    <div id="geminiPanel" class="gemini-panel z-modal hidden"></div>
+    <div id="settingsPanel" class="settings-modal z-modal hidden"></div>
+    <div id="toastContainer" class="toast-container z-modal"></div>
+    <div id="undoChipContainer" class="undo-chip-container z-modal"></div>
+
+    <!-- SSIRO-UPDATE: Layer 100: Welcome Screen ("Welcome to SSIRO Classes") -->
+    <div id="welcomeScreen" class="welcome-screen">
+      <main class="welcome-stitch-root">
+        <!-- Subtle Ambient Glow Rings -->
+        <div class="welcome-glow-top"></div>
+        <div class="welcome-glow-subtle"></div>
+
+        <!-- Top & Hero Branding Group -->
+        <div style="width: 100%; display: flex; flex-direction: column; align-items: center; text-align: center; position: relative; z-index: 10;">
+          <!-- Minimal Live Pill Indicator -->
+          <div class="welcome-live-pill">
+            <span class="welcome-live-dot"></span>
+            <span class="welcome-live-text">Interactive Engine Live</span>
+          </div>
+
+          <!-- Hero Logo Container with Glassmorphic Rim -->
+          <div class="welcome-logo-wrapper" id="welcomeLogoWrapper" title="लोगो बदलने के लिए क्लिक करें (Click to change logo)">
+            <div class="welcome-logo-glow"></div>
+            <div class="welcome-logo-container">
+              <img id="welcomeLogoImg" alt="SSIRO Classes Modern Icon" class="welcome-logo-img" src="./icons/ssiro-modern-logo.png" />
+            </div>
+          </div>
+
+          <!-- Main Typography Hierarchy -->
+          <h1 class="welcome-headline">
+            <span class="sr-only welcome-line-1" style="display:none;">Welcome to</span>
+            SSIRO <span class="welcome-gradient-text welcome-line-2">Classes</span>
+          </h1>
+          <p class="welcome-subtitle">
+            Empower Your Learning • Smart Interactive Study Decks
+          </p>
+
+          <!-- Horizontal Value Badges -->
+          <div class="welcome-badges-row">
+            <div class="welcome-chip-badge">
+              <span class="material-symbols-outlined" style="color: var(--w-primary);">auto_stories</span>
+              <span>500+ Study Decks</span>
+            </div>
+            <div class="welcome-chip-badge">
+              <span class="material-symbols-outlined" style="color: var(--w-secondary); font-variation-settings: 'FILL' 1;">bolt</span>
+              <span>Smart Flashcards</span>
+            </div>
+            <div class="welcome-chip-badge">
+              <span class="material-symbols-outlined" style="color: var(--w-tertiary);">verified</span>
+              <span>100% Free Access</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Stats Mini Showcase Card -->
+        <div class="welcome-showcase-card">
+          <div class="welcome-showcase-inner">
+            <div class="welcome-showcase-left">
+              <div class="welcome-showcase-icon-box">
+                <span class="material-symbols-outlined">cognition</span>
+              </div>
+              <div style="text-align: left;">
+                <div class="welcome-showcase-title">Active Session Mode</div>
+                <div class="welcome-showcase-sub">Spaced repetition enabled</div>
+              </div>
+            </div>
+            <div class="welcome-showcase-rating">
+              <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+              <span>4.9</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Interactive Call-To-Action Stack -->
+        <div class="welcome-cta-stack welcome-actions">
+          <!-- Primary Action CTA -->
+          <button class="welcome-btn-primary welcome-open-btn" id="btnWelcomeOpenDeck" type="button" aria-label="Open Study Deck">
+            <span class="material-symbols-outlined font-bold">file_open</span>
+            <span>Open Study Deck</span>
+            <span class="material-symbols-outlined cta-arrow">arrow_forward</span>
+          </button>
+
+          <!-- Secondary Frosted Glass CTA -->
+          <button class="welcome-btn-secondary" id="btnWelcomeLibrary" type="button" aria-label="Browse Studio Library" title="स्टूडियो लाइब्रेरी खोलें">
+            <span class="material-symbols-outlined" style="color: var(--w-primary);">explore</span>
+            <span>Browse Library</span>
+            <span class="material-symbols-outlined cta-chevron">chevron_right</span>
+          </button>
+
+          <!-- Tertiary Quick Start / App Link CTA -->
+          <button class="welcome-btn-tertiary btn-pwa-install" id="btnWelcomeInstallApp" type="button" aria-label="Install App for Offline Use" title="ऐप इंस्टॉल करें">
+            <span class="material-symbols-outlined">download</span>
+            <span>Install Web App for Offline Use</span>
+          </button>
+        </div>
+
+        <!-- System Status & Legal Footer -->
+        <footer class="welcome-footer">
+          <div class="welcome-footer-top">
+            <span>v2.4</span>
+            <span class="welcome-footer-dot"></span>
+            <span>Official SSIRO Platform</span>
+            <span class="welcome-footer-dot"></span>
+            <span class="welcome-footer-link" id="btnWelcomeHelp">Help &amp; Privacy</span>
+          </div>
+          <p class="welcome-footer-copy">
+            © 2025 SSIRO Classes. All rights reserved.
+          </p>
+        </footer>
+      </main>
+    </div>
+
+    <!-- Hidden file inputs -->
+    <input type="file" id="fileInputDeck" accept="application/pdf,.pdf,.pptx,.ppt,image/jpeg,image/png,image/webp" multiple class="sr-only" />
+    <input type="file" id="fileInputMedia" accept="video/mp4,video/webm,image/jpeg,image/png,image/webp" multiple class="sr-only" />
+  </div>
+
+</body>
+</html>
