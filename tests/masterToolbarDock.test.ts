@@ -37,7 +37,7 @@ describe('Master Floating Dock & Dynamic Inking Island Suite', () => {
       const island = document.getElementById('penDynamicIsland');
       expect(island).not.toBeNull();
 
-      const tipBtns = island?.querySelectorAll('.island-tip-btn');
+      const tipBtns = island?.querySelectorAll('#penTipsGroup .island-tip-btn');
       expect(tipBtns?.length).toBe(4);
 
       const strokeDots = island?.querySelectorAll('.stroke-dot-btn');
@@ -201,9 +201,9 @@ describe('Master Floating Dock & Dynamic Inking Island Suite', () => {
 
     it('supports Dynamic Island across Pen, Marker, Eraser, and Laser', () => {
       const island = document.getElementById('penDynamicIsland');
-      const markerBtn = document.getElementById('btnToolMarker');
+      const markerBtn = document.getElementById('btnToolHighlighter');
       const eraserBtn = document.getElementById('btnToolEraser');
-      const laserBtn = document.getElementById('btnToolLaser');
+      const laserBtn = document.getElementById('btnToolMagnifier');
 
       markerBtn?.click();
       expect(store.getState().activeTool).toBe('highlighter');

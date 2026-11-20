@@ -484,8 +484,6 @@
   cursor: crosshair;
   background: radial-gradient(circle at center, #131b2a 0%, #0a0e17 100%);
 }
-  gap: 6px;
-}
 
 /* --------------------------------------------------------------------------
    5. MULTI-PAGE BLACKBOARD CONTROLS IN BOARD DOCK
