@@ -824,159 +824,295 @@
 }
 
 /* ==========================================================================
-   CONCENTRIC ORBITAL CROWN HALO (Contextual Properties Crown in Circle Mode)
-   Curved crown arc hugging the top perimeter of the circular dial,
-   dynamically scaled in lockstep with --circle-dock-size.
+   CONCENTRIC ORBITAL RING LAYER (पतला सा लेयर गोला - True Circular Arc in Circle Mode)
+   Follows the circular curvature of the main dial with exact radial polar coordinates.
+   Active for Pen, Marker, Eraser, and Laser in circle mode.
    ========================================================================== */
-.toolbar-container.layout-circle .pen-dynamic-island {
-  position: absolute;
-  bottom: calc(100% + 10px);
-  left: 50%;
-  transform: translateX(-50%);
-  margin-bottom: 0;
-  z-index: 20;
-  width: calc(var(--circle-dock-size, 480px) * 0.96);
-  max-width: calc(100vw - 20px);
-  border-radius: calc(var(--circle-dock-size, 480px) * 0.10) !important;
-  padding: calc(var(--circle-dock-size, 480px) * 0.012) calc(var(--circle-dock-size, 480px) * 0.022) !important;
-  gap: calc(var(--circle-dock-size, 480px) * 0.014) !important;
-  background: radial-gradient(ellipse at 50% 120%, rgba(18, 28, 48, 0.98) 0%, rgba(8, 14, 25, 0.97) 100%) !important;
-  border: 2px solid rgba(245, 158, 11, 0.75) !important;
-  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.88), 0 0 28px rgba(245, 158, 11, 0.35), inset 0 1px 2px rgba(255, 255, 255, 0.28) !important;
-  justify-content: center;
-  align-items: center;
-  box-sizing: border-box;
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-
-.toolbar-container.layout-circle .pen-dynamic-island::-webkit-scrollbar {
+.island-orbit-track-svg {
   display: none;
 }
 
-/* Downward golden pointer notch linking the crown directly to 12 o'clock tool wedge */
-.toolbar-container.layout-circle .pen-dynamic-island::after {
-  content: '';
+.toolbar-container.layout-circle .island-orbit-track-svg {
+  display: block;
   position: absolute;
-  bottom: -8px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 0;
-  height: 0;
-  border-left: 8px solid transparent;
-  border-right: 8px solid transparent;
-  border-top: 8px solid rgba(245, 158, 11, 0.85);
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.85));
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   pointer-events: none;
+  z-index: 1;
 }
 
-/* Collapsed transition in circle layout */
+.toolbar-container.layout-circle .pen-dynamic-island {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: calc(var(--circle-dock-size, 480px) * 1.34);
+  height: calc(var(--circle-dock-size, 480px) * 1.34);
+  border-radius: 50%;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  pointer-events: none;
+  z-index: 20;
+  overflow: visible;
+  transition: opacity 220ms ease, transform 220ms ease, visibility 220ms ease;
+}
+
 .toolbar-container.layout-circle .pen-dynamic-island.collapsed {
   opacity: 0 !important;
-  transform: translateX(-50%) translateY(10px) scale(0.96) !important;
+  transform: translate(-50%, -50%) scale(0.92) !important;
   pointer-events: none !important;
   visibility: hidden !important;
 }
 
-/* Inner Panels (Pen, Marker, Eraser, Laser) in Circle Layout */
+/* Flatten panels and groups into concentric coordinate space */
 .toolbar-container.layout-circle .island-panel {
-  gap: calc(var(--circle-dock-size, 480px) * 0.014) !important;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
+  display: contents !important;
 }
 
-/* Tip / Mode Buttons proportional scaling */
+.toolbar-container.layout-circle .island-panel[style*="display: none"],
+.toolbar-container.layout-circle .island-panel[style*="display:none"] {
+  display: none !important;
+}
+
+.toolbar-container.layout-circle .island-tips-group,
+.toolbar-container.layout-circle .island-stroke-group,
+.toolbar-container.layout-circle .island-swatches-group {
+  display: contents !important;
+}
+
+.toolbar-container.layout-circle .island-sep,
+.toolbar-container.layout-circle .island-stroke-label,
+.toolbar-container.layout-circle .island-pressure-feedback {
+  display: none !important;
+}
+
+/* Base button styling along the circular orbital arc */
 .toolbar-container.layout-circle .island-tip-btn {
-  height: calc(var(--circle-dock-size, 480px) * 0.058) !important;
-  padding: 0 calc(var(--circle-dock-size, 480px) * 0.018) !important;
-  font-size: calc(var(--circle-dock-size, 480px) * 0.022) !important;
-  border-radius: calc(var(--circle-dock-size, 480px) * 0.022) !important;
+  position: absolute;
+  z-index: 6;
+  pointer-events: auto;
+  transform: translate(-50%, -50%);
+  height: calc(var(--circle-dock-size, 480px) * 0.054) !important;
+  padding: 0 calc(var(--circle-dock-size, 480px) * 0.015) !important;
+  font-size: calc(var(--circle-dock-size, 480px) * 0.019) !important;
+  border-radius: calc(var(--circle-dock-size, 480px) * 0.018) !important;
+  background: rgba(15, 23, 42, 0.92) !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  color: #e2e8f0 !important;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6) !important;
   font-weight: 600;
   white-space: nowrap;
+  outline: none;
+  cursor: pointer;
+  transition: transform 120ms ease, background 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
 }
 
-/* Stroke Label proportional scaling */
-.toolbar-container.layout-circle .island-stroke-label {
-  font-size: calc(var(--circle-dock-size, 480px) * 0.019) !important;
-  letter-spacing: 0.5px;
-  margin-right: 2px;
+.toolbar-container.layout-circle .island-tip-btn:hover {
+  transform: translate(-50%, -50%) scale(1.12);
+  border-color: #f59e0b !important;
+  color: #ffffff !important;
 }
 
-/* Stroke Dot Buttons proportional scaling */
+.toolbar-container.layout-circle .island-tip-btn.active {
+  transform: translate(-50%, -50%) scale(1.16);
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
+  color: #050811 !important;
+  border-color: #fbbf24 !important;
+  box-shadow: 0 0 14px rgba(245, 158, 11, 0.85) !important;
+}
+
+/* Stroke Dot buttons along the circular arc */
 .toolbar-container.layout-circle .stroke-dot-btn {
+  position: absolute;
+  z-index: 6;
+  pointer-events: auto;
+  transform: translate(-50%, -50%);
   width: calc(var(--circle-dock-size, 480px) * 0.052) !important;
   height: calc(var(--circle-dock-size, 480px) * 0.052) !important;
   min-width: unset !important;
   min-height: unset !important;
   border-radius: 50% !important;
+  background: rgba(15, 23, 42, 0.92) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  outline: none;
+  cursor: pointer;
+  transition: transform 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.toolbar-container.layout-circle .stroke-dot-btn:hover {
+  transform: translate(-50%, -50%) scale(1.18);
+  border-color: #f59e0b !important;
+}
+
+.toolbar-container.layout-circle .stroke-dot-btn.active {
+  transform: translate(-50%, -50%) scale(1.22);
+  border-color: #f59e0b !important;
+  box-shadow: 0 0 14px rgba(245, 158, 11, 0.9), inset 0 0 6px rgba(245, 158, 11, 0.5) !important;
 }
 
 .toolbar-container.layout-circle .stroke-dot.dot-1 {
   width: calc(var(--circle-dock-size, 480px) * 0.008) !important;
   height: calc(var(--circle-dock-size, 480px) * 0.008) !important;
 }
-
 .toolbar-container.layout-circle .stroke-dot.dot-2 {
   width: calc(var(--circle-dock-size, 480px) * 0.014) !important;
   height: calc(var(--circle-dock-size, 480px) * 0.014) !important;
 }
-
 .toolbar-container.layout-circle .stroke-dot.dot-4 {
   width: calc(var(--circle-dock-size, 480px) * 0.022) !important;
   height: calc(var(--circle-dock-size, 480px) * 0.022) !important;
 }
-
 .toolbar-container.layout-circle .stroke-dot.dot-8 {
   width: calc(var(--circle-dock-size, 480px) * 0.030) !important;
   height: calc(var(--circle-dock-size, 480px) * 0.030) !important;
 }
 
-/* Tactile Color Swatches proportional scaling */
+/* Color Swatches along the circular arc */
 .toolbar-container.layout-circle .color-swatch-tactile,
-.toolbar-container.layout-circle .color-swatch {
+.toolbar-container.layout-circle .color-swatch,
+.toolbar-container.layout-circle .color-swatch-spectrum {
+  position: absolute;
+  z-index: 6;
+  pointer-events: auto;
+  transform: translate(-50%, -50%);
   width: calc(var(--circle-dock-size, 480px) * 0.048) !important;
   height: calc(var(--circle-dock-size, 480px) * 0.048) !important;
   border-radius: 50% !important;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.7) !important;
+  cursor: pointer;
+  transition: transform 120ms ease, box-shadow 120ms ease;
   flex-shrink: 0;
 }
 
-/* Spectrum Custom Color Picker Button proportional scaling */
-.toolbar-container.layout-circle .color-swatch-spectrum {
-  width: calc(var(--circle-dock-size, 480px) * 0.048) !important;
-  height: calc(var(--circle-dock-size, 480px) * 0.048) !important;
-  border-radius: 50% !important;
-  flex-shrink: 0;
+.toolbar-container.layout-circle .color-swatch-tactile:hover,
+.toolbar-container.layout-circle .color-swatch:hover,
+.toolbar-container.layout-circle .color-swatch-spectrum:hover {
+  transform: translate(-50%, -50%) scale(1.22);
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.8) !important;
+}
+
+.toolbar-container.layout-circle .color-swatch-tactile.active,
+.toolbar-container.layout-circle .color-swatch.active {
+  transform: translate(-50%, -50%) scale(1.28);
+  box-shadow: 0 0 0 2px #ffffff, 0 0 0 3px #050811, 0 0 16px rgba(255, 255, 255, 0.9) !important;
 }
 
 .toolbar-container.layout-circle .color-swatch-spectrum .spectrum-plus {
   font-size: calc(var(--circle-dock-size, 480px) * 0.028) !important;
 }
 
-/* Dividers proportional scaling */
-.toolbar-container.layout-circle .island-sep {
-  height: calc(var(--circle-dock-size, 480px) * 0.045) !important;
-  margin: 0 calc(var(--circle-dock-size, 480px) * 0.004) !important;
-}
-
-/* Adaptive Pressure Feedback proportional scaling */
-.toolbar-container.layout-circle .island-pressure-feedback {
-  font-size: calc(var(--circle-dock-size, 480px) * 0.018) !important;
-  padding: calc(var(--circle-dock-size, 480px) * 0.006) calc(var(--circle-dock-size, 480px) * 0.014) !important;
+/* Action button (Clear Slide in Eraser panel) */
+.toolbar-container.layout-circle .island-action-btn {
+  position: absolute;
+  z-index: 6;
+  pointer-events: auto;
+  transform: translate(-50%, -50%);
+  height: calc(var(--circle-dock-size, 480px) * 0.054) !important;
+  padding: 0 calc(var(--circle-dock-size, 480px) * 0.015) !important;
+  font-size: calc(var(--circle-dock-size, 480px) * 0.019) !important;
   border-radius: calc(var(--circle-dock-size, 480px) * 0.018) !important;
+  background: rgba(239, 68, 68, 0.25) !important;
+  border: 1px solid rgba(239, 68, 68, 0.6) !important;
+  color: #fca5a5 !important;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6) !important;
   white-space: nowrap;
+  outline: none;
+  cursor: pointer;
+  transition: transform 120ms ease, background 120ms ease;
 }
 
-.toolbar-container.layout-circle .island-pressure-feedback svg {
-  width: calc(var(--circle-dock-size, 480px) * 0.026) !important;
-  height: calc(var(--circle-dock-size, 480px) * 0.026) !important;
+.toolbar-container.layout-circle .island-action-btn:hover {
+  transform: translate(-50%, -50%) scale(1.12);
+  background: rgba(239, 68, 68, 0.5) !important;
+  color: #ffffff !important;
 }
 
-@media (max-width: 768px) {
-  .toolbar-container.layout-circle .island-pressure-feedback span {
-    display: none;
-  }
-}
+/* ==========================================================================
+   RADIAL COORDINATES FOR CONCENTRIC ARC LAYER ITEMS
+   All items curve along the circular radius R = 43% of the orbital layer
+   ========================================================================== */
+
+/* 1. PEN PANEL */
+/* Tips: Fountain, Ballpoint, Brush, Calligraphy (-154° to -124°) */
+.toolbar-container.layout-circle .island-tip-btn[data-tip="fountain"]    { left: 11.35%; top: 31.15%; }
+.toolbar-container.layout-circle .island-tip-btn[data-tip="ballpoint"]   { left: 15.21%; top: 24.72%; }
+.toolbar-container.layout-circle .island-tip-btn[data-tip="brush"]       { left: 20.13%; top: 19.07%; }
+.toolbar-container.layout-circle .island-tip-btn[data-tip="calligraphy"] { left: 25.95%; top: 14.35%; }
+
+/* Stroke Dots: 1px, 2px, 4px, 8px (-105° to -75°) */
+.toolbar-container.layout-circle .stroke-dot-btn[data-size="2"]  { left: 38.87%; top: 8.47%; }
+.toolbar-container.layout-circle .stroke-dot-btn[data-size="4"]  { left: 46.25%; top: 7.16%; }
+.toolbar-container.layout-circle .stroke-dot-btn[data-size="8"]  { left: 53.75%; top: 7.16%; }
+.toolbar-container.layout-circle .stroke-dot-btn[data-size="16"] { left: 61.13%; top: 8.47%; }
+
+/* Tactile Color Swatches (-60° to -18°) */
+.toolbar-container.layout-circle #islandSwatchesGroup .color-swatch-tactile:nth-child(1) { left: 71.50%; top: 12.76%; }
+.toolbar-container.layout-circle #islandSwatchesGroup .color-swatch-tactile:nth-child(2) { left: 75.28%; top: 15.21%; }
+.toolbar-container.layout-circle #islandSwatchesGroup .color-swatch-tactile:nth-child(3) { left: 78.77%; top: 18.05%; }
+.toolbar-container.layout-circle #islandSwatchesGroup .color-swatch-tactile:nth-child(4) { left: 81.95%; top: 21.23%; }
+.toolbar-container.layout-circle #islandSwatchesGroup .color-swatch-tactile:nth-child(5) { left: 84.79%; top: 24.72%; }
+.toolbar-container.layout-circle #islandSwatchesGroup .color-swatch-tactile:nth-child(6) { left: 87.24%; top: 28.50%; }
+.toolbar-container.layout-circle #islandSwatchesGroup .color-swatch-tactile:nth-child(7) { left: 89.28%; top: 32.51%; }
+.toolbar-container.layout-circle #btnCustomColor                                         { left: 90.90%; top: 36.71%; }
+
+/* 2. MARKER / HIGHLIGHTER PANEL */
+/* Tips: Chisel, Soft, Wide (-140° to -110°) */
+.toolbar-container.layout-circle .marker-tip-btn[data-marker-tip="chisel"] { left: 17.06%; top: 22.36%; }
+.toolbar-container.layout-circle .marker-tip-btn[data-marker-tip="soft"]   { left: 25.34%; top: 14.78%; }
+.toolbar-container.layout-circle .marker-tip-btn[data-marker-tip="wide"]   { left: 35.29%; top: 9.59%; }
+
+/* Width Dots: 12px, 20px, 32px, 48px (-96° to -66°) */
+.toolbar-container.layout-circle .marker-size-btn[data-marker-size="12"] { left: 45.51%; top: 7.24%; }
+.toolbar-container.layout-circle .marker-size-btn[data-marker-size="20"] { left: 53.00%; top: 7.10%; }
+.toolbar-container.layout-circle .marker-size-btn[data-marker-size="32"] { left: 60.40%; top: 8.28%; }
+.toolbar-container.layout-circle .marker-size-btn[data-marker-size="48"] { left: 67.49%; top: 10.72%; }
+
+/* Neon Swatches (-54° to -14°) */
+.toolbar-container.layout-circle #markerSwatchesGroup .marker-swatch:nth-child(1) { left: 75.28%; top: 15.21%; }
+.toolbar-container.layout-circle #markerSwatchesGroup .marker-swatch:nth-child(2) { left: 80.93%; top: 20.13%; }
+.toolbar-container.layout-circle #markerSwatchesGroup .marker-swatch:nth-child(3) { left: 85.65%; top: 25.95%; }
+.toolbar-container.layout-circle #markerSwatchesGroup .marker-swatch:nth-child(4) { left: 89.28%; top: 32.51%; }
+.toolbar-container.layout-circle #markerSwatchesGroup .marker-swatch:nth-child(5) { left: 91.72%; top: 39.60%; }
+
+/* 3. ERASER PANEL */
+/* Modes: Stroke, Precision (-130° to -112°) */
+.toolbar-container.layout-circle .eraser-mode-btn[data-eraser-mode="stroke"] { left: 22.36%; top: 17.06%; }
+.toolbar-container.layout-circle .eraser-mode-btn[data-eraser-mode="pixel"]  { left: 33.89%; top: 10.13%; }
+
+/* Sizes: 16px, 32px, 64px, 96px (-96° to -60°) */
+.toolbar-container.layout-circle .eraser-size-btn[data-eraser-size="16"] { left: 45.51%; top: 7.24%; }
+.toolbar-container.layout-circle .eraser-size-btn[data-eraser-size="32"] { left: 54.49%; top: 7.24%; }
+.toolbar-container.layout-circle .eraser-size-btn[data-eraser-size="64"] { left: 63.29%; top: 9.10%; }
+.toolbar-container.layout-circle .eraser-size-btn[data-eraser-size="96"] { left: 71.50%; top: 12.76%; }
+
+/* Clear Slide Action (-44°) */
+.toolbar-container.layout-circle #btnIslandClearSlide { left: 80.93%; top: 20.13%; }
+
+/* 4. LASER / MAGNIFIER PANEL */
+/* Modes: Dot, Trail, Ring (-136° to -108°) */
+.toolbar-container.layout-circle .laser-mode-btn[data-laser-mode="dot"]  { left: 19.07%; top: 20.13%; }
+.toolbar-container.layout-circle .laser-mode-btn[data-laser-mode="glow"] { left: 27.21%; top: 13.54%; }
+.toolbar-container.layout-circle .laser-mode-btn[data-laser-mode="ring"] { left: 36.71%; top: 9.10%; }
+
+/* Sizes: 6px, 12px, 24px (-94° to -70°) */
+.toolbar-container.layout-circle .laser-size-btn[data-laser-size="6"]  { left: 47.00%; top: 7.10%; }
+.toolbar-container.layout-circle .laser-size-btn[data-laser-size="12"] { left: 55.98%; top: 7.42%; }
+.toolbar-container.layout-circle .laser-size-btn[data-laser-size="24"] { left: 64.71%; top: 9.59%; }
+
+/* Swatches (-58° to -22°) */
+.toolbar-container.layout-circle #laserSwatchesGroup .laser-swatch:nth-child(1) { left: 72.79%; top: 13.54%; }
+.toolbar-container.layout-circle #laserSwatchesGroup .laser-swatch:nth-child(2) { left: 79.87%; top: 19.07%; }
+.toolbar-container.layout-circle #laserSwatchesGroup .laser-swatch:nth-child(3) { left: 85.65%; top: 25.95%; }
+.toolbar-container.layout-circle #laserSwatchesGroup .laser-swatch:nth-child(4) { left: 89.87%; top: 33.89%; }
 
 /* Dock Sections & Dividers */
 .dock-section {

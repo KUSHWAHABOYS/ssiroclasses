@@ -308,8 +308,35 @@ describe('Master Floating Dock & Dynamic Inking Island Suite', () => {
       toolbar.setLayout('circle');
       const island = document.getElementById('penDynamicIsland');
       const container = document.getElementById('toolbarContainer');
+      const trackSvg = document.getElementById('islandOrbitTrackSvg');
+      const orbitRim = document.getElementById('orbitGlowRim');
+
       expect(island).not.toBeNull();
       expect(container?.classList.contains('layout-circle')).toBe(true);
+      expect(trackSvg).not.toBeNull();
+      expect(orbitRim).not.toBeNull();
+
+      // Test active tool attribute and rim glow sync
+      expect(container?.getAttribute('data-active-tool')).toBe('pen');
+      expect(orbitRim?.getAttribute('stroke')).toBe('#f59e0b');
+
+      // Switch to highlighter
+      store.setState({ activeTool: 'highlighter' });
+      expect(container?.getAttribute('data-active-tool')).toBe('highlighter');
+      expect(orbitRim?.getAttribute('stroke')).toBe('#38bdf8');
+
+      // Switch to eraser
+      store.setState({ activeTool: 'eraser' });
+      expect(container?.getAttribute('data-active-tool')).toBe('eraser');
+      expect(orbitRim?.getAttribute('stroke')).toBe('#ef4444');
+
+      // Switch to magnifier (laser)
+      store.setState({ activeTool: 'magnifier' });
+      expect(container?.getAttribute('data-active-tool')).toBe('magnifier');
+      expect(orbitRim?.getAttribute('stroke')).toBe('#a855f7');
+
+      // Reset back to pen
+      store.setState({ activeTool: 'pen' });
     });
 
     it('supports scaling dial size via slider, preset pills, and reset button', () => {

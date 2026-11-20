@@ -126,8 +126,29 @@ export class Toolbar {
           </div>
         </div>
 
-        <!-- 1. DYNAMIC INKING & TOOL PROPERTIES ISLAND (Contextual Floater above Inking Tools) -->
+        <!-- 1. DYNAMIC INKING & TOOL PROPERTIES ISLAND (Contextual Floater in Strip, True Concentric Orbit in Circle) -->
         <div class="pen-dynamic-island" id="penDynamicIsland">
+          <!-- Concentric Orbital Halo Track SVG (Active in Circle Layout) -->
+          <svg class="island-orbit-track-svg" id="islandOrbitTrackSvg" viewBox="0 0 1000 1000" aria-hidden="true">
+            <defs>
+              <linearGradient id="orbitTrackGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="rgba(8, 14, 25, 0.96)"/>
+                <stop offset="50%" stop-color="rgba(15, 23, 42, 0.98)"/>
+                <stop offset="100%" stop-color="rgba(8, 14, 25, 0.96)"/>
+              </linearGradient>
+              <filter id="orbitTrackGlow" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="5" result="blur"/>
+                <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+              </filter>
+            </defs>
+            <!-- Background Curved Glassmorphic Arc Track -->
+            <path class="orbit-track-path" id="orbitTrackPath" d="M 84.7 388.7 A 430 430 0 0 1 920.6 410.6" fill="none" stroke="url(#orbitTrackGrad)" stroke-width="66" stroke-linecap="round"/>
+            <!-- Outer Glow Rim Arc -->
+            <path class="orbit-glow-rim" id="orbitGlowRim" d="M 84.7 388.7 A 430 430 0 0 1 920.6 410.6" fill="none" stroke="rgba(245, 158, 11, 0.7)" stroke-width="2.5" filter="url(#orbitTrackGlow)"/>
+            <!-- Inner Concentric Boundary Arc -->
+            <path class="orbit-inner-rim" id="orbitInnerRim" d="M 84.7 388.7 A 430 430 0 0 1 920.6 410.6" fill="none" stroke="rgba(56, 189, 248, 0.35)" stroke-width="1.5"/>
+          </svg>
+
           <!-- 1A. PEN PANEL -->
           <div class="island-panel island-panel-pen" id="islandPanelPen">
             <!-- Tips: Fountain, Ballpoint, Brush, Calligraphy -->
@@ -1393,6 +1414,17 @@ export class Toolbar {
       if (sizeSlider) sizeSlider.value = savedCircleSize;
       if (sizeBadge) sizeBadge.textContent = `${savedCircleSize}px`;
       this.updateCircleDialActiveWedge(store.getState().activeTool, store.getState().activeShape);
+      this.containerEl.setAttribute('data-active-tool', store.getState().activeTool);
+      const orbitRim = document.getElementById('orbitGlowRim');
+      if (orbitRim) {
+        const glowColors: Record<string, string> = {
+          pen: '#f59e0b',
+          highlighter: '#38bdf8',
+          eraser: '#ef4444',
+          magnifier: '#a855f7'
+        };
+        orbitRim.setAttribute('stroke', glowColors[store.getState().activeTool] || '#f59e0b');
+      }
     } else if (layout === 'box') {
       const savedBoxW = localStorage.getItem('ssiro_box_dock_width') || '540';
       this.containerEl.style.setProperty('--box-dock-width', `${savedBoxW}px`);
@@ -2234,7 +2266,20 @@ export class Toolbar {
             if (panelLaser) panelLaser.style.display = state.activeTool === 'magnifier' ? 'flex' : 'none';
 
             this.penIslandEl.classList.remove('collapsed');
+
+            this.containerEl.setAttribute('data-active-tool', state.activeTool);
+            const orbitRim = document.getElementById('orbitGlowRim');
+            if (orbitRim) {
+              const glowColors: Record<string, string> = {
+                pen: '#f59e0b',
+                highlighter: '#38bdf8',
+                eraser: '#ef4444',
+                magnifier: '#a855f7'
+              };
+              orbitRim.setAttribute('stroke', glowColors[state.activeTool] || '#f59e0b');
+            }
           } else {
+            this.containerEl.removeAttribute('data-active-tool');
             this.penIslandEl.classList.add('collapsed');
           }
         }
