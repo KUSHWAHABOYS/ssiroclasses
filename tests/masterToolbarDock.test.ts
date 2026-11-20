@@ -185,12 +185,55 @@ describe('Master Floating Dock & Dynamic Inking Island Suite', () => {
       expect(scaleBadge).not.toBeNull();
       expect(scaleBadge?.textContent).toBe('100%');
 
-      // Test apply scale
-      toolbar.applyScale(1.35);
-      expect(scaleBadge?.textContent).toBe('135%');
+      // Test apply scale down to 40%
+      toolbar.applyScale(0.4);
+      expect(scaleBadge?.textContent).toBe('40%');
+    });
 
-      toolbar.applyScale(0.8);
-      expect(scaleBadge?.textContent).toBe('80%');
+    it('has removed dead Lasso tool to keep screen clean and clutter-free', () => {
+      const btnLasso = document.getElementById('btnToolLasso');
+      expect(btnLasso).toBeNull();
+    });
+
+    it('displays compact "स्क्रीन" label for screen button and preserves it in Zen mode', () => {
+      const lblFs = document.getElementById('btnToolFitModeTier1Label');
+      expect(lblFs?.textContent).toBe('स्क्रीन');
+
+      store.setState({ isZen: true });
+      expect(lblFs?.textContent).toBe('स्क्रीन');
+
+      store.setState({ isZen: false });
+      expect(lblFs?.textContent).toBe('स्क्रीन');
+    });
+
+    it('cycles toolbar through 4 morphable layouts: strip -> box -> vertical -> orb -> strip', () => {
+      const btnLayout = document.getElementById('btnDockLayout') as HTMLButtonElement;
+      const container = document.getElementById('toolbarContainer');
+      expect(btnLayout).not.toBeNull();
+
+      expect(toolbar.getLayout()).toBe('strip');
+      expect(container?.classList.contains('layout-strip')).toBe(true);
+
+      // Cycle 1: Box (चौकोर)
+      btnLayout.click();
+      expect(toolbar.getLayout()).toBe('box');
+      expect(container?.classList.contains('layout-box')).toBe(true);
+      expect(localStorage.getItem('ssiro_toolbar_layout')).toBe('box');
+
+      // Cycle 2: Vertical (खड़ा)
+      btnLayout.click();
+      expect(toolbar.getLayout()).toBe('vertical');
+      expect(container?.classList.contains('layout-vertical')).toBe(true);
+
+      // Cycle 3: Orb (मिनी गोलाकार बटन)
+      btnLayout.click();
+      expect(toolbar.getLayout()).toBe('orb');
+      expect(container?.classList.contains('layout-orb')).toBe(true);
+
+      // Cycle 4: Back to Strip
+      btnLayout.click();
+      expect(toolbar.getLayout()).toBe('strip');
+      expect(container?.classList.contains('layout-strip')).toBe(true);
     });
   });
 });

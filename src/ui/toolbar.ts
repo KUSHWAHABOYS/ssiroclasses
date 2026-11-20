@@ -24,6 +24,7 @@ export class Toolbar {
   private resizeHandleEl!: HTMLElement;
   private scaleBadgeEl: HTMLElement | null = null;
   private btnTierToggleEl!: HTMLButtonElement;
+  private currentLayout: 'strip' | 'box' | 'vertical' | 'orb' = 'strip';
 
   private idleDimTimer: number = 0;
   private isDragging = false;
@@ -58,6 +59,15 @@ export class Toolbar {
     this.bindEvents();
     this.bindStore();
     this.restorePositionAndScale();
+    this.restoreLayout();
+
+    // Smooth horizontal mouse wheel scroll on dock (converts deltaY to horizontal scroll)
+    this.masterDockEl?.addEventListener('wheel', (e: WheelEvent) => {
+      if (this.currentLayout === 'strip' && e.deltaY !== 0) {
+        this.masterDockEl.scrollLeft += e.deltaY;
+        e.preventDefault();
+      }
+    }, { passive: false });
 
     // Ensure initial tool in UI matches store (Pen active by default)
     const initialTool = store.getState().activeTool || 'pen';
@@ -143,7 +153,7 @@ export class Toolbar {
 
         <!-- 2. STUDIO MASTER FLOATING DOCK -->
         <div class="studio-master-dock" id="toolbarMasterDock">
-          <!-- SECTION 1: Drag Anchor, Select, Lasso, Auto-Straighten -->
+          <!-- SECTION 1: Drag Anchor, Layout Morph, Select, Auto-Straighten -->
           <div class="dock-section">
             <div class="dock-drag-handle" id="dragHandle" title="टूलबार मूव करें (360° Drag Toolbar)">
               <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2">
@@ -156,19 +166,22 @@ export class Toolbar {
               </svg>
             </div>
 
+            <!-- Shape / Morph Mode Switcher -->
+            <button class="dock-btn tool-btn" id="btnDockLayout" title="टूलबार लेआउट बदलें (पट्टी ➔ चौकोर ➔ खड़ा ➔ मिनी बटन)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="7" height="7" rx="1.5"/>
+                <rect x="14" y="3" width="7" height="7" rx="1.5"/>
+                <rect x="3" y="14" width="7" height="7" rx="1.5"/>
+                <rect x="14" y="14" width="7" height="7" rx="1.5"/>
+              </svg>
+              <span class="dock-label" id="dockLayoutLabel">लेआउट</span>
+            </button>
+
             <button class="dock-btn tool-btn" id="btnToolSelect" data-tool="select" title="Select (S)">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="m3 3 7 18 3-7 7-3L3 3z"/>
               </svg>
               <span class="dock-label">Select</span>
-            </button>
-
-            <button class="dock-btn tool-btn" id="btnToolLasso" data-tool="lasso" title="Lasso Selection (L)">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M7 22a5 5 0 0 1-2-4c0-3.87 3.13-7 7-7h1a7 7 0 1 0-7-7c0 2.5 1.5 4.5 3.5 5.5"/>
-                <circle cx="12" cy="12" r="1.5"/>
-              </svg>
-              <span class="dock-label">Lasso</span>
             </button>
 
             <button class="dock-btn tool-btn" id="btnToolAutoStraighten" title="Auto-Straighten Shapes [OFF]">
@@ -352,12 +365,12 @@ export class Toolbar {
               <span class="dock-label">Mic</span>
             </button>
 
-            <!-- Full Screen Quick Toggle -->
-            <button class="dock-btn tool-btn" id="btnToolFitModeTier1" title="फुल स्क्रीन / फिट 16:9 दृश्य (Full Screen • L)">
+            <!-- Screen Quick Toggle -->
+            <button class="dock-btn tool-btn" id="btnToolFitModeTier1" title="फुल स्क्रीन / फिट 16:9 दृश्य (Screen • L)">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
               </svg>
-              <span class="dock-label" id="btnToolFitModeTier1Label">फुल स्क्रीन</span>
+              <span class="dock-label" id="btnToolFitModeTier1Label">स्क्रीन</span>
             </button>
           </div>
 
@@ -672,8 +685,8 @@ export class Toolbar {
       const targetRenderedWidth = (unscaledWidth * initialScale) + dx;
       const newScale = targetRenderedWidth / Math.max(100, unscaledWidth);
 
-      // Clamp scale between 0.55 and 2.00
-      const clampedScale = Math.max(0.55, Math.min(2.0, Math.round(newScale * 100) / 100));
+      // Clamp scale between 0.40 and 2.00
+      const clampedScale = Math.max(0.40, Math.min(2.0, Math.round(newScale * 100) / 100));
       this.applyScale(clampedScale, false);
 
       // If enlarged beyond viewport right boundary, shift left so it stays on screen
@@ -725,7 +738,7 @@ export class Toolbar {
         );
         if (initialPinchDist > 10) {
           const factor = currentDist / initialPinchDist;
-          const newScale = Math.max(0.55, Math.min(2.0, Math.round(initialPinchScale * factor * 100) / 100));
+          const newScale = Math.max(0.40, Math.min(2.0, Math.round(initialPinchScale * factor * 100) / 100));
           this.applyScale(newScale, false);
         }
       }
@@ -745,7 +758,7 @@ export class Toolbar {
   }
 
   public applyScale(scale: number, saveToStore = false): void {
-    const clamped = Math.max(0.55, Math.min(2.0, Math.round(scale * 100) / 100));
+    const clamped = Math.max(0.40, Math.min(2.0, Math.round(scale * 100) / 100));
     this.toolbarScale = clamped;
     this.containerEl.style.setProperty('--toolbar-scale', String(clamped));
     this.containerEl.style.transform = 'scale(var(--toolbar-scale, 1))';
@@ -762,6 +775,53 @@ export class Toolbar {
 
   public setScale(scale: number): void {
     this.applyScale(scale, true);
+  }
+
+  public setLayout(layout: 'strip' | 'box' | 'vertical' | 'orb'): void {
+    this.currentLayout = layout;
+    if (!this.containerEl) return;
+    this.containerEl.classList.remove('layout-strip', 'layout-box', 'layout-vertical', 'layout-orb');
+    this.containerEl.classList.add(`layout-${layout}`);
+
+    const labelEl = document.getElementById('dockLayoutLabel');
+    if (labelEl) {
+      const names: Record<string, string> = {
+        strip: 'पट्टी',
+        box: 'चौकोर',
+        vertical: 'खड़ा',
+        orb: 'मिनी'
+      };
+      labelEl.textContent = names[layout] || 'लेआउट';
+    }
+
+    try {
+      localStorage.setItem('ssiro_toolbar_layout', layout);
+    } catch {}
+
+    setTimeout(() => this.clampToViewport(), 50);
+  }
+
+  public cycleLayout(): void {
+    const sequence: ('strip' | 'box' | 'vertical' | 'orb')[] = ['strip', 'box', 'vertical', 'orb'];
+    const nextIdx = (sequence.indexOf(this.currentLayout) + 1) % sequence.length;
+    this.setLayout(sequence[nextIdx]);
+  }
+
+  public getLayout(): 'strip' | 'box' | 'vertical' | 'orb' {
+    return this.currentLayout;
+  }
+
+  private restoreLayout(): void {
+    try {
+      const saved = localStorage.getItem('ssiro_toolbar_layout') as 'strip' | 'box' | 'vertical' | 'orb' | null;
+      if (saved && ['strip', 'box', 'vertical', 'orb'].includes(saved)) {
+        this.setLayout(saved);
+      } else {
+        this.setLayout('strip');
+      }
+    } catch {
+      this.setLayout('strip');
+    }
   }
 
   public clampToViewport(): void {
@@ -1279,6 +1339,21 @@ export class Toolbar {
       window.dispatchEvent(new CustomEvent('toggle-settings'));
     });
 
+    // Dock Layout Switcher button
+    document.getElementById('btnDockLayout')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (this.isDragging) return;
+      this.cycleLayout();
+    });
+
+    // In layout-orb mode, clicking anywhere on the master dock restores to normal strip
+    this.masterDockEl?.addEventListener('click', (e) => {
+      if (this.currentLayout === 'orb') {
+        e.stopPropagation();
+        this.setLayout('strip');
+      }
+    });
+
     // Full Screen Zen Quick Toggle button
     const handleFitToggle = (e?: Event) => {
       e?.stopPropagation();
@@ -1358,7 +1433,7 @@ export class Toolbar {
         this.applyScale(state.settings.toolbarScale || 1.0, false);
       }
 
-      // Zen mode toolbar visibility and "फुल स्क्रीन" button active state
+      // Zen mode toolbar visibility and "स्क्रीन" button active state
       if (state.isZen !== prev.isZen || state.isToolbarVisibleInZen !== prev.isToolbarVisibleInZen) {
         const btnFs = document.getElementById('btnToolFitModeTier1');
         const lblFs = document.getElementById('btnToolFitModeTier1Label');
@@ -1366,7 +1441,7 @@ export class Toolbar {
           btnFs.classList.toggle('active', state.isZen);
         }
         if (lblFs) {
-          lblFs.textContent = state.isZen ? 'फुल स्क्रीन बंद' : 'फुल स्क्रीन';
+          lblFs.textContent = 'स्क्रीन';
         }
         if (state.isZen && !state.isToolbarVisibleInZen) {
           this.containerEl.classList.add('zen-hidden');

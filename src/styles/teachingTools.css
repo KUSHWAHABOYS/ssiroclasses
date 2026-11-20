@@ -281,88 +281,85 @@
 /* --------------------------------------------------------------------------
    3. SPOTLIGHT FOCUS TOOL (स्पॉटलाइट)
    -------------------------------------------------------------------------- */
-.spotlight-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 76;
-  pointer-events: none;
-  touch-action: none;
-}
-
-.spotlight-overlay.active {
-  pointer-events: auto;
-}
-
 .spotlight-controls-badge {
-  position: absolute;
-  top: 80px;
+  position: fixed;
+  top: 18px;
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(13, 18, 28, 0.92);
-  border: 1px solid rgba(251, 191, 36, 0.5);
+  background: rgba(13, 18, 28, 0.95);
+  border: 1px solid rgba(251, 191, 36, 0.6);
   border-radius: 9999px;
-  padding: 6px 16px;
+  padding: 5px 16px;
   display: flex;
   align-items: center;
   gap: 12px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
-  z-index: 77;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), 0 0 15px rgba(245, 158, 11, 0.25);
+  z-index: 80;
   color: #ffffff;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
+  user-select: none;
+  pointer-events: auto;
 }
 
 .spotlight-slider {
   width: 90px;
   height: 4px;
   accent-color: #fbbf24;
-}
-
-.spotlight-close-btn {
-  background: rgba(239, 68, 68, 0.2);
-  border: 1px solid rgba(239, 68, 68, 0.4);
-  color: #fca5a5;
-  border-radius: 9999px;
-  padding: 2px 8px;
-  font-size: 11px;
-  font-weight: 700;
   cursor: pointer;
 }
 
-/* --------------------------------------------------------------------------
-   4. 50:50 DUAL SPLIT-SCREEN BOARD
-   -------------------------------------------------------------------------- */
-.stage.split-mode #slideCanvas {
-  width: 50% !important;
-  left: 0 !important;
-  border-right: 2px solid rgba(251, 191, 36, 0.5);
+.spotlight-close-btn {
+  background: rgba(239, 68, 68, 0.22);
+  border: 1px solid rgba(239, 68, 68, 0.5);
+  color: #fca5a5;
+  border-radius: 9999px;
+  padding: 3px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 140ms ease;
 }
 
+.spotlight-close-btn:hover {
+  background: rgba(239, 68, 68, 0.4);
+  color: #ffffff;
+}
+
+/* --------------------------------------------------------------------------
+   4. 50:50 DUAL SPLIT-SCREEN BOARD (रफ ब्लैकबोर्ड साइड शीट)
+   -------------------------------------------------------------------------- */
 .split-board-surface {
   position: absolute;
   top: 0;
   right: 0;
   bottom: 0;
-  width: 50%;
-  background: #11141c;
-  z-index: 25;
-  border-left: 2px solid rgba(255, 255, 255, 0.1);
+  width: 48%;
+  background: rgba(15, 20, 30, 0.96);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  z-index: 38;
+  border-left: 2px solid rgba(251, 191, 36, 0.4);
   display: none;
-  box-shadow: -10px 0 30px rgba(0, 0, 0, 0.7);
+  flex-direction: column;
+  box-shadow: -15px 0 40px rgba(0, 0, 0, 0.85);
+  border-top-left-radius: 20px;
+  border-bottom-left-radius: 20px;
 }
 
 .stage.split-mode .split-board-surface {
-  display: block;
+  display: flex;
 }
 
 .split-board-header {
-  height: 42px;
-  background: rgba(0, 0, 0, 0.5);
+  height: 44px;
+  background: rgba(0, 0, 0, 0.4);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 14px;
+  padding: 0 16px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-top-left-radius: 20px;
 }
 
 .split-board-title {

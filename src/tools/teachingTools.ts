@@ -436,16 +436,40 @@ export class SpotlightController {
       this.hide();
     });
 
-    // Pointer move moves spotlight
-    const handlePointer = (e: PointerEvent) => {
-      if (!this.isActive) return;
-      this.spotX = e.clientX;
-      this.spotY = e.clientY;
+    // Pointer move and drag moves spotlight smoothly anywhere on screen
+    let isTracking = false;
+
+    const updateSpot = (clientX: number, clientY: number) => {
+      this.spotX = clientX;
+      this.spotY = clientY;
       this.redraw();
     };
 
-    this.canvasEl.addEventListener('pointermove', handlePointer);
-    this.canvasEl.addEventListener('pointerdown', handlePointer);
+    this.canvasEl.addEventListener('pointerdown', (e: PointerEvent) => {
+      if (!this.isActive) return;
+      isTracking = true;
+      try { this.canvasEl!.setPointerCapture(e.pointerId); } catch {}
+      updateSpot(e.clientX, e.clientY);
+    });
+
+    this.canvasEl.addEventListener('pointermove', (e: PointerEvent) => {
+      if (!this.isActive) return;
+      updateSpot(e.clientX, e.clientY);
+    });
+
+    this.canvasEl.addEventListener('pointerup', () => { isTracking = false; });
+    this.canvasEl.addEventListener('pointercancel', () => { isTracking = false; });
+
+    // Wheel on canvas dynamically expands or contracts spotlight radius
+    this.canvasEl.addEventListener('wheel', (e: WheelEvent) => {
+      if (!this.isActive) return;
+      e.preventDefault();
+      const delta = e.deltaY < 0 ? 15 : -15;
+      this.radius = Math.max(50, Math.min(380, this.radius + delta));
+      const slider = document.getElementById('spotlightRadiusSlider') as HTMLInputElement;
+      if (slider) slider.value = String(this.radius);
+      this.redraw();
+    }, { passive: false });
 
     window.addEventListener('resize', () => {
       if (this.isActive) {
@@ -564,26 +588,42 @@ export class SplitScreenController {
 // ============================================================================
 export class PdfNotesExporter {
   async exportCurrentSession(): Promise<void> {
-    this.showToast('⏳ क्लास नोट्स PDF तैयार हो रही है...');
+    this.showToast('⏳ क्लास नोट्स 16:9 PDF तैयार हो रही है...');
 
     try {
       const slideCanvas = layerManager.slideCanvas;
       const annotationCanvas = layerManager.annotationCanvas;
-      const dims = layerManager.getDimensions();
 
-      // Create a master composite offscreen canvas
+      // Master 16:9 1080p canvas (1920x1080)
       const compCanvas = document.createElement('canvas');
-      compCanvas.width = dims.width || 1920;
-      compCanvas.height = dims.height || 1080;
+      compCanvas.width = 1920;
+      compCanvas.height = 1080;
       const compCtx = compCanvas.getContext('2d')!;
 
-      // 1. Draw slide background
-      compCtx.drawImage(slideCanvas, 0, 0);
-      // 2. Draw annotations
-      compCtx.drawImage(annotationCanvas, 0, 0);
+      // Background
+      compCtx.fillStyle = '#0f141f';
+      compCtx.fillRect(0, 0, 1920, 1080);
+
+      // 1. Draw slide background scaled cleanly to 1920x1080
+      if (slideCanvas && slideCanvas.width > 0) {
+        compCtx.drawImage(
+          slideCanvas,
+          0, 0, slideCanvas.width, slideCanvas.height,
+          0, 0, 1920, 1080
+        );
+      }
+
+      // 2. Draw handwritten annotations scaled cleanly to 1920x1080
+      if (annotationCanvas && annotationCanvas.width > 0) {
+        compCtx.drawImage(
+          annotationCanvas,
+          0, 0, annotationCanvas.width, annotationCanvas.height,
+          0, 0, 1920, 1080
+        );
+      }
 
       // Convert to high-quality JPEG
-      const jpegDataUrl = compCanvas.toDataURL('image/jpeg', 0.92);
+      const jpegDataUrl = compCanvas.toDataURL('image/jpeg', 0.94);
       const binaryStr = atob(jpegDataUrl.split(',')[1]);
       const binaryLen = binaryStr.length;
       const jpegBytes = new Uint8Array(binaryLen);
@@ -591,8 +631,8 @@ export class PdfNotesExporter {
         jpegBytes[i] = binaryStr.charCodeAt(i);
       }
 
-      // Build pure standard PDF 1.4 binary document with zero dependencies
-      const pdfBytes = this.buildSingleImagePdf(jpegBytes, compCanvas.width, compCanvas.height);
+      // Build pure standard PDF 1.4 binary document in 16:9 Landscape ratio
+      const pdfBytes = this.buildSingleImagePdf(jpegBytes, 1920, 1080);
       const blob = new Blob([pdfBytes.buffer as ArrayBuffer], { type: 'application/pdf' });
       const url = URL.createObjectURL(blob);
 
@@ -601,7 +641,7 @@ export class PdfNotesExporter {
       const now = new Date();
       const timestamp = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}`;
       const state = store.getState();
-      const fileName = state.currentDeck?.name ? state.currentDeck.name.replace(/\.[^/.]+$/, '') : 'Lecture_Notes';
+      const fileName = state.currentDeck?.name ? state.currentDeck.name.replace(/\.[^/.]+$/, '') : 'Lecture_Notes_16x9';
       a.href = url;
       a.download = `SSIRO_${fileName}_${timestamp}.pdf`;
       document.body.appendChild(a);
@@ -609,17 +649,17 @@ export class PdfNotesExporter {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
-      this.showToast('✅ क्लास नोट्स PDF डाउनलोड हो गई!');
+      this.showToast('✅ 16:9 क्लास नोट्स PDF डाउनलोड हो गई!');
     } catch (err) {
       console.error('PDF Export Error:', err);
       this.showToast('❌ PDF एक्सपोर्ट में त्रुटि हुई');
     }
   }
 
-  // Pure specification-compliant PDF 1.4 generator
+  // Pure specification-compliant PDF 1.4 generator in 16:9 Landscape format
   private buildSingleImagePdf(jpegBytes: Uint8Array, width: number, height: number): Uint8Array {
-    const ptWidth = 842; // Standard A4 Landscape ratio
-    const ptHeight = 595;
+    const ptWidth = 960; // Exact 16:9 Landscape ratio (960x540 pt)
+    const ptHeight = 540;
 
     let pdf = '%PDF-1.4\n';
     const offsets: number[] = [];

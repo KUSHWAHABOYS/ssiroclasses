@@ -271,15 +271,191 @@
   -webkit-backdrop-filter: blur(28px);
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 5px;
   box-sizing: border-box;
   overflow-x: auto;
+  overflow-y: hidden;
   user-select: none;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(245, 158, 11, 0.45) rgba(0, 0, 0, 0.25);
+  touch-action: pan-x;
 }
 
 .studio-master-dock::-webkit-scrollbar {
+  height: 4px;
+  display: block;
+}
+
+.studio-master-dock::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 9999px;
+}
+
+.studio-master-dock::-webkit-scrollbar-thumb {
+  background: rgba(245, 158, 11, 0.45);
+  border-radius: 9999px;
+}
+
+.studio-master-dock::-webkit-scrollbar-thumb:hover {
+  background: rgba(245, 158, 11, 0.85);
+}
+
+/* ==========================================================================
+   MULTI-LAYOUT MORPHING STYLES (Strip, Box, Vertical, Orb)
+   ========================================================================== */
+
+/* Layout 1: Compact Grid Box (चौकोर ग्रिड - Fits any 4:3 or narrow screen) */
+.toolbar-container.layout-box {
+  white-space: normal;
+}
+
+.toolbar-container.layout-box .studio-master-dock {
+  width: 540px;
+  max-width: calc(100vw - 24px);
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  row-gap: 8px;
+  column-gap: 6px;
+  padding: 10px 14px;
+  border-radius: 22px;
+  overflow: visible;
+}
+
+.toolbar-container.layout-box .pen-dynamic-island {
+  position: static;
+  margin-bottom: 4px;
+}
+
+/* Layout 2: Vertical Dock (खड़ा पट्टा - Ideal for Left/Right screen docking) */
+.toolbar-container.layout-vertical .master-toolbar-wrapper {
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.toolbar-container.layout-vertical .studio-master-dock {
+  width: 58px;
+  max-width: 58px;
+  max-height: calc(100vh - 120px);
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 10px 4px;
+  border-radius: 28px;
+  gap: 6px;
+  scrollbar-width: thin;
+}
+
+.toolbar-container.layout-vertical .dock-section {
+  flex-direction: column;
+  gap: 4px;
+}
+
+.toolbar-container.layout-vertical .dock-sep {
+  width: 28px;
+  height: 1px;
+  margin: 4px 0;
+}
+
+.toolbar-container.layout-vertical .dock-btn.tool-ai-translate {
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  padding: 0;
+  justify-content: center;
+}
+
+.toolbar-container.layout-vertical .dock-btn.tool-ai-translate .ai-text-box,
+.toolbar-container.layout-vertical .dock-btn.tool-ai-translate .ai-ping-dot {
   display: none;
+}
+
+.toolbar-container.layout-vertical .dock-shapes-pill {
+  flex-direction: column;
+  gap: 3px;
+}
+
+.toolbar-container.layout-vertical .dock-btn-exit {
+  width: 44px;
+  padding: 0;
+  justify-content: center;
+}
+
+.toolbar-container.layout-vertical .dock-btn-exit span {
+  display: none;
+}
+
+.toolbar-container.layout-vertical .studio-master-dock::-webkit-scrollbar {
+  width: 3px;
+  display: block;
+}
+
+/* Layout 3: Mini Orb / Floating Bubble (अल्ट्रा-क्लीन 52px फ्लोटिंग बटन) */
+.toolbar-container.layout-orb {
+  width: 52px !important;
+  height: 52px !important;
+  min-width: 52px !important;
+  min-height: 52px !important;
+  border-radius: 50% !important;
+  overflow: visible !important;
+}
+
+.toolbar-container.layout-orb .master-toolbar-wrapper {
+  width: 52px !important;
+  height: 52px !important;
+}
+
+.toolbar-container.layout-orb .pen-dynamic-island,
+.toolbar-container.layout-orb .toolbar-resize-handle,
+.toolbar-container.layout-orb .toolbar-scale-badge {
+  display: none !important;
+}
+
+.toolbar-container.layout-orb .studio-master-dock {
+  width: 52px !important;
+  height: 52px !important;
+  min-width: 52px !important;
+  min-height: 52px !important;
+  padding: 0 !important;
+  border-radius: 50% !important;
+  background: radial-gradient(circle at 35% 35%, rgba(245, 158, 11, 0.45), rgba(11, 15, 24, 0.96)) !important;
+  border: 2px solid rgba(251, 191, 36, 0.9) !important;
+  box-shadow: 0 0 24px rgba(245, 158, 11, 0.65), 0 10px 25px rgba(0, 0, 0, 0.8) !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  overflow: hidden !important;
+}
+
+.toolbar-container.layout-orb .studio-master-dock > *:not(#btnDockLayout) {
+  display: none !important;
+}
+
+.toolbar-container.layout-orb #btnDockLayout {
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 52px !important;
+  border-radius: 50% !important;
+  background: transparent !important;
+  border: none !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  padding: 0 !important;
+}
+
+.toolbar-container.layout-orb #btnDockLayout svg {
+  width: 24px !important;
+  height: 24px !important;
+  color: #fbbf24 !important;
+}
+
+.toolbar-container.layout-orb #btnDockLayout .dock-label {
+  display: none !important;
 }
 
 /* Dock Sections & Dividers */
