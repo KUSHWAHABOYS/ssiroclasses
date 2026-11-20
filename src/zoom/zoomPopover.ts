@@ -30,24 +30,24 @@ export class ZoomPopoverManager {
     popover.style.minWidth = '280px';
     popover.innerHTML = `
       <div class="popover-header">
-        <span>🔍 मैग्नीफ़ायर सेटिंग्स (Magnifier)</span>
+        <span>🔍 Magnifier Settings</span>
       </div>
 
       <!-- Quick Zoom presets -->
       <div class="popover-row">
-        <label><span>त्वरित आवर्धन (Quick Zoom)</span></label>
+        <label><span>Quick Zoom</span></label>
         <div class="popover-presets" id="magQuickPresets">
-          <button type="button" class="popover-preset-btn ${(settings.magnifierZoom || 3.0) === 2.0 ? 'active' : ''}" data-zoom="2.0">2× स्पष्ट</button>
-          <button type="button" class="popover-preset-btn ${(settings.magnifierZoom || 3.0) === 3.0 ? 'active' : ''}" data-zoom="3.0">3× मानक</button>
-          <button type="button" class="popover-preset-btn ${(settings.magnifierZoom || 3.0) === 4.0 ? 'active' : ''}" data-zoom="4.0">4× बड़ा</button>
-          <button type="button" class="popover-preset-btn ${(settings.magnifierZoom || 3.0) === 6.0 ? 'active' : ''}" data-zoom="6.0">6× सूक्ष्म</button>
+          <button type="button" class="popover-preset-btn ${(settings.magnifierZoom || 3.0) === 2.0 ? 'active' : ''}" data-zoom="2.0">2× Clear</button>
+          <button type="button" class="popover-preset-btn ${(settings.magnifierZoom || 3.0) === 3.0 ? 'active' : ''}" data-zoom="3.0">3× Standard</button>
+          <button type="button" class="popover-preset-btn ${(settings.magnifierZoom || 3.0) === 4.0 ? 'active' : ''}" data-zoom="4.0">4× Large</button>
+          <button type="button" class="popover-preset-btn ${(settings.magnifierZoom || 3.0) === 6.0 ? 'active' : ''}" data-zoom="6.0">6× Detail</button>
         </div>
       </div>
 
       <!-- Size -->
       <div class="popover-row">
         <label>
-          <span>आकार (Lens Size)</span>
+          <span>Lens Size</span>
           <span id="magSizeVal">${settings.magnifierSize || 280}px</span>
         </label>
         <input type="range" class="popover-slider" id="magSizeSlider" min="120" max="600" step="10" value="${settings.magnifierSize || 280}" />
@@ -56,7 +56,7 @@ export class ZoomPopoverManager {
       <!-- Magnification -->
       <div class="popover-row">
         <label>
-          <span>आवर्धन (Zoom)</span>
+          <span>Zoom</span>
           <span id="magZoomVal">${settings.magnifierZoom || 3.0}×</span>
         </label>
         <input type="range" class="popover-slider" id="magZoomSlider" min="1.5" max="8" step="0.5" value="${settings.magnifierZoom || 3.0}" />
@@ -65,29 +65,29 @@ export class ZoomPopoverManager {
       <!-- Shape -->
       <div class="popover-row">
         <label>
-          <span>आकार शैली (Shape)</span>
+          <span>Shape</span>
         </label>
         <div style="display:flex; gap:8px;">
-          <button id="btnShapeCircle" class="header-btn ${isCircle ? 'active' : ''}" style="flex:1; height:36px; font-size:12px;">वृत्त (Circle)</button>
-          <button id="btnShapeRect" class="header-btn ${!isCircle ? 'active' : ''}" style="flex:1; height:36px; font-size:12px;">आयत (Rect)</button>
+          <button id="btnShapeCircle" class="header-btn ${isCircle ? 'active' : ''}" style="flex:1; height:36px; font-size:12px;">Circle</button>
+          <button id="btnShapeRect" class="header-btn ${!isCircle ? 'active' : ''}" style="flex:1; height:36px; font-size:12px;">Rect</button>
         </div>
       </div>
 
       <!-- Mode -->
       <div class="popover-row">
         <label>
-          <span>मोड (Mode)</span>
+          <span>Mode</span>
         </label>
         <div style="display:flex; gap:8px;">
-          <button id="btnModeFollow" class="header-btn ${!isPinMode ? 'active' : ''}" style="flex:1; height:36px; font-size:12px;">Follow (पीछा करें)</button>
-          <button id="btnModePin" class="header-btn ${isPinMode ? 'active' : ''}" style="flex:1; height:36px; font-size:12px;">Pin-on-tap (टिकाएँ)</button>
+          <button id="btnModeFollow" class="header-btn ${!isPinMode ? 'active' : ''}" style="flex:1; height:36px; font-size:12px;">Follow</button>
+          <button id="btnModePin" class="header-btn ${isPinMode ? 'active' : ''}" style="flex:1; height:36px; font-size:12px;">Pin-on-tap</button>
         </div>
       </div>
 
       <!-- Spotlight -->
       <div class="popover-row">
         <label>
-          <span>स्पॉटलाइट (Spotlight)</span>
+          <span>Spotlight Dimming</span>
           <input type="checkbox" id="chkSpotlight" ${settings.magnifierSpotlight ? 'checked' : ''} style="width:18px; height:18px; accent-color:var(--primary-accent);" />
         </label>
       </div>
@@ -95,18 +95,18 @@ export class ZoomPopoverManager {
       <!-- Touch Position -->
       <div class="popover-row">
         <label>
-          <span>टच स्थिति (Touch Position)</span>
+          <span>Touch Position</span>
         </label>
         <div style="display:flex; gap:8px;">
-          <button id="btnTouchAbove" class="header-btn ${isAbove ? 'active' : ''}" style="flex:1; height:36px; font-size:12px;">Above (ऊपर)</button>
-          <button id="btnTouchUnder" class="header-btn ${!isAbove ? 'active' : ''}" style="flex:1; height:36px; font-size:12px;">Under (नीचे)</button>
+          <button id="btnTouchAbove" class="header-btn ${isAbove ? 'active' : ''}" style="flex:1; height:36px; font-size:12px;">Above Touch</button>
+          <button id="btnTouchUnder" class="header-btn ${!isAbove ? 'active' : ''}" style="flex:1; height:36px; font-size:12px;">Under Touch</button>
         </div>
       </div>
 
       <!-- Reset Zoom -->
       <div class="popover-row" style="margin-top:4px;">
         <button id="btnPopoverResetZoom" class="header-btn" style="width:100%; height:38px; justify-content:center; background:rgba(232, 137, 12, 0.2); border-color:var(--primary-accent); color:var(--primary-accent); font-weight:600;">
-          रीसेट 1× (Reset Whole-Slide Zoom)
+          Reset Whole-Slide Zoom (1×)
         </button>
       </div>
     `;

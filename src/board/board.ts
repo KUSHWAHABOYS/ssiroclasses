@@ -29,7 +29,7 @@ export class BlackboardStudio {
             <div class="theme-pill ${th.id === 'slate' ? 'active' : ''}" 
                  style="background-color: ${th.bgColor}; border-color: ${th.isChroma ? '#000' : 'rgba(255,255,255,0.2)'};" 
                  data-theme="${th.id}" 
-                 title="${th.nameHi} (${th.name})">
+                 title="${th.name}">
             </div>
           `
             )
@@ -44,15 +44,15 @@ export class BlackboardStudio {
       <div class="board-dock-right" style="display:flex; align-items:center; gap:8px;">
         <!-- Multi-Page Blackboard Navigation -->
         <div class="board-page-controls" id="boardPageControls">
-          <button class="board-page-btn" id="btnBoardPrevPage" type="button" title="पिछला पेज (Previous Board Page)">◀</button>
+          <button class="board-page-btn" id="btnBoardPrevPage" type="button" title="Previous Page (◀)">◀</button>
           <span class="board-page-indicator" id="boardPageIndicator">1 / 1</span>
-          <button class="board-page-btn" id="btnBoardNextPage" type="button" title="अगला पेज (Next Board Page)">▶</button>
-          <button class="board-page-btn" id="btnBoardAddPage" type="button" title="नया बोर्ड पेज जोड़ें (Add New Blackboard Page)">➕</button>
+          <button class="board-page-btn" id="btnBoardNextPage" type="button" title="Next Page (▶)">▶</button>
+          <button class="board-page-btn" id="btnBoardAddPage" type="button" title="Add New Blackboard Page (➕)">➕</button>
         </div>
 
         <button class="board-close-btn" id="btnBoardClose" title="Close Board (Return to Slide)">
           <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-          <span>✕ बंद करें</span>
+          <span>✕ Close</span>
         </button>
       </div>
     `;

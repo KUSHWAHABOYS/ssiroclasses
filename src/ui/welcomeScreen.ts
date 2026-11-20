@@ -55,7 +55,7 @@ export class WelcomeScreen {
     });
     if (logoWrapper) {
       logoWrapper.style.cursor = 'pointer';
-      logoWrapper.title = 'लोगो व संस्था नाम बदलने के लिए क्लिक करें (Click to change logo)';
+      logoWrapper.title = 'Click to change logo & organisation name';
     }
 
     // Open Deck Button inside Welcome Screen with loading animation

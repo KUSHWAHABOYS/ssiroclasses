@@ -50,18 +50,18 @@ export class TranslatorCardManager {
               <line x1="2" y1="12" x2="22" y2="12"/>
               <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1 4-10z"/>
             </svg>
-            <span>अनुवाद</span>
+            <span>Translation</span>
           </div>
         </div>
         <div class="trans-actions">
-          <button class="trans-btn close" id="btnTransClose" title="बंद करें">✕</button>
+          <button class="trans-btn close" id="btnTransClose" title="Close">✕</button>
         </div>
       </div>
       <div class="translation-loading-wrap">
         <div class="translation-spinner"></div>
-        <div class="translation-loading-text">अनुवाद हो रहा है...</div>
+        <div class="translation-loading-text">Translating...</div>
       </div>
-      <div class="trans-resize-handle" id="transResizeHandle" title="खींचकर आकार बदलें (Drag to Resize)">
+      <div class="trans-resize-handle" id="transResizeHandle" title="Drag to Resize">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#64748b" stroke-width="2.5">
           <line x1="20" y1="8" x2="8" y2="20"/>
           <line x1="20" y1="13" x2="13" y2="20"/>
@@ -84,7 +84,7 @@ export class TranslatorCardManager {
       result.keyGlossary && result.keyGlossary.length > 0
         ? `
         <div class="trans-key-section">
-          <div class="trans-key-label">मुख्य शब्द व अर्थ:</div>
+          <div class="trans-key-label">Key Terms &amp; Definitions:</div>
           <div class="trans-glossary-list">
             ${result.keyGlossary
               .map(
@@ -110,25 +110,25 @@ export class TranslatorCardManager {
               <line x1="2" y1="12" x2="22" y2="12"/>
               <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1 4-10z"/>
             </svg>
-            <span>हिंदी अनुवाद</span>
+            <span>Hindi Translation</span>
           </div>
         </div>
         <div class="trans-actions">
-          <button class="trans-btn scale-btn" id="btnTransScaleDown" title="फॉन्ट छोटा करें (A−)">A−</button>
-          <button class="trans-btn scale-btn" id="btnTransScaleUp" title="फॉन्ट बड़ा करें (A+)">A+</button>
-          <button class="trans-btn" id="btnTransSpeak" title="हिंदी में सुनें">
+          <button class="trans-btn scale-btn" id="btnTransScaleDown" title="Decrease font (A−)">A−</button>
+          <button class="trans-btn scale-btn" id="btnTransScaleUp" title="Increase font (A+)">A+</button>
+          <button class="trans-btn" id="btnTransSpeak" title="Listen in Hindi">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
               <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
             </svg>
           </button>
-          <button class="trans-btn" id="btnTransCopy" title="कॉपी करें">
+          <button class="trans-btn" id="btnTransCopy" title="Copy">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
               <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
             </svg>
           </button>
-          <button class="trans-btn close" id="btnTransClose" title="बंद करें">✕</button>
+          <button class="trans-btn close" id="btnTransClose" title="Close">✕</button>
         </div>
       </div>
 
@@ -137,7 +137,7 @@ export class TranslatorCardManager {
         ${glossaryHtml}
       </div>
 
-      <div class="trans-resize-handle" id="transResizeHandle" title="खींचकर आकार बदलें (Drag to Resize)">
+      <div class="trans-resize-handle" id="transResizeHandle" title="Drag to Resize">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#64748b" stroke-width="2.5">
           <line x1="20" y1="8" x2="8" y2="20"/>
           <line x1="20" y1="13" x2="13" y2="20"/>
@@ -163,23 +163,23 @@ export class TranslatorCardManager {
               <line x1="12" y1="8" x2="12" y2="12"/>
               <line x1="12" y1="16" x2="12.01" y2="16"/>
             </svg>
-            <span>${isMissingKey ? 'Gemini API Key आवश्यक' : 'त्रुटि'}</span>
+            <span>${isMissingKey ? 'Gemini API Key Required' : 'Error'}</span>
           </div>
         </div>
         <div class="trans-actions">
-          <button class="trans-btn close" id="btnTransClose" title="बंद करें">✕</button>
+          <button class="trans-btn close" id="btnTransClose" title="Close">✕</button>
         </div>
       </div>
       <div class="translation-card-body" style="padding: 22px;">
         <div style="font-size: 15px; color: #475569; line-height: 1.6;">
           ${
             isMissingKey
-              ? 'AI अनुवाद का उपयोग करने के लिए Settings में जाकर अपनी Google Gemini API Key दर्ज करें।'
+              ? 'To use AI Translation, enter your Google Gemini API Key in Settings.'
               : this.escapeHtml(errorMsg)
           }
         </div>
       </div>
-      <div class="trans-resize-handle" id="transResizeHandle" title="खींचकर आकार बदलें">
+      <div class="trans-resize-handle" id="transResizeHandle" title="Drag to Resize">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#64748b" stroke-width="2.5">
           <line x1="20" y1="8" x2="8" y2="20"/>
           <line x1="20" y1="13" x2="13" y2="20"/>

@@ -29,23 +29,23 @@ export class TimerController {
 
     widget.innerHTML = `
       <div class="timer-header">
-        <div class="timer-drag-handle" id="timerDragHandle">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+        <div class="timer-drag-handle" id="timerDragHandle" title="Drag Timer">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#fbbf24" stroke-width="2.2">
             <circle cx="12" cy="12" r="10"/>
             <polyline points="12 6 12 12 16 14"/>
           </svg>
-          <span id="timerTitle">टाइमर (Timer)</span>
+          <span id="timerTitle">Timer</span>
         </div>
         <div class="timer-actions">
-          <button class="timer-icon-btn" id="btnTimerMinimize" title="छोटा / बड़ा करें (Minimize)">─</button>
-          <button class="timer-icon-btn" id="btnTimerClose" title="बंद करें (Close)">✕</button>
+          <button class="timer-icon-btn" id="btnTimerMinimize" title="Minimize / Expand">─</button>
+          <button class="timer-icon-btn" id="btnTimerClose" title="Close">✕</button>
         </div>
       </div>
 
       <div class="timer-full-controls">
         <div class="timer-mode-pills">
-          <button class="timer-mode-btn active" id="btnModeTimer" type="button">उल्टी गिनती (Timer)</button>
-          <button class="timer-mode-btn" id="btnModeStopwatch" type="button">स्टॉपवॉच (Stopwatch)</button>
+          <button class="timer-mode-btn active" id="btnModeTimer" type="button">Countdown</button>
+          <button class="timer-mode-btn" id="btnModeStopwatch" type="button">Stopwatch</button>
         </div>
 
         <div class="timer-display" id="timerDisplay">02:00</div>
@@ -53,13 +53,13 @@ export class TimerController {
         <div class="timer-presets" id="timerPresets">
           <button class="timer-preset-pill" data-sec="30" type="button">30s</button>
           <button class="timer-preset-pill" data-sec="60" type="button">1m</button>
-          <button class="timer-preset-pill" data-sec="120" type="button">2m</button>
+          <button class="timer-preset-pill active" data-sec="120" type="button">2m</button>
           <button class="timer-preset-pill" data-sec="300" type="button">5m</button>
         </div>
 
         <div class="timer-controls">
-          <button class="timer-btn-primary" id="btnTimerStartPause" type="button">शुरू करें (Start)</button>
-          <button class="timer-btn-secondary" id="btnTimerReset" type="button">रीसेट (Reset)</button>
+          <button class="timer-btn-primary" id="btnTimerStartPause" type="button">Start</button>
+          <button class="timer-btn-secondary" id="btnTimerReset" type="button">Reset</button>
         </div>
       </div>
     `;
@@ -172,13 +172,13 @@ export class TimerController {
     const presetsEl = document.getElementById('timerPresets');
 
     if (mode === 'timer') {
-      if (titleEl) titleEl.textContent = 'टाइमर (Timer)';
+      if (titleEl) titleEl.textContent = 'Timer';
       btnT?.classList.add('active');
       btnS?.classList.remove('active');
       if (presetsEl) presetsEl.style.display = 'flex';
       this.seconds = this.initialSeconds;
     } else {
-      if (titleEl) titleEl.textContent = 'स्टॉपवॉच (Stopwatch)';
+      if (titleEl) titleEl.textContent = 'Stopwatch';
       btnT?.classList.remove('active');
       btnS?.classList.add('active');
       if (presetsEl) presetsEl.style.display = 'none';
@@ -206,7 +206,7 @@ export class TimerController {
   private start(): void {
     this.isRunning = true;
     const btn = document.getElementById('btnTimerStartPause');
-    if (btn) btn.textContent = 'रोकें (Pause)';
+    if (btn) btn.textContent = 'Pause';
 
     if (this.timerInterval) clearInterval(this.timerInterval);
     this.timerInterval = window.setInterval(() => {
@@ -233,7 +233,7 @@ export class TimerController {
       this.timerInterval = null;
     }
     const btn = document.getElementById('btnTimerStartPause');
-    if (btn) btn.textContent = 'शुरू करें (Start)';
+    if (btn) btn.textContent = 'Start';
   }
 
   private reset(): void {
@@ -283,7 +283,7 @@ export class TimerController {
 }
 
 // ============================================================================
-// 2. INTERACTIVE SCREEN CURTAIN / SHADE (पर्दा टूल)
+// 2. INTERACTIVE SCREEN CURTAIN / SHADE
 // ============================================================================
 export class CurtainController {
   private curtainEl: HTMLElement | null = null;
@@ -307,8 +307,8 @@ export class CurtainController {
       <div class="curtain-shade" id="curtainShade" style="top:0; height:${this.shadeHeightPercent}%;">
         <div class="curtain-handle" id="curtainHandle">
           <div class="curtain-grip-lines"><span></span><span></span></div>
-          <span class="curtain-title">पर्दा / CURTAIN</span>
-          <button class="curtain-close-btn" id="btnCurtainClose" type="button" title="पर्दा हटाएं (Close Curtain)">✕</button>
+          <span class="curtain-title">CURTAIN</span>
+          <button class="curtain-close-btn" id="btnCurtainClose" type="button" title="Close Curtain (✕)">✕</button>
         </div>
       </div>
     `;
@@ -382,7 +382,7 @@ export class CurtainController {
 }
 
 // ============================================================================
-// 3. SPOTLIGHT FOCUS TOOL (स्पॉटलाइट)
+// 3. SPOTLIGHT FOCUS TOOL
 // ============================================================================
 export class SpotlightController {
   private canvasEl: HTMLCanvasElement | null = null;
@@ -414,7 +414,7 @@ export class SpotlightController {
     ctrl.style.display = 'none';
 
     ctrl.innerHTML = `
-      <span class="spotlight-icon" title="स्पॉटलाइट फोकस">
+      <span class="spotlight-icon" title="Spotlight Focus">
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#fbbf24" stroke-width="2.2">
           <circle cx="12" cy="12" r="5" fill="#fbbf24" fill-opacity="0.3"/>
           <line x1="12" y1="2" x2="12" y2="5"/>
@@ -423,14 +423,14 @@ export class SpotlightController {
           <line x1="19" y1="12" x2="22" y2="12"/>
         </svg>
       </span>
-      <span class="spotlight-label">फोकस</span>
+      <span class="spotlight-label">Focus</span>
       <div class="spotlight-pill-sep"></div>
-      <button class="spotlight-step-btn" id="btnSpotlightDec" type="button" title="छोटा करें (-)">−</button>
+      <button class="spotlight-step-btn" id="btnSpotlightDec" type="button" title="Decrease Radius (−)">−</button>
       <span class="spotlight-size-text" id="spotlightSizeDisplay">${this.radius}px</span>
-      <button class="spotlight-step-btn" id="btnSpotlightInc" type="button" title="बड़ा करें (+)">+</button>
+      <button class="spotlight-step-btn" id="btnSpotlightInc" type="button" title="Increase Radius (+)">+</button>
       <input type="range" class="spotlight-slider" id="spotlightRadiusSlider" min="70" max="320" value="${this.radius}" style="display:none;" />
       <div class="spotlight-pill-sep"></div>
-      <button class="spotlight-close-circle" id="btnSpotlightClose" type="button" title="बंद करें (Close)">✕</button>
+      <button class="spotlight-close-circle" id="btnSpotlightClose" type="button" title="Close">✕</button>
     `;
 
     stage.appendChild(ctrl);
@@ -574,7 +574,7 @@ export class SpotlightController {
 }
 
 // ============================================================================
-// 4. 50:50 DUAL SPLIT-SCREEN BOARD (स्प्लिट स्क्रीन मोड)
+// 4. 50:50 DUAL SPLIT-SCREEN BOARD
 // ============================================================================
 export class SplitScreenController {
   private isSplit = false;
@@ -599,14 +599,14 @@ export class SplitScreenController {
           <div class="split-board-header">
             <span class="split-board-title">
               <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#fbbf24" stroke-width="2"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/></svg>
-              रफ ब्लैकबोर्ड (Rough Blackboard)
+              Rough Blackboard
             </span>
             <div class="split-board-tools">
-              <button class="split-board-btn" id="btnSplitClear" title="ब्लैकबोर्ड साफ़ करें">
+              <button class="split-board-btn" id="btnSplitClear" title="Clear Board">
                 <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
-                साफ़ करें
+                Clear
               </button>
-              <button class="split-board-btn" id="btnSplitClose" title="स्प्लिट मोड बंद करें">✕ बंद करें</button>
+              <button class="split-board-btn" id="btnSplitClose" title="Close Split Mode">✕ Close</button>
             </div>
           </div>
           <canvas id="splitBoardCanvas" class="split-board-canvas"></canvas>
@@ -722,11 +722,11 @@ export class SplitScreenController {
 }
 
 // ============================================================================
-// 5. 1-CLICK CLASS NOTES PDF EXPORTER (क्लास नोट्स डाउनलोड)
+// 5. 1-CLICK CLASS NOTES PDF EXPORTER
 // ============================================================================
 export class PdfNotesExporter {
   async exportCurrentSession(): Promise<void> {
-    this.showToast('⏳ क्लास नोट्स 16:9 PDF तैयार हो रही है...');
+    this.showToast('Generating 16:9 PDF class notes...');
 
     try {
       const slideCanvas = layerManager.slideCanvas;
@@ -787,10 +787,10 @@ export class PdfNotesExporter {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
-      this.showToast('✅ 16:9 क्लास नोट्स PDF डाउनलोड हो गई!');
+      this.showToast('✅ 16:9 Class Notes PDF Downloaded!');
     } catch (err) {
       console.error('PDF Export Error:', err);
-      this.showToast('❌ PDF एक्सपोर्ट में त्रुटि हुई');
+      this.showToast('❌ PDF Export Failed');
     }
   }
 

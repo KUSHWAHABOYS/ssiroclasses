@@ -28,29 +28,29 @@ export class PopoverManager {
     popover.className = 'popover pen-popover';
     popover.innerHTML = `
       <div class="popover-header">
-        <span>✏️ पेन सेटिंग्स (Pen Options)</span>
+        <span>✏️ Pen Options</span>
       </div>
       <div class="popover-row">
         <label>
-          <span>त्वरित आकार (Quick Size)</span>
+          <span>Quick Size</span>
         </label>
         <div class="popover-presets" id="penQuickPresets">
-          <button type="button" class="popover-preset-btn ${state.penSize === 3 ? 'active' : ''}" data-size="3">3px बारीक</button>
-          <button type="button" class="popover-preset-btn ${state.penSize === 6 ? 'active' : ''}" data-size="6">6px मानक</button>
-          <button type="button" class="popover-preset-btn ${state.penSize === 12 ? 'active' : ''}" data-size="12">12px बोल्ड</button>
-          <button type="button" class="popover-preset-btn ${state.penSize === 20 ? 'active' : ''}" data-size="20">20px मार्कर</button>
+          <button type="button" class="popover-preset-btn ${state.penSize === 3 ? 'active' : ''}" data-size="3">3px Fine</button>
+          <button type="button" class="popover-preset-btn ${state.penSize === 6 ? 'active' : ''}" data-size="6">6px Standard</button>
+          <button type="button" class="popover-preset-btn ${state.penSize === 12 ? 'active' : ''}" data-size="12">12px Bold</button>
+          <button type="button" class="popover-preset-btn ${state.penSize === 20 ? 'active' : ''}" data-size="20">20px Marker</button>
         </div>
       </div>
       <div class="popover-row">
         <label>
-          <span>आकार (Size)</span>
+          <span>Size</span>
           <span id="penSizeVal">${state.penSize}px</span>
         </label>
         <input type="range" class="popover-slider" id="penSizeSlider" min="1" max="40" value="${state.penSize}" />
       </div>
       <div class="popover-row">
         <label>
-          <span>घनत्व (Opacity)</span>
+          <span>Opacity</span>
           <span id="penAlphaVal">${Math.round(state.penAlpha * 100)}%</span>
         </label>
         <input type="range" class="popover-slider" id="penAlphaSlider" min="20" max="100" value="${Math.round(state.penAlpha * 100)}" />
@@ -114,29 +114,29 @@ export class PopoverManager {
     popover.className = 'popover hl-popover';
     popover.innerHTML = `
       <div class="popover-header">
-        <span>🖍️ हाइलाइटर सेटिंग्स (Highlighter)</span>
+        <span>🖍️ Highlighter Options</span>
       </div>
       <div class="popover-row">
         <label>
-          <span>त्वरित चौड़ाई (Quick Width)</span>
+          <span>Quick Width</span>
         </label>
         <div class="popover-presets" id="hlQuickPresets">
-          <button type="button" class="popover-preset-btn ${state.highlighterWidth === 16 ? 'active' : ''}" data-width="16">16px पतला</button>
-          <button type="button" class="popover-preset-btn ${state.highlighterWidth === 28 ? 'active' : ''}" data-width="28">28px मानक</button>
-          <button type="button" class="popover-preset-btn ${state.highlighterWidth === 44 ? 'active' : ''}" data-width="44">44px चौड़ा</button>
-          <button type="button" class="popover-preset-btn ${state.highlighterWidth === 64 ? 'active' : ''}" data-width="64">64px मोटा</button>
+          <button type="button" class="popover-preset-btn ${state.highlighterWidth === 16 ? 'active' : ''}" data-width="16">16px Fine</button>
+          <button type="button" class="popover-preset-btn ${state.highlighterWidth === 28 ? 'active' : ''}" data-width="28">28px Standard</button>
+          <button type="button" class="popover-preset-btn ${state.highlighterWidth === 44 ? 'active' : ''}" data-width="44">44px Wide</button>
+          <button type="button" class="popover-preset-btn ${state.highlighterWidth === 64 ? 'active' : ''}" data-width="64">64px Thick</button>
         </div>
       </div>
       <div class="popover-row">
         <label>
-          <span>चौड़ाई (Width)</span>
+          <span>Width</span>
           <span id="hlWidthVal">${state.highlighterWidth}px</span>
         </label>
         <input type="range" class="popover-slider" id="hlWidthSlider" min="10" max="80" value="${state.highlighterWidth}" />
       </div>
       <div class="popover-row">
         <label>
-          <span>घनत्व (Density)</span>
+          <span>Density</span>
           <span id="hlAlphaVal">${Math.round(state.highlighterAlpha * 100)}%</span>
         </label>
         <input type="range" class="popover-slider" id="hlAlphaSlider" min="10" max="60" value="${Math.round(state.highlighterAlpha * 100)}" />
@@ -199,31 +199,31 @@ export class PopoverManager {
     popover.className = 'popover eraser-popover';
     popover.innerHTML = `
       <div class="popover-header">
-        <span>🧹 इरेज़र सेटिंग्स (Eraser Options)</span>
+        <span>🧹 Eraser Options</span>
       </div>
       <div class="popover-row">
         <label>
-          <span>मोड (Eraser Mode)</span>
+          <span>Eraser Mode</span>
         </label>
         <div class="toggle-group">
-          <button class="toggle-btn ${state.eraserMode === 'pixel' ? 'active' : ''}" id="btnModePixel">Pixel (पिक्सेल)</button>
-          <button class="toggle-btn ${state.eraserMode === 'stroke' ? 'active' : ''}" id="btnModeStroke">Stroke (स्ट्रोक मिटाएं)</button>
+          <button class="toggle-btn ${state.eraserMode === 'pixel' ? 'active' : ''}" id="btnModePixel">Pixel</button>
+          <button class="toggle-btn ${state.eraserMode === 'stroke' ? 'active' : ''}" id="btnModeStroke">Stroke</button>
         </div>
       </div>
       <div class="popover-row">
         <label>
-          <span>त्वरित आकार (Quick Size)</span>
+          <span>Quick Size</span>
         </label>
         <div class="popover-presets" id="eraserQuickPresets">
-          <button type="button" class="popover-preset-btn ${state.eraserSize === 20 ? 'active' : ''}" data-size="20">20px छोटा</button>
-          <button type="button" class="popover-preset-btn ${state.eraserSize === 40 ? 'active' : ''}" data-size="40">40px मध्यम</button>
-          <button type="button" class="popover-preset-btn ${state.eraserSize === 80 ? 'active' : ''}" data-size="80">80px बड़ा</button>
-          <button type="button" class="popover-preset-btn ${state.eraserSize === 120 ? 'active' : ''}" data-size="120">120px विशाल</button>
+          <button type="button" class="popover-preset-btn ${state.eraserSize === 20 ? 'active' : ''}" data-size="20">20px Small</button>
+          <button type="button" class="popover-preset-btn ${state.eraserSize === 40 ? 'active' : ''}" data-size="40">40px Medium</button>
+          <button type="button" class="popover-preset-btn ${state.eraserSize === 80 ? 'active' : ''}" data-size="80">80px Large</button>
+          <button type="button" class="popover-preset-btn ${state.eraserSize === 120 ? 'active' : ''}" data-size="120">120px Huge</button>
         </div>
       </div>
       <div class="popover-row">
         <label>
-          <span>आकार (Size)</span>
+          <span>Size</span>
           <span id="eraserSizeVal">${state.eraserSize}px</span>
         </label>
         <input type="range" class="popover-slider" id="eraserSizeSlider" min="10" max="150" value="${state.eraserSize}" />
@@ -290,32 +290,32 @@ export class PopoverManager {
     popover.style.minWidth = '240px';
     popover.innerHTML = `
       <div class="popover-header">
-        <span>🎙️ माइक मेनू (Mic Menu)</span>
+        <span>🎙️ Mic Menu</span>
       </div>
       <div class="popover-row" style="justify-content: space-between; align-items: center; margin-bottom: 8px;">
-        <span style="font-size: 13px; font-weight: 600;">स्थिति / Status</span>
+        <span style="font-size: 13px; font-weight: 600;">Status</span>
         <button id="popoverToggleMic" class="header-btn" style="padding: 4px 10px; font-size: 12px; background: ${isListening ? '#ef4444' : '#333'}; color: #fff;">
-          ${isListening ? 'माइक चालू (ON)' : 'माइक बंद (OFF)'}
+          ${isListening ? 'Mic ON' : 'Mic OFF'}
         </button>
       </div>
       <div class="popover-row" style="flex-direction: column; align-items: stretch; gap: 4px; margin-bottom: 8px;">
-        <span style="font-size: 12px; color: var(--text-muted);">भाषा (Language)</span>
+        <span style="font-size: 12px; color: var(--text-muted);">Language</span>
         <select id="popoverVoiceLang" class="header-btn" style="background:#111; font-size: 12px; padding: 4px 8px;">
-          <option value="hi-IN" ${settings.voiceLang === 'hi-IN' ? 'selected' : ''}>हिंदी (Hindi - hi-IN)</option>
+          <option value="hi-IN" ${settings.voiceLang === 'hi-IN' ? 'selected' : ''}>Hindi (hi-IN)</option>
           <option value="en-IN" ${settings.voiceLang === 'en-IN' ? 'selected' : ''}>English (India - en-IN)</option>
         </select>
       </div>
       <div class="popover-row" style="flex-direction: column; align-items: stretch; gap: 4px; margin-bottom: 8px;">
-        <span style="font-size: 12px; color: var(--text-muted);">स्वतः बंद (Auto-off after)</span>
+        <span style="font-size: 12px; color: var(--text-muted);">Auto-off after</span>
         <select id="popoverMicAutoOff" class="header-btn" style="background:#111; font-size: 12px; padding: 4px 8px;">
-          <option value="0" ${settings.micAutoOffMinutes === 0 ? 'selected' : ''}>कभी नहीं (Off / Never)</option>
-          <option value="5" ${settings.micAutoOffMinutes === 5 ? 'selected' : ''}>5 मिनट (5 minutes)</option>
-          <option value="10" ${settings.micAutoOffMinutes === 10 ? 'selected' : ''}>10 मिनट (10 minutes - Default)</option>
-          <option value="30" ${settings.micAutoOffMinutes === 30 ? 'selected' : ''}>30 मिनट (30 minutes)</option>
+          <option value="0" ${settings.micAutoOffMinutes === 0 ? 'selected' : ''}>Off / Never</option>
+          <option value="5" ${settings.micAutoOffMinutes === 5 ? 'selected' : ''}>5 minutes</option>
+          <option value="10" ${settings.micAutoOffMinutes === 10 ? 'selected' : ''}>10 minutes (Default)</option>
+          <option value="30" ${settings.micAutoOffMinutes === 30 ? 'selected' : ''}>30 minutes</option>
         </select>
       </div>
       <div class="popover-row" style="justify-content: space-between; align-items: center;">
-        <span style="font-size: 12px; color: var(--text-muted);">पुश-टू-टॉक (Push-to-talk)</span>
+        <span style="font-size: 12px; color: var(--text-muted);">Push-to-talk</span>
         <input type="checkbox" id="popoverPushToTalk" ${settings.pushToTalk ? 'checked' : ''} style="accent-color: var(--primary-accent); width: 16px; height: 16px;" />
       </div>
     `;

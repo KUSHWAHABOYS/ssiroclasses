@@ -72,10 +72,10 @@ export class LibraryModal {
             </div>
             <div class="lib-header-text">
               <div class="lib-title-row">
-                <h2 class="lib-title">स्टूडियो लाइब्रेरी <span class="lib-subtitle">/ Studio Library</span></h2>
+                <h2 class="lib-title">Studio Library</h2>
                 <span class="lib-badge">100% In-Device Private</span>
               </div>
-              <p class="lib-caption">अपनी पसंदीदा PPT, शिक्षण वीडियो और फ़ोटो सीधे अपने डिजिटल बोर्ड व PC में सुरक्षित रखें</p>
+              <p class="lib-caption">Store your favorite presentations, teaching videos, and images directly on your device</p>
             </div>
           </div>
 
@@ -85,15 +85,15 @@ export class LibraryModal {
             <div class="lib-storage-pill" title="IndexedDB Persistent Storage Quota">
               <span class="material-symbols-outlined" style="font-size:18px; color:#e9c258;">hard_drive</span>
               <div class="lib-storage-text">
-                <span style="font-weight:700; color:#fff7eb;">${storageInfo.usedFormatted} उपयोग</span>
-                <span style="color:#d0c5b1; font-size:11px;">/ ~${storageInfo.quotaFormatted} उपलब्ध</span>
+                <span style="font-weight:700; color:#fff7eb;">${storageInfo.usedFormatted} used</span>
+                <span style="color:#d0c5b1; font-size:11px;">/ ~${storageInfo.quotaFormatted} available</span>
               </div>
             </div>
 
             <!-- Add Files Button -->
-            <button type="button" class="lib-btn-primary" id="btnLibAddFile" title="नई PPT, वीडियो या फ़ोटो जोड़ें">
+            <button type="button" class="lib-btn-primary" id="btnLibAddFile" title="Add PPT, video, or images">
               <span class="material-symbols-outlined">add_circle</span>
-              <span>➕ फाइल जोड़ें / Add File</span>
+              <span>➕ Add File</span>
             </button>
             <input type="file" id="libFileInputHidden" accept=".pdf,.pptx,.ppt,.mp4,.webm,.png,.jpg,.jpeg,.webp" multiple style="display:none;" />
 
@@ -110,26 +110,26 @@ export class LibraryModal {
           <div class="lib-tabs">
             <button type="button" class="lib-tab-btn ${this.currentTab === 'all' ? 'active' : ''}" data-tab="all">
               <span class="material-symbols-outlined" style="font-size:18px;">auto_awesome_motion</span>
-              <span>सभी (${this.items.length})</span>
+              <span>All (${this.items.length})</span>
             </button>
             <button type="button" class="lib-tab-btn ${this.currentTab === 'presentation' ? 'active' : ''}" data-tab="presentation">
               <span class="material-symbols-outlined" style="font-size:18px;">slideshow</span>
-              <span>प्रेजेंटेशन (${this.items.filter(i => i.type === 'presentation').length})</span>
+              <span>Presentations (${this.items.filter(i => i.type === 'presentation').length})</span>
             </button>
             <button type="button" class="lib-tab-btn ${this.currentTab === 'video' ? 'active' : ''}" data-tab="video">
               <span class="material-symbols-outlined" style="font-size:18px;">play_circle</span>
-              <span>वीडियो (${this.items.filter(i => i.type === 'video').length})</span>
+              <span>Videos (${this.items.filter(i => i.type === 'video').length})</span>
             </button>
             <button type="button" class="lib-tab-btn ${this.currentTab === 'image' ? 'active' : ''}" data-tab="image">
               <span class="material-symbols-outlined" style="font-size:18px;">image</span>
-              <span>तस्वीरें (${this.items.filter(i => i.type === 'image').length})</span>
+              <span>Images (${this.items.filter(i => i.type === 'image').length})</span>
             </button>
           </div>
 
           <!-- Search Input -->
           <div class="lib-search-box">
             <span class="material-symbols-outlined lib-search-icon">search</span>
-            <input type="text" id="libSearchInput" class="lib-search-input" placeholder="फाइल का नाम खोजें (Search files)..." value="${this.searchQuery}" />
+            <input type="text" id="libSearchInput" class="lib-search-input" placeholder="Search files..." value="${this.searchQuery}" />
           </div>
         </div>
 
@@ -141,15 +141,15 @@ export class LibraryModal {
                 <span class="material-symbols-outlined">folder_open</span>
               </div>
               <h3 style="font-size:18px; font-weight:700; color:#fff7eb; margin:0;">
-                ${this.searchQuery ? 'कोई फाइल नहीं मिली' : 'लाइब्रेरी अभी खाली है'}
+                ${this.searchQuery ? 'No files found' : 'Library is currently empty'}
               </h3>
               <p style="font-size:13.5px; color:#d0c5b1; margin:6px 0 16px 0; max-width:420px; line-height:1.5;">
-                ${this.searchQuery ? `"${this.searchQuery}" नाम से कोई सामग्री नहीं है।` : 'अपनी रोज़ पढ़ाने वाली PPT, शिक्षण वीडियो अथवा फ़ोटो यहाँ जोड़ें ताकि क्लास में 1-क्लिक में तुरंत खोल सकें!'}
+                ${this.searchQuery ? `No files matching "${this.searchQuery}".` : 'Add your teaching presentations, videos, and images here for 1-click instant access during class!'}
               </p>
               ${!this.searchQuery ? `
                 <button type="button" class="lib-btn-primary" id="btnLibAddFileEmpty">
                   <span class="material-symbols-outlined">upload_file</span>
-                  <span>अपनी पहली फाइल यहाँ जोड़ें (Add File)</span>
+                  <span>Add your first file</span>
                 </button>
               ` : ''}
             </div>
@@ -167,14 +167,14 @@ export class LibraryModal {
     const isPres = item.type === 'presentation';
     const isVid = item.type === 'video';
     const sizeStr = libraryStore.formatBytes(item.size);
-    const dateStr = new Date(item.dateAdded).toLocaleDateString('hi-IN', {
+    const dateStr = new Date(item.dateAdded).toLocaleDateString('en-US', {
       day: 'numeric',
       month: 'short',
       year: 'numeric'
     });
 
     const iconName = isPres ? 'slideshow' : isVid ? 'movie' : 'image';
-    const typeLabel = isPres ? 'प्रेजेंटेशन' : isVid ? 'वीडियो क्लिप' : 'तस्वीर';
+    const typeLabel = isPres ? 'Presentation' : isVid ? 'Video' : 'Image';
     const badgeColor = isPres ? '#eab308' : isVid ? '#38bdf8' : '#34d399';
 
     return `
@@ -202,11 +202,11 @@ export class LibraryModal {
 
           <!-- Action buttons -->
           <div class="lib-card-actions">
-            <button type="button" class="lib-action-open" data-open-id="${item.id}" title="स्क्रीन पर तुरंत खोलें">
+            <button type="button" class="lib-action-open" data-open-id="${item.id}" title="Open immediately on screen">
               <span class="material-symbols-outlined" style="font-size:18px;">open_in_new</span>
-              <span>खोलें / Open</span>
+              <span>Open</span>
             </button>
-            <button type="button" class="lib-action-delete" data-delete-id="${item.id}" title="लाइब्रेरी से हटाएं">
+            <button type="button" class="lib-action-delete" data-delete-id="${item.id}" title="Remove from library">
               <span class="material-symbols-outlined" style="font-size:18px;">delete</span>
             </button>
           </div>
@@ -239,7 +239,7 @@ export class LibraryModal {
         const files = Array.from(fileInput.files);
         window.dispatchEvent(
           new CustomEvent('app-toast', {
-            detail: { message: `⏳ ${files.length} फाइलें लाइब्रेरी में जोड़ी जा रही हैं...`, isError: false }
+            detail: { message: `⏳ Adding ${files.length} file(s) to library...`, isError: false }
           })
         );
 
@@ -253,7 +253,7 @@ export class LibraryModal {
 
         window.dispatchEvent(
           new CustomEvent('app-toast', {
-            detail: { message: `✅ ${files.length} फाइलें लाइब्रेरी में सुरक्षित जोड़ दी गईं!`, isError: false }
+            detail: { message: `✅ ${files.length} file(s) safely added to library!`, isError: false }
           })
         );
 
@@ -303,12 +303,12 @@ export class LibraryModal {
         const id = deleteBtn.getAttribute('data-delete-id');
         const item = this.items.find(i => i.id === id);
         if (item) {
-          const ok = window.confirm(`क्या आप "${item.name}" को लाइब्रेरी से हटाना चाहते हैं?`);
+          const ok = window.confirm(`Are you sure you want to remove "${item.name}" from your library?`);
           if (ok) {
             await libraryStore.deleteItem(id!);
             window.dispatchEvent(
               new CustomEvent('app-toast', {
-                detail: { message: `🗑️ "${item.name}" हटा दी गई।`, isError: false }
+                detail: { message: `🗑️ "${item.name}" removed.`, isError: false }
               })
             );
             await this.refresh();
@@ -327,7 +327,7 @@ export class LibraryModal {
     if (item.type === 'presentation') {
       window.dispatchEvent(
         new CustomEvent('app-toast', {
-          detail: { message: `📄 प्रेजेंटेशन लोड हो रही है: ${item.name}...`, isError: false }
+          detail: { message: `📄 Loading presentation: ${item.name}...`, isError: false }
         })
       );
       try {
@@ -338,7 +338,7 @@ export class LibraryModal {
     } else {
       window.dispatchEvent(
         new CustomEvent('app-toast', {
-          detail: { message: `🎬 स्क्रीन पर खोला जा रहा है: ${item.name}...`, isError: false }
+          detail: { message: `🎬 Opening media on screen: ${item.name}...`, isError: false }
         })
       );
       try {

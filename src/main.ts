@@ -89,7 +89,7 @@ if ('serviceWorker' in navigator) {
           // SSIRO-UPDATE: Show reload toast on new version ready
           window.dispatchEvent(
             new CustomEvent('app-toast', {
-              detail: { message: 'नया संस्करण उपलब्ध है — पुनः लोड करें (New version ready — Reload)' }
+              detail: { message: 'New version available — Reload to update' }
             })
           );
         },
@@ -251,9 +251,9 @@ class SmartStudioApp {
       const nextMode = current === 'fill' ? 'stretch' : current === 'stretch' ? 'fit' : 'fill';
       store.updateSettings({ fitMode: nextMode });
       const labels: Record<string, string> = {
-        fill: 'लेआउट: फ़ुल स्क्रीन (Fill 100%)',
-        stretch: 'लेआउट: 100% बोर्ड खिंचाव (Stretch)',
-        fit: 'लेआउट: ओरिजिनल अनुपात (Fit)'
+        fill: 'Layout: Fullscreen (Fill 100%)',
+        stretch: 'Layout: Full Board Stretch (100%)',
+        fit: 'Layout: Original Aspect Ratio (Fit)'
       };
       window.dispatchEvent(
         new CustomEvent('app-toast', {
@@ -302,7 +302,7 @@ class SmartStudioApp {
     if (!toastContainer) return;
 
     window.addEventListener('app-toast', (e: any) => {
-      // In deck mode (presenting PPT), ZERO popups allowed per teacher requirement: "कोई गंदा सा पॉपअप नहीं आना चाहिए"
+      // In deck mode (presenting PPT), ZERO popups allowed per teacher requirement: "Zero intrusive popups in deck mode"
       if (store.getState().appState === 'deck') {
         return;
       }

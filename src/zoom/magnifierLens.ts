@@ -386,7 +386,7 @@ export class MagnifierLensController {
     const handleSE = document.createElement('div');
     handleSE.className = 'pinned-lens-handle corner-handle handle-se pinned-lens-resize-handle';
     handleSE.setAttribute('data-handle', 'se');
-    handleSE.title = 'Resize (आकार बदलें)';
+    handleSE.title = 'Resize';
     container.appendChild(handleSE);
 
     // 2. Bottom-Left Corner (SW)
@@ -411,7 +411,7 @@ export class MagnifierLensController {
     const handleE = document.createElement('div');
     handleE.className = 'pinned-lens-handle edge-handle handle-e';
     handleE.setAttribute('data-handle', 'e');
-    handleE.title = 'Width (चौड़ाई बदलें)';
+    handleE.title = 'Width';
     container.appendChild(handleE);
 
     // 6. Left Edge (W) - Horizontal width adjust
@@ -424,7 +424,7 @@ export class MagnifierLensController {
     const handleS = document.createElement('div');
     handleS.className = 'pinned-lens-handle edge-handle handle-s';
     handleS.setAttribute('data-handle', 's');
-    handleS.title = 'Height (लंबाई बदलें)';
+    handleS.title = 'Height';
     container.appendChild(handleS);
 
     // 8. Top Edge (N) - Vertical height adjust
@@ -458,7 +458,7 @@ export class MagnifierLensController {
 
     // Toast
     window.dispatchEvent(new CustomEvent('app-toast', {
-      detail: { message: `लेंस टिकाया गया (Lens Pinned: ${this.pinnedLenses.length}/3)` }
+      detail: { message: `Lens Pinned: ${this.pinnedLenses.length}/3` }
     }));
   }
 

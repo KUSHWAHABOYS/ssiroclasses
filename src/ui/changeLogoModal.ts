@@ -44,20 +44,20 @@ export class ChangeLogoModal {
       <div class="settings-content" style="max-height:85vh; overflow-y:auto; padding:24px;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid rgba(255,255,255,0.12); padding-bottom:12px;">
           <h2 style="font-size:18px; font-weight:700; color:#FFD76A; margin:0;">
-            🎨 लोगो व संस्था नाम बदलें (Change Logo & Brand)
+            🎨 Change Logo &amp; Brand
           </h2>
           <button id="btnCloseLogoModal" class="header-btn" style="width:36px; height:36px; padding:0; display:flex; align-items:center; justify-content:center;">✕</button>
         </div>
 
         <!-- Organisation Name Field -->
         <div class="setting-item" style="flex-direction:column; align-items:flex-start; gap:8px; margin-bottom:16px;">
-          <label style="font-weight:600; font-size:14px; color:#fff;">संस्था / चैनल का नाम (Organisation / Channel Name):</label>
+          <label style="font-weight:600; font-size:14px; color:#fff;">Organisation / Channel Name:</label>
           <input type="text" id="inputOrgName" class="gemini-input" style="width:100%; font-size:15px; padding:10px 14px;" value="${currentOrg}" placeholder="e.g. SSIRO Classes" />
         </div>
 
         <!-- Logo Picker & Square Crop -->
         <div class="setting-item" style="flex-direction:column; align-items:flex-start; gap:12px; margin-bottom:20px;">
-          <label style="font-weight:600; font-size:14px; color:#fff;">नया लोगो चुनें (Pick Image / SVG):</label>
+          <label style="font-weight:600; font-size:14px; color:#fff;">Pick Image / SVG:</label>
           <input type="file" id="filePickerLogo" accept="image/png,image/jpeg,image/webp,image/svg+xml" style="color:#aaa; font-size:13px;" />
           
           <div style="width:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; background:rgba(0,0,0,0.4); border:1px dashed rgba(255,255,255,0.2); border-radius:12px; padding:16px;">
@@ -69,10 +69,10 @@ export class ChangeLogoModal {
         <!-- Action Buttons -->
         <div style="display:flex; gap:12px; justify-content:flex-end; margin-top:16px;">
           <button id="btnResetDefaultLogo" class="header-btn" style="background:rgba(239,68,68,0.15); color:#fca5a5; border-color:rgba(239,68,68,0.4); height:42px; padding:0 16px;">
-            ↺ डिफ़ॉल्ट रीसेट (Reset)
+            ↺ Reset Defaults
           </button>
           <button id="btnApplyLogo" class="header-btn" style="background:#E8890C; color:#fff; border-color:#FFD76A; font-weight:700; height:42px; padding:0 24px;">
-            ✓ लागू करें (Apply)
+            ✓ Apply
           </button>
         </div>
       </div>
@@ -158,7 +158,7 @@ export class ChangeLogoModal {
 
       window.dispatchEvent(
         new CustomEvent('app-toast', {
-          detail: { message: `✅ लोगो व ब्रांड अपडेट किया गया (${orgName})` }
+          detail: { message: `✅ Logo & branding updated (${orgName})` }
         })
       );
 
@@ -177,7 +177,7 @@ export class ChangeLogoModal {
 
       window.dispatchEvent(
         new CustomEvent('app-toast', {
-          detail: { message: '↺ मूल SSIRO लोगो व ब्रांड रीसेट किया गया' }
+          detail: { message: '↺ Default SSIRO logo & branding restored' }
         })
       );
 

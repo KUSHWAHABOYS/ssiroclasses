@@ -78,10 +78,10 @@ export class MediaWindow {
 
     // Badges
     const badgeHtml = isPortrait
-      ? `<span class="media-badge shorts" title="Shorts / Reels (पोर्ट्रेट वीडियो)">📱 Shorts</span>`
+      ? `<span class="media-badge shorts" title="Shorts / Reels">📱 Shorts</span>`
       : isVideo
-      ? `<span class="media-badge video" title="वीडियो (Video)">🎬 Video</span>`
-      : `<span class="media-badge image" title="चित्र (Image)">🖼 Image</span>`;
+      ? `<span class="media-badge video" title="Video">🎬 Video</span>`
+      : `<span class="media-badge image" title="Image">🖼 Image</span>`;
 
     win.innerHTML = `
       <!-- Header Bar (Draggable) -->
@@ -91,13 +91,13 @@ export class MediaWindow {
           <span class="media-window-title" title="${this.escapeHtml(this.config.name)}">${this.escapeHtml(this.config.name)}</span>
         </div>
         <div class="media-window-controls">
-          <button class="media-win-btn btn-flip" data-btn-flip="true" title="साइड बदलें: बाएं ↔ दाएं (Flip Left/Right)">
+          <button class="media-win-btn btn-flip" data-btn-flip="true" title="Flip Left / Right">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4"/></svg>
           </button>
-          <button class="media-win-btn btn-maximize" data-btn-maximize="true" title="फ़ुल स्क्रीन / सामान्य आकार (Maximize/Restore)">
+          <button class="media-win-btn btn-maximize" data-btn-maximize="true" title="Maximize / Restore">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
           </button>
-          <button class="media-win-btn btn-close" data-btn-close="true" title="बंद करें (Close)">
+          <button class="media-win-btn btn-close" data-btn-close="true" title="Close">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
         </div>
@@ -133,24 +133,24 @@ export class MediaWindow {
       </div>
 
       <!-- 4 Corner Touch-Friendly Resize Handles -->
-      <div class="resize-handle resize-tl" data-resize="tl" title="ऊपर-बाएं से आकार बदलें">
+      <div class="resize-handle resize-tl" data-resize="tl" title="Resize from Top-Left">
         <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H2v12"/></svg>
       </div>
-      <div class="resize-handle resize-tr" data-resize="tr" title="ऊपर-दाएं से आकार बदलें">
+      <div class="resize-handle resize-tr" data-resize="tr" title="Resize from Top-Right">
         <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 2h12v12"/></svg>
       </div>
-      <div class="resize-handle resize-bl" data-resize="bl" title="नीचे-बाएं से आकार बदलें">
+      <div class="resize-handle resize-bl" data-resize="bl" title="Resize from Bottom-Left">
         <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 14H2V2"/></svg>
       </div>
-      <div class="resize-handle resize-br" data-resize="br" title="नीचे-दाएं से आकार बदलें">
+      <div class="resize-handle resize-br" data-resize="br" title="Resize from Bottom-Right">
         <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 14h12V2"/></svg>
       </div>
 
       <!-- 4 Edge Resize Handles for Free Stretch -->
-      <div class="resize-edge edge-t" data-resize="t" title="ऊपरी किनारे से आकार बदलें"></div>
-      <div class="resize-edge edge-b" data-resize="b" title="निचले किनारे से आकार बदलें"></div>
-      <div class="resize-edge edge-l" data-resize="l" title="बाएं किनारे से आकार बदलें"></div>
-      <div class="resize-edge edge-r" data-resize="r" title="दाएं किनारे से आकार बदलें"></div>
+      <div class="resize-edge edge-t" data-resize="t" title="Resize Top Edge"></div>
+      <div class="resize-edge edge-b" data-resize="b" title="Resize Bottom Edge"></div>
+      <div class="resize-edge edge-l" data-resize="l" title="Resize Left Edge"></div>
+      <div class="resize-edge edge-r" data-resize="r" title="Resize Right Edge"></div>
     `;
 
     if (isVideo) {

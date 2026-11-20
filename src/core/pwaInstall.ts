@@ -16,7 +16,7 @@ export class PwaInstallManager {
       this.updateInstallButtonsVisibility(false);
       window.dispatchEvent(
         new CustomEvent('app-toast', {
-          detail: { message: '🎉 स्मार्ट स्टूडियो सफलतापूर्वक इंस्टॉल हो गया! (App Installed)', isError: false }
+          detail: { message: '🎉 Smart Studio successfully installed!', isError: false }
         })
       );
     });
@@ -55,7 +55,7 @@ export class PwaInstallManager {
       window.dispatchEvent(
         new CustomEvent('app-toast', {
           detail: {
-            message: '💡 Google Chrome के ऊपर 3-डॉट्स (⋮) पर क्लिक करें ➔ "Install Smart Studio" (या "Add to Home Screen") चुनें।',
+            message: '💡 Click 3-dots (⋮) in Chrome ➔ select "Install Smart Studio" (or "Add to Home Screen").',
             isError: false
           }
         })

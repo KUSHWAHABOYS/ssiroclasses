@@ -22,9 +22,9 @@ export class WebOverlay {
 
     this.overlayEl.innerHTML = `
       <div class="web-overlay-bar">
-        <input type="text" class="web-overlay-input" id="webUrlInput" placeholder="URL या खोज दर्ज करें (e.g. google.com or topic)..." value="https://www.google.com" />
-        <button class="header-btn" id="btnWebGo">खोजें / Go</button>
-        <button class="header-btn" id="btnOpenNewWindow" title="Open in New Tab (नई विंडो में खोलें)" style="background: rgba(255,255,255,0.1); font-size:12px; margin-left:auto;">
+        <input type="text" class="web-overlay-input" id="webUrlInput" placeholder="Enter URL or search (e.g. google.com or topic)..." value="https://www.google.com" />
+        <button class="header-btn" id="btnWebGo">Go</button>
+        <button class="header-btn" id="btnOpenNewWindow" title="Open in New Tab" style="background: rgba(255,255,255,0.1); font-size:12px; margin-left:auto;">
           ⛶ New Tab
         </button>
         <button class="web-overlay-close" id="btnWebClose" title="Close Browser (Return to Slide)">✕</button>
@@ -35,11 +35,11 @@ export class WebOverlay {
           : `<iframe id="webIframe" class="web-frame" src="about:blank" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"></iframe>`
         }
         <div id="webFallbackCard" class="web-fallback-card hidden">
-          <h3>यह साइट इस बॉक्स में सीधे नहीं खुल सकी</h3>
-          <p>सुरक्षा नीतियों (X-Frame-Options) के कारण गूगल या बाहरी साइटें इन-ऐप फ़्रेम में अवरुद्ध हैं।</p>
-          <p>कृपया इसे नई विंडो में खोलें और OBS / StreamYard में Window Capture का उपयोग करें।</p>
+          <h3>This website cannot be displayed directly in this frame</h3>
+          <p>Due to security policies (X-Frame-Options), Google and external websites are blocked from displaying inside an iframe.</p>
+          <p>Please open it in a new window and use Window Capture in OBS / StreamYard.</p>
           <button class="header-btn" id="btnCardOpenNewWindow" style="background: var(--primary-accent); color: #000; font-weight: 700; margin-top: 12px;">
-            नई विंडो में खोलें (Open in New Tab)
+            Open in New Tab
           </button>
         </div>
       </div>

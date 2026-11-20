@@ -51,7 +51,7 @@ export class SettingsPanel {
             <div style="display:flex; flex-direction:column;">
               <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
                 <h1 style="font-size:22px; font-weight:700; color:#fff7eb; margin:0; letter-spacing:-0.3px;">
-                  सेटिंग्स <span style="color:#d0c5b1; font-weight:300; font-size:18px;">/ Settings</span>
+                  Settings
                 </h1>
                 <span style="padding:3px 10px; border-radius:9999px; background:#293452; color:#e9c258; font-size:12px; font-weight:600; letter-spacing:0.3px;">
                   Smart Studio Pro v4.2 • 4K IFP Edition
@@ -67,7 +67,7 @@ export class SettingsPanel {
           <div style="display:flex; align-items:center; gap:12px;">
             <button id="reset-all-btn" class="stitch-btn-cancel" style="min-height:46px; padding:0 18px; display:flex; align-items:center; gap:8px; font-size:13.5px;" title="Reset all settings to recommended defaults">
               <span class="material-symbols-outlined" style="font-size:18px; color:#e9c258;">restart_alt</span>
-              <span>रीसेट / Reset All</span>
+              <span>Reset All</span>
             </button>
             <button id="btnSettingsClose" aria-label="Close Settings" style="width:46px; height:46px; border-radius:50%; background:rgba(30,41,71,0.8); border:1px solid rgba(255,255,255,0.1); color:#dae2ff; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all 160ms ease;">
               <span class="material-symbols-outlined" style="font-size:22px;">close</span>
@@ -87,8 +87,7 @@ export class SettingsPanel {
                 <div style="display:flex; align-items:center; gap:12px;">
                   <span class="material-symbols-outlined tab-icon" style="font-size:22px;">branding_watermark</span>
                   <div style="display:flex; flex-direction:column; line-height:1.2;">
-                    <span style="font-size:14px; font-weight:600;">सामान्य व ब्रांडिंग</span>
-                    <span style="font-size:11.5px; opacity:0.8; font-weight:400;">General &amp; Branding</span>
+                    <span style="font-size:14px; font-weight:600;">General &amp; Branding</span>
                   </div>
                 </div>
                 <span class="material-symbols-outlined tab-chevron" style="font-size:16px; opacity:0.5;">chevron_right</span>
@@ -99,8 +98,7 @@ export class SettingsPanel {
                 <div style="display:flex; align-items:center; gap:12px;">
                   <span class="material-symbols-outlined tab-icon" style="font-size:22px;">display_settings</span>
                   <div style="display:flex; flex-direction:column; line-height:1.2;">
-                    <span style="font-size:14px; font-weight:600;">डिस्प्ले व रिज़ॉल्यूशन</span>
-                    <span style="font-size:11.5px; opacity:0.8; font-weight:400;">Display &amp; 4K UHD</span>
+                    <span style="font-size:14px; font-weight:600;">Display &amp; 4K UHD</span>
                   </div>
                 </div>
                 <span class="material-symbols-outlined tab-chevron" style="font-size:16px; opacity:0.5;">chevron_right</span>
@@ -111,8 +109,7 @@ export class SettingsPanel {
                 <div style="display:flex; align-items:center; gap:12px;">
                   <span class="material-symbols-outlined tab-icon" style="font-size:22px;">stylus_note</span>
                   <div style="display:flex; flex-direction:column; line-height:1.2;">
-                    <span style="font-size:14px; font-weight:600;">पेन व इंक टूल्स</span>
-                    <span style="font-size:11.5px; opacity:0.8; font-weight:400;">Pen &amp; Smart Ink</span>
+                    <span style="font-size:14px; font-weight:600;">Pen &amp; Smart Ink</span>
                   </div>
                 </div>
                 <span class="material-symbols-outlined tab-chevron" style="font-size:16px; opacity:0.5;">chevron_right</span>
@@ -123,8 +120,7 @@ export class SettingsPanel {
                 <div style="display:flex; align-items:center; gap:12px;">
                   <span class="material-symbols-outlined tab-icon" style="font-size:22px;">touch_app</span>
                   <div style="display:flex; flex-direction:column; line-height:1.2;">
-                    <span style="font-size:14px; font-weight:600;">टूलबार व टच</span>
-                    <span style="font-size:11.5px; opacity:0.8; font-weight:400;">Toolbar &amp; Ergonomics</span>
+                    <span style="font-size:14px; font-weight:600;">Toolbar &amp; Ergonomics</span>
                   </div>
                 </div>
                 <span class="material-symbols-outlined tab-chevron" style="font-size:16px; opacity:0.5;">chevron_right</span>
@@ -135,8 +131,7 @@ export class SettingsPanel {
                 <div style="display:flex; align-items:center; gap:12px;">
                   <span class="material-symbols-outlined tab-icon" style="font-size:22px;">mic</span>
                   <div style="display:flex; flex-direction:column; line-height:1.2;">
-                    <span style="font-size:14px; font-weight:600;">माइक व ऑडियो</span>
-                    <span style="font-size:11.5px; opacity:0.8; font-weight:400;">Voice &amp; Audio FX</span>
+                    <span style="font-size:14px; font-weight:600;">Voice &amp; Audio FX</span>
                   </div>
                 </div>
                 <span class="material-symbols-outlined tab-chevron" style="font-size:16px; opacity:0.5;">chevron_right</span>
@@ -147,8 +142,7 @@ export class SettingsPanel {
                 <div style="display:flex; align-items:center; gap:12px;">
                   <span class="material-symbols-outlined tab-icon" style="font-size:22px; color:#ffb873;">smart_toy</span>
                   <div style="display:flex; flex-direction:column; line-height:1.2;">
-                    <span style="font-size:14px; font-weight:600;">जेमिनी एआई</span>
-                    <span style="font-size:11.5px; opacity:0.8; font-weight:400;">Gemini AI Studio</span>
+                    <span style="font-size:14px; font-weight:600;">Gemini AI Studio</span>
                   </div>
                 </div>
                 <span class="material-symbols-outlined tab-chevron" style="font-size:16px; opacity:0.5;">chevron_right</span>
@@ -159,8 +153,7 @@ export class SettingsPanel {
                 <div style="display:flex; align-items:center; gap:12px;">
                   <span class="material-symbols-outlined tab-icon" style="font-size:22px;">videocam</span>
                   <div style="display:flex; flex-direction:column; line-height:1.2;">
-                    <span style="font-size:14px; font-weight:600;">स्टूडियो रिकॉर्डिंग</span>
-                    <span style="font-size:11.5px; opacity:0.8; font-weight:400;">OBS &amp; Stream Vault</span>
+                    <span style="font-size:14px; font-weight:600;">OBS &amp; Stream Vault</span>
                   </div>
                 </div>
                 <span class="material-symbols-outlined tab-chevron" style="font-size:16px; opacity:0.5;">chevron_right</span>
@@ -193,10 +186,10 @@ export class SettingsPanel {
             <section class="settings-panel ${this.activeTab === 'tab-general' ? '' : 'hidden'}" id="tab-general">
               <div>
                 <h2 style="font-size:22px; font-weight:700; color:#fff7eb; margin:0;">
-                  सामान्य व ब्रांडिंग / General &amp; Channel Branding
+                  General &amp; Channel Branding
                 </h2>
                 <p style="font-size:13.5px; color:#d0c5b1; margin:4px 0 0 0;">
-                  कक्षा प्रसारण शीर्षक, चैनल लोगो और शिक्षण भाषा सेटिंग्स का प्रबंधन करें।
+                  Manage broadcast title, channel watermark logo, and teaching settings.
                 </p>
               </div>
 
@@ -205,13 +198,13 @@ export class SettingsPanel {
                 <div style="display:flex; flex-direction:column; gap:8px;">
                   <div style="display:flex; justify-content:space-between; align-items:center;">
                     <label for="channel-name" style="font-size:14.5px; font-weight:600; color:#fff7eb;">
-                      चैनल का नाम / Studio Channel Name
+                      Studio Channel Name
                     </label>
                     <span style="font-size:12px; color:#e9c258; font-weight:600;">IFP Live Overlay</span>
                   </div>
                   <div class="stitch-input-wrap">
                     <span class="material-symbols-outlined stitch-icon">school</span>
-                    <input type="text" id="channel-name" class="stitch-input" value="${s.channelName || 'SSIRO Classes'}" placeholder="चैनल का नाम दर्ज करें..." />
+                    <input type="text" id="channel-name" class="stitch-input" value="${s.channelName || 'SSIRO Classes'}" placeholder="Enter studio channel name..." />
                     <button type="button" class="stitch-clear-btn" id="btnClearChannelName" title="Clear">
                       <span class="material-symbols-outlined" style="font-size:18px;">backspace</span>
                     </button>
@@ -220,11 +213,11 @@ export class SettingsPanel {
 
                 <div style="display:flex; flex-direction:column; gap:8px; padding-top:6px;">
                   <label for="welcome-text" style="font-size:14.5px; font-weight:600; color:#fff7eb;">
-                    स्वागत संदेश / Live Welcome Banner
+                    Live Welcome Banner
                   </label>
                   <div class="stitch-input-wrap">
                     <span class="material-symbols-outlined stitch-icon">campaign</span>
-                    <input type="text" id="welcome-text" class="stitch-input" value="${s.welcomeLine2 || 'आज की लाइव कक्षा में स्वागत है / Welcome to Live Class'}" />
+                    <input type="text" id="welcome-text" class="stitch-input" value="${s.welcomeLine2 || 'Welcome to Live Class'}" />
                   </div>
                 </div>
               </div>
@@ -247,30 +240,30 @@ export class SettingsPanel {
                     </span>
                   </div>
                   <div style="display:flex; flex-direction:column; gap:3px;">
-                    <span style="font-size:15px; font-weight:600; color:#fff7eb;">चैनल प्रतीक चिन्ह / Channel Watermark Logo</span>
+                    <span style="font-size:15px; font-weight:600; color:#fff7eb;">Channel Watermark Logo</span>
                     <span style="font-size:12.5px; color:#d0c5b1;">Direct IFP Screen Corner Overlay (PNG/SVG)</span>
-                    <span style="font-size:12px; color:#e9c258;">अनुशंसित: 512×512px पारदर्शी PNG (अधिकतम 2MB)</span>
+                    <span style="font-size:12px; color:#e9c258;">Recommended: 512×512px transparent PNG (Max 2MB)</span>
                   </div>
                 </div>
                 <button type="button" class="stitch-seg-btn active" id="btnChangeLogoModal" style="padding:0 22px; min-height:50px;">
                   <span class="material-symbols-outlined" style="font-size:20px;">upload_file</span>
-                  <span>लोगो बदलें / Change Logo</span>
+                  <span>Change Logo</span>
                 </button>
               </div>
 
               <!-- Teaching Language Segmented Control -->
               <div class="stitch-card">
-                <span style="font-size:14.5px; font-weight:600; color:#fff7eb;">शिक्षण भाषा माध्यम / Teaching Language Mode</span>
+                <span style="font-size:14.5px; font-weight:600; color:#fff7eb;">Teaching Language Mode</span>
                 <div class="stitch-segmented" style="grid-template-columns:1fr 1fr 1fr;">
                   <button type="button" class="stitch-seg-btn lang-opt ${s.voiceLang === 'hi-IN' && s.language === 'hi' ? 'active' : ''}" data-lang="hi">
                     <span class="material-symbols-outlined" style="font-size:18px;">translate</span>
-                    <span>हिंदी (Hindi)</span>
+                    <span>Hindi</span>
                   </button>
                   <button type="button" class="stitch-seg-btn lang-opt ${s.voiceLang === 'en-IN' ? 'active' : ''}" data-lang="en">
                     <span>English</span>
                   </button>
                   <button type="button" class="stitch-seg-btn lang-opt ${s.language === 'hi' && s.voiceLang !== 'en-IN' ? 'active' : ''}" data-lang="hinglish">
-                    <span>द्विभाषी (Hinglish)</span>
+                    <span>Hinglish</span>
                   </button>
                 </div>
               </div>
@@ -278,8 +271,8 @@ export class SettingsPanel {
               <!-- Welcome Screen Controls & Close Deck -->
               <div class="stitch-card row-card">
                 <div style="display:flex; flex-direction:column; gap:4px;">
-                  <span style="font-size:14.5px; font-weight:600; color:#fff7eb;">स्वागत स्क्रीन दिखाएं / Show Welcome Screen</span>
-                  <span style="font-size:12.5px; color:#d0c5b1;">ऐप प्रारंभ होने पर स्प्लैश स्क्रीन और ब्रांड लोगो प्रदर्शित करें</span>
+                  <span style="font-size:14.5px; font-weight:600; color:#fff7eb;">Show Welcome Screen</span>
+                  <span style="font-size:12.5px; color:#d0c5b1;">Display splash screen and branding logo on startup</span>
                 </div>
                 <label class="stitch-switch">
                   <input type="checkbox" id="settingShowWelcome" ${s.showWelcomeScreen !== false ? 'checked' : ''} />
@@ -289,11 +282,11 @@ export class SettingsPanel {
 
               <div class="stitch-card row-card">
                 <div style="display:flex; flex-direction:column; gap:4px;">
-                  <span style="font-size:14.5px; font-weight:600; color:#fff7eb;">सक्रिय डेक बंद करें / Close Current Deck</span>
-                  <span style="font-size:12.5px; color:#d0c5b1;">वर्तमान प्रेजेंटेशन बंद कर मुख्य वेलकम स्क्रीन पर लौटें</span>
+                  <span style="font-size:14.5px; font-weight:600; color:#fff7eb;">Close Current Deck</span>
+                  <span style="font-size:12.5px; color:#d0c5b1;">Close active presentation deck and return to home screen</span>
                 </div>
                 <button type="button" id="btnSettingsCloseDeck" style="min-height:48px; padding:0 20px; border-radius:12px; background:rgba(239,68,68,0.18); border:1px solid rgba(239,68,68,0.4); color:#fca5a5; font-size:13.5px; font-weight:600; cursor:pointer;">
-                  ✕ डेक बंद करें (Close Deck)
+                  ✕ Close Deck
                 </button>
               </div>
 
@@ -303,18 +296,18 @@ export class SettingsPanel {
                   <div style="display:flex; flex-direction:column; gap:4px;">
                     <div style="display:flex; align-items:center; gap:8px;">
                       <span class="material-symbols-outlined" style="color:#ffd76a; font-size:20px;">sync</span>
-                      <span style="font-size:15px; font-weight:700; color:#fff7eb;">सेटिंग्स सिंक करें / Sync to Digital Board</span>
+                      <span style="font-size:15px; font-weight:700; color:#fff7eb;">Sync to Digital Board</span>
                     </div>
-                    <span style="font-size:12.5px; color:#d0c5b1;">PC पर की गई सेटिंग्स (चैनल नाम, पेन मोटाई, थीम आदि) को डिजिटल बोर्ड पर 1-क्लिक में ट्रांसफर करें</span>
+                    <span style="font-size:12.5px; color:#d0c5b1;">Transfer configuration (channel name, pen size, theme) to digital board in 1 click</span>
                   </div>
                   <div style="display:flex; gap:10px; flex-wrap:wrap;">
                     <button type="button" id="btnCopySyncLink" class="stitch-seg-btn active" style="min-height:46px; padding:0 20px;">
                       <span class="material-symbols-outlined" style="font-size:18px;">content_copy</span>
-                      <span>🔗 सिंक लिंक कॉपी करें</span>
+                      <span>🔗 Copy Sync Link</span>
                     </button>
                     <button type="button" id="btnSettingsInstallPwa" class="btn-pwa-install stitch-seg-btn" style="min-height:46px; padding:0 18px; border:1px solid rgba(255,215,106,0.4); color:#ffd76a;">
                       <span class="material-symbols-outlined" style="font-size:18px;">install_desktop</span>
-                      <span>📲 ऐप इंस्टॉल करें</span>
+                      <span>📲 Install PWA</span>
                     </button>
                   </div>
                 </div>
@@ -327,35 +320,35 @@ export class SettingsPanel {
             <section class="settings-panel ${this.activeTab === 'tab-display' ? '' : 'hidden'}" id="tab-display">
               <div>
                 <h2 style="font-size:22px; font-weight:700; color:#fff7eb; margin:0;">
-                  डिस्प्ले व 4K रिज़ॉल्यूशन / Display &amp; Resolution
+                  Display &amp; 4K UHD Resolution
                 </h2>
                 <p style="font-size:13.5px; color:#d0c5b1; margin:4px 0 0 0;">
-                  कैनवास फिट, अल्ट्रा-एचडी फ्रेम दर और स्पर्श आवर्धक ग्लास को नियंत्रित करें।
+                  Configure canvas fit mode, ultra-HD render engine, and touch magnifier.
                 </p>
               </div>
 
               <!-- Screen Fit Control -->
               <div class="stitch-card">
-                <span style="font-size:14.5px; font-weight:600; color:#fff7eb;">कैनवास फिट मोड / Aspect Ratio &amp; Fit</span>
+                <span style="font-size:14.5px; font-weight:600; color:#fff7eb;">Canvas Aspect Ratio &amp; Fit</span>
                 <div class="stitch-segmented" style="grid-template-columns:1fr 1fr 1fr;">
                   <button type="button" class="stitch-seg-btn fit-opt ${s.fitMode === 'fit' ? 'active' : ''}" data-fit="fit">
                     <span class="material-symbols-outlined" style="font-size:18px;">aspect_ratio</span>
-                    <span>Fit / प्राकृतिक (16:9)</span>
+                    <span>Fit (16:9 Natural)</span>
                   </button>
                   <button type="button" class="stitch-seg-btn fit-opt ${s.fitMode === 'fill' ? 'active' : ''}" data-fit="fill">
                     <span class="material-symbols-outlined" style="font-size:18px;">fullscreen</span>
-                    <span>Fill / पूर्ण पर्दा</span>
+                    <span>Fill (100% Fullscreen)</span>
                   </button>
                   <button type="button" class="stitch-seg-btn fit-opt ${s.fitMode === 'stretch' ? 'active' : ''}" data-fit="stretch">
                     <span class="material-symbols-outlined" style="font-size:18px;">fit_screen</span>
-                    <span>Stretch / खिंचाव</span>
+                    <span>Stretch (Full Board Stretch)</span>
                   </button>
                 </div>
               </div>
 
               <!-- 4K Render Engine Profile -->
               <div class="stitch-card">
-                <span style="font-size:14.5px; font-weight:600; color:#fff7eb;">प्रसारण गुणवत्ता / Render Performance</span>
+                <span style="font-size:14.5px; font-weight:600; color:#fff7eb;">Render Performance &amp; Engine</span>
                 <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px;">
                   <div class="render-card ${s.renderQuality === '3x' ? 'active' : ''}" data-quality="3x" style="padding:16px; border-radius:16px; background:${s.renderQuality === '3x' ? 'rgba(30,41,71,0.95)' : 'rgba(15,26,55,0.8)'}; border:2px solid ${s.renderQuality === '3x' ? '#ffd76a' : 'rgba(255,255,255,0.08)'}; cursor:pointer; display:flex; flex-direction:column; gap:6px;">
                     <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -393,8 +386,8 @@ export class SettingsPanel {
               <div class="stitch-card">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                   <div>
-                    <span style="font-size:14.5px; font-weight:600; color:#fff7eb;">शिक्षक आवर्धक लेंस / Touch Magnifier Tool</span>
-                    <p style="font-size:12.5px; color:#d0c5b1; margin:2px 0 0 0;">सुक्ष्म सूत्रों और आरेखों को बड़ा करके दिखाने हेतु आवर्धक ग्लास</p>
+                    <span style="font-size:14.5px; font-weight:600; color:#fff7eb;">Touch Magnifier Tool</span>
+                    <p style="font-size:12.5px; color:#d0c5b1; margin:2px 0 0 0;">Magnify fine formulas, small text, and diagrams during teaching</p>
                   </div>
                   <span class="px-space-md py-1" id="zoom-badge" style="padding:4px 14px; border-radius:9999px; background:#ffd76a; color:#775c00; font-size:13px; font-weight:700;">
                     ${(s.magnifierZoom || 4.0).toFixed(1)}x Zoom
@@ -406,15 +399,15 @@ export class SettingsPanel {
                   <span class="material-symbols-outlined" style="color:#d0c5b1; font-size:20px;">search</span>
                 </div>
                 <div style="display:flex; justify-content:space-between; align-items:center; padding-top:4px;">
-                  <span style="font-size:13.5px; color:#dae2ff; font-weight:500;">लेंस का आकार / Lens Aperture Shape</span>
+                  <span style="font-size:13.5px; color:#dae2ff; font-weight:500;">Lens Aperture Shape</span>
                   <div style="display:flex; gap:6px; background:#020c29; padding:4px; border-radius:12px;">
                     <button type="button" class="lens-shape-btn ${s.magnifierShape !== 'rect' ? 'active' : ''}" data-shape="circle" style="padding:6px 14px; border-radius:8px; border:none; background:${s.magnifierShape !== 'rect' ? '#1e2947' : 'transparent'}; color:${s.magnifierShape !== 'rect' ? '#fff7eb' : '#d0c5b1'}; font-size:12.5px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:6px;">
                       <span class="material-symbols-outlined" style="font-size:14px;">circle</span>
-                      <span>वृत्त / Circle</span>
+                      <span>Circle</span>
                     </button>
                     <button type="button" class="lens-shape-btn ${s.magnifierShape === 'rect' ? 'active' : ''}" data-shape="rect" style="padding:6px 14px; border-radius:8px; border:none; background:${s.magnifierShape === 'rect' ? '#1e2947' : 'transparent'}; color:${s.magnifierShape === 'rect' ? '#fff7eb' : '#d0c5b1'}; font-size:12.5px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:6px;">
                       <span class="material-symbols-outlined" style="font-size:14px;">crop_landscape</span>
-                      <span>आयत / Rect</span>
+                      <span>Rect</span>
                     </button>
                   </div>
                 </div>
@@ -423,8 +416,8 @@ export class SettingsPanel {
               <!-- Blank Margins & Layout Report -->
               <div class="stitch-card row-card">
                 <div style="display:flex; flex-direction:column; gap:4px;">
-                  <span style="font-size:14.5px; font-weight:600; color:#fff7eb;">खाली मार्जिन स्वतः ट्रिम करें / Auto-Trim Blank Margins</span>
-                  <span style="font-size:12.5px; color:#d0c5b1;">स्लाइड के किनारों से खाली बॉर्डर हटाकर सामग्री को पूरी स्क्रीन पर फैलाएं</span>
+                  <span style="font-size:14.5px; font-weight:600; color:#fff7eb;">Auto-Trim Blank Margins</span>
+                  <span style="font-size:12.5px; color:#d0c5b1;">Remove excess whitespace around slides and maximize screen usage</span>
                 </div>
                 <label class="stitch-switch">
                   <input type="checkbox" id="settingAutoTrimMargins" ${s.autoTrimMargins ? 'checked' : ''} />
@@ -434,12 +427,12 @@ export class SettingsPanel {
 
               <div class="stitch-card row-card">
                 <div style="display:flex; flex-direction:column; gap:4px;">
-                  <span style="font-size:14.5px; font-weight:600; color:#fff7eb;">लेआउट रिपोर्ट / 4K Layout Report per ZEN-7</span>
-                  <span style="font-size:12.5px; color:#d0c5b1;">4K बोर्ड एवं लाइव प्रसारण हेतु पिक्सल व व्यूमार्जिन का सटीक विश्लेषण</span>
+                  <span style="font-size:14.5px; font-weight:600; color:#fff7eb;">4K Layout &amp; Geometry Report</span>
+                  <span style="font-size:12.5px; color:#d0c5b1;">Precise pixel alignment and viewport analysis for 4K IFP &amp; live stream</span>
                 </div>
                 <button type="button" id="btnViewLayoutReport" style="min-height:46px; padding:0 20px; border-radius:12px; background:rgba(56,189,248,0.15); border:1px solid rgba(56,189,248,0.35); color:#38bdf8; font-size:13px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:8px;">
                   <span class="material-symbols-outlined" style="font-size:18px;">analytics</span>
-                  <span>📊 लेआउट रिपोर्ट देखें</span>
+                  <span>📊 View Layout Report</span>
                 </button>
               </div>
             </section>
@@ -450,17 +443,17 @@ export class SettingsPanel {
             <section class="settings-panel ${this.activeTab === 'tab-ink' ? '' : 'hidden'}" id="tab-ink">
               <div>
                 <h2 style="font-size:22px; font-weight:700; color:#fff7eb; margin:0;">
-                  पेन व इंक टूल्स / Stylus &amp; Smart Ink Engine
+                  Stylus &amp; Smart Ink Engine
                 </h2>
                 <p style="font-size:13.5px; color:#d0c5b1; margin:4px 0 0 0;">
-                  हैंडराइटिंग स्मूथिंग, कैलीग्राफी मोटाई और डिजिटल ब्लैकबोर्ड का बैकग्राउंड।
+                  Handwriting smoothing, stroke width, ink retention, and digital blackboard presets.
                 </p>
               </div>
 
               <!-- Stylus Thickness Slider with Live Preview Dot -->
               <div class="stitch-card">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
-                  <span style="font-size:14.5px; font-weight:600; color:#fff7eb;">पेन स्ट्रोक मोटाई / Default Pen Stroke Width</span>
+                  <span style="font-size:14.5px; font-weight:600; color:#fff7eb;">Default Pen Stroke Width</span>
                   <div style="display:flex; align-items:center; gap:12px;">
                     <div style="width:32px; height:32px; border-radius:50%; background:#020c29; display:flex; align-items:center; justify-content:center; border:1px solid rgba(255,255,255,0.1);">
                       <div id="pen-dot-preview" style="width:${s.defaultPenSize || 6}px; height:${s.defaultPenSize || 6}px; border-radius:50%; background:#ffd76a; transition:all 100ms ease;"></div>
@@ -476,8 +469,8 @@ export class SettingsPanel {
               <!-- Smart Ink Auto Straighten -->
               <div class="stitch-card row-card">
                 <div style="display:flex; flex-direction:column; gap:4px;">
-                  <span style="font-size:14.5px; font-weight:600; color:#fff7eb;">स्मार्ट आकृतियां / Smart Geometry Auto-Snap</span>
-                  <span style="font-size:12.5px; color:#d0c5b1;">कच्चे हाथ से बने त्रिकोण, वृत्त और तीरों को तत्काल सही आकार में बदलें</span>
+                  <span style="font-size:14.5px; font-weight:600; color:#fff7eb;">Smart Geometry Auto-Snap</span>
+                  <span style="font-size:12.5px; color:#d0c5b1;">Automatically straighten hand-drawn triangles, circles, and arrows</span>
                 </div>
                 <label class="stitch-switch">
                   <input type="checkbox" id="settingSmartInkEnabled" ${s.smartInkEnabled !== false ? 'checked' : ''} />
@@ -488,8 +481,8 @@ export class SettingsPanel {
               <!-- Slide Navigation Ink Retention -->
               <div class="stitch-card row-card">
                 <div style="display:flex; flex-direction:column; gap:4px;">
-                  <span style="font-size:14.5px; font-weight:600; color:#fff7eb;">स्लाइड बदलने पर स्वतः साफ़ / Auto-Erase on Navigation</span>
-                  <span style="font-size:12.5px; color:#d0c5b1;">अगली अथवा पिछली स्लाइड पर जाने पर पिछली स्याही तत्काल हटाएं</span>
+                  <span style="font-size:14.5px; font-weight:600; color:#fff7eb;">Auto-Erase on Navigation</span>
+                  <span style="font-size:12.5px; color:#d0c5b1;">Clear annotations automatically when navigating to another slide</span>
                 </div>
                 <label class="stitch-switch">
                   <input type="checkbox" id="settingAutoErase" ${s.autoEraseOnSlideChange ? 'checked' : ''} />
@@ -499,8 +492,8 @@ export class SettingsPanel {
 
               <div class="stitch-card row-card">
                 <div style="display:flex; flex-direction:column; gap:4px;">
-                  <span style="font-size:14.5px; font-weight:600; color:#fff7eb;">प्रति-स्लाइड स्याही सहेजें / Keep Annotations Per Slide</span>
-                  <span style="font-size:12.5px; color:#d0c5b1;">प्रत्येक स्लाइड के लिए स्वतंत्र आरेखण व नोट्स सुरक्षित रखें</span>
+                  <span style="font-size:14.5px; font-weight:600; color:#fff7eb;">Keep Annotations Per Slide</span>
+                  <span style="font-size:12.5px; color:#d0c5b1;">Preserve drawings and notes independently for each slide</span>
                 </div>
                 <label class="stitch-switch">
                   <input type="checkbox" id="settingKeepPerSlide" ${s.keepAnnotationsPerSlide ? 'checked' : ''} />
@@ -512,44 +505,44 @@ export class SettingsPanel {
               <div class="stitch-card">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                   <div style="display:flex; flex-direction:column; gap:4px;">
-                    <span style="font-size:14.5px; font-weight:600; color:#fff7eb;">आकृतियों के बाद पेन पर वापसी / Return to Pen after Shape</span>
-                    <span style="font-size:12.5px; color:#d0c5b1;">शेप/आकृतियां बनाने के बाद पेन टूल पर कितने समय बाद लौटें</span>
+                    <span style="font-size:14.5px; font-weight:600; color:#fff7eb;">Return to Pen after Shape</span>
+                    <span style="font-size:12.5px; color:#d0c5b1;">Duration before reverting back to pen after drawing shapes</span>
                   </div>
                   <span id="revert-timer-badge" style="font-size:13.5px; font-weight:700; color:#e9c258;">
-                    ${s.autoRevertToPenSeconds === 0 ? 'कभी नहीं (हमेशा वही टूल)' : `${s.autoRevertToPenSeconds || 15} सेकंड`}
+                    ${s.autoRevertToPenSeconds === 0 ? 'Never (Stay)' : `${s.autoRevertToPenSeconds || 15}s`}
                   </span>
                 </div>
                 <div class="stitch-segmented" style="grid-template-columns:1fr 1fr 1fr 1fr; margin-top:10px;">
                   <button type="button" class="stitch-seg-btn revert-opt ${(s.autoRevertToPenSeconds || 15) === 10 ? 'active' : ''}" data-revert="10">10s</button>
-                  <button type="button" class="stitch-seg-btn revert-opt ${(s.autoRevertToPenSeconds || 15) === 15 ? 'active' : ''}" data-revert="15">15s (डिफ़ॉल्ट)</button>
+                  <button type="button" class="stitch-seg-btn revert-opt ${(s.autoRevertToPenSeconds || 15) === 15 ? 'active' : ''}" data-revert="15">15s (Default)</button>
                   <button type="button" class="stitch-seg-btn revert-opt ${(s.autoRevertToPenSeconds || 15) === 30 ? 'active' : ''}" data-revert="30">30s</button>
-                  <button type="button" class="stitch-seg-btn revert-opt ${s.autoRevertToPenSeconds === 0 ? 'active' : ''}" data-revert="0">कभी नहीं (Stay)</button>
+                  <button type="button" class="stitch-seg-btn revert-opt ${s.autoRevertToPenSeconds === 0 ? 'active' : ''}" data-revert="0">Never (Stay)</button>
                 </div>
               </div>
 
               <!-- Digital Blackboard Theme Swatches -->
               <div class="stitch-card">
-                <span style="font-size:14.5px; font-weight:600; color:#fff7eb;">डिजिटल श्यामपट्ट थीम / Blackboard Preset Theme</span>
+                <span style="font-size:14.5px; font-weight:600; color:#fff7eb;">Blackboard Preset Theme</span>
                 <div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:12px;">
                   <button type="button" class="stitch-theme-swatch ${s.boardDefaultTheme === 'slate' ? 'active' : ''}" data-theme="slate" style="background:#0b172a;">
                     <span style="font-size:12px; font-weight:700; color:#fff7eb;">Deep Slate</span>
-                    <span style="font-size:10.5px; color:#d0c5b1;">डार्क स्लेट</span>
+                    <span style="font-size:10.5px; color:#d0c5b1;">Dark Slate</span>
                   </button>
                   <button type="button" class="stitch-theme-swatch ${s.boardDefaultTheme === 'chalkboard' ? 'active' : ''}" data-theme="chalkboard" style="background:#123023;">
                     <span style="font-size:12px; font-weight:700; color:#fff7eb;">Classic Olive</span>
-                    <span style="font-size:10.5px; color:#d0c5b1;">पारंपरिक हरा</span>
+                    <span style="font-size:10.5px; color:#d0c5b1;">Olive Green</span>
                   </button>
                   <button type="button" class="stitch-theme-swatch ${s.boardDefaultTheme === 'navy' ? 'active' : ''}" data-theme="navy" style="background:#0A1633;">
                     <span style="font-size:12px; font-weight:700; color:#fff7eb;">Navy Studio</span>
-                    <span style="font-size:10.5px; color:#d0c5b1;">स्टूडियो नेवी</span>
+                    <span style="font-size:10.5px; color:#d0c5b1;">Navy Blue</span>
                   </button>
                   <button type="button" class="stitch-theme-swatch ${s.boardDefaultTheme === 'maths' ? 'active' : ''}" data-theme="maths" style="background:#030712;">
                     <span style="font-size:12px; font-weight:700; color:#fff7eb;">Matte Black</span>
-                    <span style="font-size:10.5px; color:#d0c5b1;">मैट ब्लैक</span>
+                    <span style="font-size:10.5px; color:#d0c5b1;">Matte Black</span>
                   </button>
                   <button type="button" class="stitch-theme-swatch ${s.boardDefaultTheme === 'chroma' ? 'active' : ''}" data-theme="chroma" style="background:#00FF00; color:#000;">
                     <span style="font-size:12px; font-weight:700; color:#000;">Pure Chroma</span>
-                    <span style="font-size:10.5px; color:#111;">OBS पारदर्शी</span>
+                    <span style="font-size:10.5px; color:#111;">OBS Green</span>
                   </button>
                 </div>
               </div>
@@ -561,18 +554,18 @@ export class SettingsPanel {
             <section class="settings-panel ${this.activeTab === 'tab-toolbar' ? '' : 'hidden'}" id="tab-toolbar">
               <div>
                 <h2 style="font-size:22px; font-weight:700; color:#fff7eb; margin:0;">
-                  टूलबार व टच / Ergonomics &amp; Touch Zones
+                  Toolbar &amp; Ergonomics
                 </h2>
                 <p style="font-size:13.5px; color:#d0c5b1; margin:4px 0 0 0;">
-                  पैनल की ऊंचाई, पाम रिजेक्शन और फ्लोटिंग टूलबार का व्यवहार सेट करें।
+                  Adjust toolbar scaling, auto-dim timeouts, palm rejection, and docking position.
                 </p>
               </div>
 
               <!-- Auto-Dim Timer -->
               <div class="stitch-card row-card">
                 <div style="display:flex; flex-direction:column; gap:4px;">
-                  <span style="font-size:14.5px; font-weight:600; color:#fff7eb;">ऑटो-डिम टाइमर / Toolbar Idle Auto-Dim</span>
-                  <span style="font-size:12.5px; color:#d0c5b1;">सक्रिय शिक्षण के दौरान टूलबार को हल्का अर्ध-पारदर्शी बनाएं</span>
+                  <span style="font-size:14.5px; font-weight:600; color:#fff7eb;">Toolbar Idle Auto-Dim</span>
+                  <span style="font-size:12.5px; color:#d0c5b1;">Dim toolbar slightly during active teaching to keep screen uncluttered</span>
                 </div>
                 <div style="display:flex; gap:6px; background:#020c29; padding:4px; border-radius:12px;">
                   <button type="button" class="dim-timer-btn ${s.toolbarIdleSeconds === 2 ? 'active' : ''}" data-sec="2" style="padding:8px 14px; border-radius:8px; border:none; background:${s.toolbarIdleSeconds === 2 ? '#ffd76a' : 'transparent'}; color:${s.toolbarIdleSeconds === 2 ? '#775c00' : '#d0c5b1'}; font-weight:700; font-size:13px; cursor:pointer;">2s</button>
@@ -585,8 +578,8 @@ export class SettingsPanel {
               <!-- Palm Rejection Filter -->
               <div class="stitch-card row-card">
                 <div style="display:flex; flex-direction:column; gap:4px;">
-                  <span style="font-size:14.5px; font-weight:600; color:#fff7eb;">हथेली अस्वीकृति / IFP Palm Rejection Filter</span>
-                  <span style="font-size:12.5px; color:#d0c5b1;">लिखते समय स्क्रीन पर हाथ टिकने पर अवांछित निशान बनने से रोकें (Multi-touch Guard)</span>
+                  <span style="font-size:14.5px; font-weight:600; color:#fff7eb;">IFP Palm Rejection Filter</span>
+                  <span style="font-size:12.5px; color:#d0c5b1;">Prevent accidental marks when resting palm on touch screen (Multi-touch Guard)</span>
                 </div>
                 <label class="stitch-switch">
                   <input type="checkbox" checked disabled />
@@ -597,7 +590,7 @@ export class SettingsPanel {
               <!-- Toolbar Scale Adjustment -->
               <div class="stitch-card">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
-                  <span style="font-size:14.5px; font-weight:600; color:#fff7eb;">टूलबार स्केल / Toolbar Size Scale (60%–160%)</span>
+                  <span style="font-size:14.5px; font-weight:600; color:#fff7eb;">Toolbar Size Scale (60%–160%)</span>
                   <span id="toolbarScaleVal" style="font-size:13.5px; font-weight:700; color:#e9c258;">
                     ${Math.round((s.toolbarScale || 1.0) * 100)}%
                   </span>
@@ -613,19 +606,19 @@ export class SettingsPanel {
               <!-- Reset Toolbar Position -->
               <div class="stitch-card row-card">
                 <div style="display:flex; flex-direction:column; gap:4px;">
-                  <span style="font-size:14.5px; font-weight:600; color:#fff7eb;">टूलबार रीसेट / Snap Toolbar to Center Base</span>
-                  <span style="font-size:12.5px; color:#d0c5b1;">टूलबार को स्क्रीन के मूल केंद्र (शीर्ष-मध्य) पर पुनः स्थापित करें</span>
+                  <span style="font-size:14.5px; font-weight:600; color:#fff7eb;">Snap Toolbar to Center Base</span>
+                  <span style="font-size:12.5px; color:#d0c5b1;">Reset toolbar dock back to top-center default position</span>
                 </div>
                 <button type="button" id="btnResetToolbarPos" class="stitch-btn-cancel" style="min-height:46px; padding:0 20px;">
-                  रीसेट करें / Reset Dock
+                  Reset Dock
                 </button>
               </div>
 
               <!-- Idle Toolbar & Cursor Hide -->
               <div class="stitch-card row-card">
                 <div style="display:flex; flex-direction:column; gap:4px;">
-                  <span style="font-size:14.5px; font-weight:600; color:#fff7eb;">निष्क्रिय होने पर टूलबार छिपाएं / Hide Toolbar on Idle</span>
-                  <span style="font-size:12.5px; color:#d0c5b1;">लाइव प्रसारण के दौरान स्क्रीन को पूर्णतः स्वच्छ रखने हेतु</span>
+                  <span style="font-size:14.5px; font-weight:600; color:#fff7eb;">Hide Toolbar on Idle</span>
+                  <span style="font-size:12.5px; color:#d0c5b1;">Hide toolbar completely when inactive for clean presentation broadcast</span>
                 </div>
                 <label class="stitch-switch">
                   <input type="checkbox" id="settingHideToolbarCompletely" ${s.hideToolbarCompletelyOnIdle ? 'checked' : ''} />
@@ -635,8 +628,8 @@ export class SettingsPanel {
 
               <div class="stitch-card row-card">
                 <div style="display:flex; flex-direction:column; gap:4px;">
-                  <span style="font-size:14.5px; font-weight:600; color:#fff7eb;">माउस कर्सर स्वतः छिपाएं / Hide Cursor on Idle</span>
-                  <span style="font-size:12.5px; color:#d0c5b1;">2 सेकंड निष्क्रिय रहने पर स्क्रीन से माउस पॉइंटर ओझल करें</span>
+                  <span style="font-size:14.5px; font-weight:600; color:#fff7eb;">Hide Cursor on Idle</span>
+                  <span style="font-size:12.5px; color:#d0c5b1;">Hide mouse cursor automatically after 2 seconds of inactivity</span>
                 </div>
                 <label class="stitch-switch">
                   <input type="checkbox" id="settingHideCursorWhenIdle" ${s.hideCursorWhenIdle ? 'checked' : ''} />
@@ -651,18 +644,18 @@ export class SettingsPanel {
             <section class="settings-panel ${this.activeTab === 'tab-voice' ? '' : 'hidden'}" id="tab-voice">
               <div>
                 <h2 style="font-size:22px; font-weight:700; color:#fff7eb; margin:0;">
-                  माइक व ऑडियो / Voice &amp; Classroom Acoustics
+                  Voice &amp; Classroom Acoustics
                 </h2>
                 <p style="font-size:13.5px; color:#d0c5b1; margin:4px 0 0 0;">
-                  कक्षा माइक्रोफ़ोन म्यूट टाइमर, शोर रद्दीकरण और लाइव संकेतक।
+                  Classroom microphone timeout, push-to-talk mode, and live voice indicators.
                 </p>
               </div>
 
               <!-- Mic Auto Gate Timeout -->
               <div class="stitch-card row-card">
                 <div style="display:flex; flex-direction:column; gap:4px;">
-                  <span style="font-size:14.5px; font-weight:600; color:#fff7eb;">माइक्रोफ़ोन स्वतः बंद / Auto Mic Gate Timeout</span>
-                  <span style="font-size:12.5px; color:#d0c5b1;">कक्षा में शिक्षक के दूर हटने पर माइक स्वतः बंद होने का समय</span>
+                  <span style="font-size:14.5px; font-weight:600; color:#fff7eb;">Auto Mic Gate Timeout</span>
+                  <span style="font-size:12.5px; color:#d0c5b1;">Automatically turn off microphone when teacher walks away from board</span>
                 </div>
                 <div style="display:flex; gap:6px; background:#020c29; padding:4px; border-radius:12px;">
                   <button type="button" class="mic-timer-btn ${s.micAutoOffMinutes === 0 ? 'active' : ''}" data-min="0" style="padding:8px 14px; border-radius:8px; border:none; background:${s.micAutoOffMinutes === 0 ? '#ffd76a' : 'transparent'}; color:${s.micAutoOffMinutes === 0 ? '#775c00' : '#d0c5b1'}; font-weight:700; font-size:13px; cursor:pointer;">Never</button>
@@ -675,8 +668,8 @@ export class SettingsPanel {
               <!-- Push-to-Talk Switch -->
               <div class="stitch-card row-card">
                 <div style="display:flex; flex-direction:column; gap:4px;">
-                  <span style="font-size:14.5px; font-weight:600; color:#fff7eb;">पुश-टू-टॉक मोड / Push-to-Talk Stylus Button</span>
-                  <span style="font-size:12.5px; color:#d0c5b1;">माइक बटन या 'V' की दबाए रखने पर ही वॉयस कमांड सुनें</span>
+                  <span style="font-size:14.5px; font-weight:600; color:#fff7eb;">Push-to-Talk Stylus Button</span>
+                  <span style="font-size:12.5px; color:#d0c5b1;">Listen to voice commands only while holding mic button or 'V' key</span>
                 </div>
                 <label class="stitch-switch">
                   <input type="checkbox" id="settingPushToTalk" ${s.pushToTalk ? 'checked' : ''} />
@@ -687,8 +680,8 @@ export class SettingsPanel {
               <!-- Mute on Blackboard -->
               <div class="stitch-card row-card">
                 <div style="display:flex; flex-direction:column; gap:4px;">
-                  <span style="font-size:14.5px; font-weight:600; color:#fff7eb;">बोर्ड मोड पर म्यूट / Mute Mic on Board</span>
-                  <span style="font-size:12.5px; color:#d0c5b1;">व्हाइटबोर्ड अथवा ब्लैकबोर्ड खोलते ही माइक तुरंत म्यूट करें</span>
+                  <span style="font-size:14.5px; font-weight:600; color:#fff7eb;">Mute Mic on Board</span>
+                  <span style="font-size:12.5px; color:#d0c5b1;">Automatically mute microphone when opening digital blackboard</span>
                 </div>
                 <label class="stitch-switch">
                   <input type="checkbox" id="settingMuteMicOnBoard" ${s.muteMicOnBoard ? 'checked' : ''} />
@@ -699,8 +692,8 @@ export class SettingsPanel {
               <!-- Zen Mode Red Dot Indicator -->
               <div class="stitch-card row-card">
                 <div style="display:flex; flex-direction:column; gap:4px;">
-                  <span style="font-size:14.5px; font-weight:600; color:#fff7eb;">ज़ेन मोड में लाल संकेतक / Zen Mode Red Light Indicator</span>
-                  <span style="font-size:12.5px; color:#d0c5b1;">माइक चालू रहने पर शीर्ष-दाएं कोने में सूक्ष्म लाल संकेतक दिखाएं</span>
+                  <span style="font-size:14.5px; font-weight:600; color:#fff7eb;">Zen Mode Red Light Indicator</span>
+                  <span style="font-size:12.5px; color:#d0c5b1;">Display subtle red indicator dot at top-right while microphone is live</span>
                 </div>
                 <label class="stitch-switch">
                   <input type="checkbox" id="settingShowMicDotInZen" ${s.showMicDotInZen ? 'checked' : ''} />
@@ -715,21 +708,21 @@ export class SettingsPanel {
             <section class="settings-panel ${this.activeTab === 'tab-gemini' ? '' : 'hidden'}" id="tab-gemini">
               <div>
                 <h2 style="font-size:22px; font-weight:700; color:#fff7eb; margin:0;">
-                  जेमिनी एआई स्टूडियो / Gemini AI Teaching Engine
+                  Gemini AI Teaching Engine
                 </h2>
                 <p style="font-size:13.5px; color:#d0c5b1; margin:4px 0 0 0;">
-                  कक्षा में कठिन प्रश्नों को तुरंत हल करने व बहुभाषी स्पष्टीकरण हेतु एआई मॉडल।
+                  Instant classroom explanations, formula step-by-step solutions, and multi-modal reasoning.
                 </p>
               </div>
 
               <!-- Automatic AI Model Detection -->
               <div class="stitch-card">
                 <label style="font-size:14.5px; font-weight:600; color:#fff7eb;">
-                  एआई मॉडल प्रबंधन / AI Model Architecture
+                  AI Model Architecture
                 </label>
                 <div style="font-size:13.5px; color:#ffd76a; margin-top:6px; display:flex; align-items:center; gap:8px;">
                   <span class="material-symbols-outlined" style="font-size:19px; color:#ffd76a;">auto_awesome</span>
-                  <span>⚡ <strong>पूर्णतः स्वचालित (Auto-Selected)</strong> — आपकी API Key के अनुसार सबसे तेज़ व आधुनिक मॉडल (Gemini 2.5 Flash / Next-Gen) स्वतः चयनित होगा।</span>
+                  <span>⚡ <strong>Auto-Selected</strong> — Optimal high-speed model (Gemini 2.5 Flash / Next-Gen) automatically selected based on your API key.</span>
                 </div>
               </div>
 
@@ -738,7 +731,7 @@ export class SettingsPanel {
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                   <label for="gemini-key" style="font-size:14.5px; font-weight:600; color:#fff7eb;">Google AI API Key</label>
                   <span id="geminiKeyStatusBadge" style="padding:3px 10px; border-radius:9999px; background:rgba(223,130,0,0.2); color:#ffb873; font-size:12px; font-weight:600;">
-                    सत्यापित / Connected
+                    Connected
                   </span>
                 </div>
                 <div class="stitch-input-wrap">
@@ -752,32 +745,32 @@ export class SettingsPanel {
 
               <!-- AI Answer Depth -->
               <div class="stitch-card">
-                <span style="font-size:14.5px; font-weight:600; color:#fff7eb;">उत्तर विस्तार स्तर / AI Response Depth for Board</span>
+                <span style="font-size:14.5px; font-weight:600; color:#fff7eb;">AI Response Depth for Board</span>
                 <div class="stitch-segmented" style="grid-template-columns:1fr 1fr 1fr;">
                   <button type="button" class="stitch-seg-btn depth-btn ${s.aiAnswerLength === 'short' ? 'active' : ''}" data-depth="short">
-                    <span>संक्षिप्त / Short Formula</span>
+                    <span>Short Formula</span>
                   </button>
                   <button type="button" class="stitch-seg-btn depth-btn ${s.aiAnswerLength === 'normal' || !s.aiAnswerLength ? 'active' : ''}" data-depth="normal">
-                    <span>सामान्य / Standard</span>
+                    <span>Standard</span>
                   </button>
                   <button type="button" class="stitch-seg-btn depth-btn ${s.aiAnswerLength === 'detailed' ? 'active' : ''}" data-depth="detailed">
-                    <span>विस्तृत / Step-by-Step</span>
+                    <span>Step-by-Step</span>
                   </button>
                 </div>
               </div>
 
               <!-- Storage & Privacy Whitelist -->
               <div class="stitch-card">
-                <span style="font-size:14.5px; font-weight:600; color:#fff7eb;">गोपनीयता एवं डिवाइस स्टोरेज स्थिति / Storage &amp; Privacy</span>
+                <span style="font-size:14.5px; font-weight:600; color:#fff7eb;">Storage &amp; Privacy</span>
                 <div id="storageStatsContainer" style="font-size:12px; color:#d0c5b1; line-height:1.6; background:rgba(2,12,41,0.6); padding:12px 16px; border-radius:12px; border:1px solid rgba(255,255,255,0.06);">
-                  गणना हो रही है... (Calculating storage...)
+                  Calculating storage...
                 </div>
                 <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; padding-top:6px;">
                   <button type="button" id="btnPrivacyDeleteKeys" class="stitch-btn-cancel" style="font-size:13px; color:#fca5a5; border-color:rgba(239,68,68,0.3);">
-                    🔑 AI कुंजियाँ हटाएं (Delete Keys)
+                    🔑 Delete AI Keys
                   </button>
                   <button type="button" id="btnDeleteAllAppData" style="min-height:48px; padding:0 22px; border-radius:12px; background:rgba(239,68,68,0.85); color:#ffffff; font-weight:700; border:none; font-size:13px; cursor:pointer;">
-                    🗑️ सारा डेटा हटाएं (Wipe All Data)
+                    🗑️ Wipe All Data
                   </button>
                 </div>
               </div>
@@ -789,10 +782,10 @@ export class SettingsPanel {
             <section class="settings-panel ${this.activeTab === 'tab-obs' ? '' : 'hidden'}" id="tab-obs">
               <div>
                 <h2 style="font-size:22px; font-weight:700; color:#fff7eb; margin:0;">
-                  स्टूडियो रिकॉर्डिंग / Broadcast Hub &amp; OBS Link
+                  Broadcast Hub &amp; OBS Link
                 </h2>
                 <p style="font-size:13.5px; color:#d0c5b1; margin:4px 0 0 0;">
-                  OBS Studio WebSocket, NDI 5 आउटपुट और स्थानीय 4K रिकॉर्डिंग वॉल्ट।
+                  OBS Studio WebSocket, NDI 5 output, and local 4K recording vault.
                 </p>
               </div>
 
@@ -808,13 +801,13 @@ export class SettingsPanel {
                   </div>
                 </div>
                 <span style="padding:6px 14px; border-radius:9999px; background:rgba(223,130,0,0.25); color:#ffd76a; font-size:12px; font-weight:700;">
-                  जुड़ा हुआ / Linked
+                  Linked
                 </span>
               </div>
 
               <!-- Stream Frame Lock -->
               <div class="stitch-card">
-                <span style="font-size:14.5px; font-weight:600; color:#fff7eb;">स्ट्रीम फ्रेम लॉक / Broadcast Aspect Ratio</span>
+                <span style="font-size:14.5px; font-weight:600; color:#fff7eb;">Broadcast Aspect Ratio</span>
                 <div class="stitch-segmented" style="grid-template-columns:repeat(4, 1fr);">
                   <button type="button" class="stitch-seg-btn lock-btn ${s.streamFrameLock === 'none' || !s.streamFrameLock ? 'active' : ''}" data-lock="none">
                     <span>Full Screen</span>
@@ -833,7 +826,7 @@ export class SettingsPanel {
 
               <!-- Stream Remainder Fill Mode -->
               <div class="stitch-card">
-                <span style="font-size:14.5px; font-weight:600; color:#fff7eb;">किनारा भराव मोड / Remainder Fill Mode</span>
+                <span style="font-size:14.5px; font-weight:600; color:#fff7eb;">Remainder Fill Mode</span>
                 <div class="stitch-segmented" style="grid-template-columns:1fr 1fr 1fr;">
                   <button type="button" class="stitch-seg-btn remainder-btn ${s.streamRemainderMode === 'background' || !s.streamRemainderMode ? 'active' : ''}" data-remainder="background">
                     <span>Corner Color Fill</span>
@@ -850,23 +843,23 @@ export class SettingsPanel {
               <!-- Streaming Help Guide Button -->
               <div class="stitch-card row-card">
                 <div style="display:flex; flex-direction:column; gap:4px;">
-                  <span style="font-size:14.5px; font-weight:600; color:#fff7eb;">स्ट्रीमिंग निर्देशिका / Streaming Best Practices Help</span>
-                  <span style="font-size:12.5px; color:#d0c5b1;">OBS Studio, StreamYard एवं क्रोमा की (#00FF00) सेटअप मार्गदर्शिका</span>
+                  <span style="font-size:14.5px; font-weight:600; color:#fff7eb;">Streaming Best Practices Help</span>
+                  <span style="font-size:12.5px; color:#d0c5b1;">OBS Studio, StreamYard, and Chroma Key (#00FF00) setup guide</span>
                 </div>
                 <button type="button" id="btnOpenStreamingHelp" style="min-height:46px; padding:0 20px; border-radius:12px; background:rgba(245,158,11,0.18); border:1px solid rgba(245,158,11,0.4); color:#fbbf24; font-size:13px; font-weight:600; cursor:pointer;">
-                  📖 स्ट्रीमिंग हेल्प गाइड खोलें
+                  📖 Open Streaming Guide
                 </button>
               </div>
 
               <!-- Recording Storage Vault -->
               <div class="stitch-card">
-                <span style="font-size:14.5px; font-weight:600; color:#fff7eb;">रिकॉर्डिंग पाथ / Recording Storage Vault</span>
+                <span style="font-size:14.5px; font-weight:600; color:#fff7eb;">Recording Storage Vault</span>
                 <div style="display:flex; align-items:center; gap:12px;">
                   <div style="flex:1; min-height:50px; padding:0 16px; border-radius:12px; background:#020c29; display:flex; align-items:center; color:#dae2ff; font-size:13.5px; border:1px solid rgba(255,255,255,0.08);">
                     D:\\SmartStudio_Recordings\\2026_Lectures
                   </div>
                   <button type="button" class="stitch-btn-cancel" style="min-height:50px; padding:0 22px;">
-                    ब्राउज़ / Browse
+                    Browse
                   </button>
                 </div>
               </div>
@@ -884,11 +877,11 @@ export class SettingsPanel {
 
           <div style="display:flex; align-items:center; gap:14px;">
             <button type="button" class="stitch-btn-cancel" id="btnCancelSettings">
-              रद्द करें / Cancel
+              Cancel
             </button>
             <button type="button" class="stitch-btn-save" id="save-changes-btn">
               <span class="material-symbols-outlined" style="font-size:22px;">check_circle</span>
-              <span id="saveBtnText">परिवर्तन सहेजें / Save Changes</span>
+              <span id="saveBtnText">Save Changes</span>
             </button>
           </div>
         </footer>
@@ -960,13 +953,13 @@ export class SettingsPanel {
         window.dispatchEvent(
           new CustomEvent('app-toast', {
             detail: {
-              message: '📋 सिंक लिंक कॉपी हो गया! इसे डिजिटल बोर्ड के Chrome में एक बार खोलें—सभी सेटिंग्स तुरंत आ जाएंगी।',
+              message: '📋 Sync link copied! Open in Chrome on your digital board to instantly sync settings.',
               isError: false
             }
           })
         );
       } catch {
-        window.prompt('सिंक लिंक (इसे कॉपी करके डिजिटल बोर्ड के Chrome में खोलें):', syncUrl);
+        window.prompt('Sync link (copy and open in Chrome on digital board):', syncUrl);
       }
     });
 
@@ -1009,7 +1002,7 @@ export class SettingsPanel {
         if (fit) {
           store.updateSettings({ fitMode: fit });
           if (fit === 'stretch') {
-            alert('चेतावनी: Stretch मोड गैर-समान अनुपात में स्लाइड को विकृत (distort) कर सकता है।');
+            alert('Warning: Stretch mode may distort slide proportions on non-matching displays.');
           }
         }
       });
@@ -1119,7 +1112,7 @@ export class SettingsPanel {
         const seconds = parseInt(btn.getAttribute('data-revert') || '15', 10);
         store.updateSettings({ autoRevertToPenSeconds: seconds });
         if (revertBadge) {
-          revertBadge.textContent = seconds === 0 ? 'कभी नहीं (हमेशा वही टूल)' : `${seconds} सेकंड`;
+          revertBadge.textContent = seconds === 0 ? 'Never (Stay)' : `${seconds}s`;
         }
       });
     });
@@ -1266,7 +1259,7 @@ export class SettingsPanel {
 
     // 24. Delete Keys & Wipe All Data
     this.modalEl.querySelector('#btnPrivacyDeleteKeys')?.addEventListener('click', async () => {
-      if (confirm('क्या आप सभी सहेजी गई AI API कुंजियाँ हटाना चाहते हैं?')) {
+      if (confirm('Are you sure you want to delete all saved AI API keys?')) {
         await keyVault.deleteAllKeys();
         if (geminiKeyInput) geminiKeyInput.value = '';
       }
@@ -1305,7 +1298,7 @@ export class SettingsPanel {
 
     // 28. Reset All Settings Button (Top Header)
     this.modalEl.querySelector('#reset-all-btn')?.addEventListener('click', () => {
-      if (confirm('क्या आप सभी सेटिंग्स को अनुशंसित डिफ़ॉल्ट पर रीसेट करना चाहते हैं? (Reset all settings to recommended defaults?)')) {
+      if (confirm('Are you sure you want to reset all settings to recommended defaults?')) {
         store.updateSettings({ ...DEFAULT_SETTINGS });
         this.render();
         this.bindEvents();
@@ -1318,7 +1311,7 @@ export class SettingsPanel {
       // Collect input values
       const channelVal = chNameInput?.value.trim() || 'SSIRO Classes';
       const welcomeInput = this.modalEl.querySelector('#welcome-text') as HTMLInputElement;
-      const welcomeVal = welcomeInput?.value.trim() || 'आज की लाइव कक्षा में स्वागत है / Welcome to Live Class';
+      const welcomeVal = welcomeInput?.value.trim() || 'Welcome to Live Class';
 
       store.updateSettings({
         channelName: channelVal,
@@ -1332,7 +1325,7 @@ export class SettingsPanel {
 
       // Visual feedback
       const saveBtnText = this.modalEl.querySelector('#saveBtnText');
-      if (saveBtnText) saveBtnText.textContent = 'सहेज लिया गया / Saved!';
+      if (saveBtnText) saveBtnText.textContent = 'Saved!';
 
       setTimeout(() => {
         this.close();
@@ -1427,15 +1420,15 @@ export class SettingsPanel {
     } catch {}
 
     container.innerHTML = `
-      • LocalStorage डेटा: <strong>${lsKb} KB</strong> (सेटिंग्स, ब्रांड, टूलबार स्थिति)<br>
-      • IndexedDB डेटाबेस: <strong>${dbCount} सक्रिय</strong> (WebCrypto AES-GCM Key Vault)<br>
-      • PWA ऑफ़लाइन कैश: <strong>${cacheCount} कैश संचित</strong> (100% ऑफ़लाइन शेल)
+      • LocalStorage Data: <strong>${lsKb} KB</strong> (Settings, Brand, Toolbar State)<br>
+      • IndexedDB Database: <strong>${dbCount} active</strong> (WebCrypto AES-GCM Key Vault)<br>
+      • PWA Offline Cache: <strong>${cacheCount} caches stored</strong> (100% Offline Shell)
     `;
   }
 
   private async deleteAllAppData(): Promise<void> {
     const confirmWipe = window.confirm(
-      'चेतावनी: क्या आप वाकई सभी ऐप डेटा, स्थानीय सेटिंग्स, AI कुंजियाँ और ऑफ़लाइन कैश हटाना चाहते हैं?\n\n(Are you sure you want to delete all app data, keys, and caches? This will reset the app completely.)'
+      'Warning: Are you sure you want to delete all app data, local settings, AI keys, and offline caches? This will reset the app completely.'
     );
     if (!confirmWipe) return;
 
@@ -1464,11 +1457,11 @@ export class SettingsPanel {
         }
       }
 
-      alert('✅ सारा ऐप डेटा सफलतापूर्वक साफ़ कर दिया गया है। ऐप अब रीलोड होगा।');
+      alert('✅ All app data successfully cleared. The application will now reload.');
       window.location.reload();
     } catch (err) {
       console.error('Delete all app data error:', err);
-      alert('डेटा हटाने में त्रुटि: ' + String(err));
+      alert('Error clearing data: ' + String(err));
     }
   }
 

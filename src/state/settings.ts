@@ -204,7 +204,7 @@ export function loadSettings(): AppSettings {
               window.dispatchEvent(
                 new CustomEvent('app-toast', {
                   detail: {
-                    message: '✅ PC की सेटिंग्स डिजिटल बोर्ड पर सफलतापूर्वक लोड हो गईं! (Settings Synced)',
+                    message: '✅ Settings successfully synced to digital board!',
                     isError: false
                   }
                 })

@@ -106,7 +106,7 @@ export class GeminiPanel {
         <div class="gemini-title" style="display:flex; flex-direction:column; gap:2px; overflow:hidden;">
           <div style="display:flex; align-items:center; gap:6px;">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3L12 3z"/></svg>
-            <span style="font-weight:700; font-size:14px; white-space:nowrap;">AI सहायक</span>
+            <span style="font-weight:700; font-size:14px; white-space:nowrap;">AI Assistant</span>
             <span id="aiActiveModelLabel" style="font-size:11px; font-weight:normal; color:var(--primary-accent); background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:4px; max-width:140px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">Gemini Flash-Lite</span>
           </div>
           <div id="aiUsageMeter" style="font-size:10px; color:rgba(255,255,255,0.6); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
@@ -116,56 +116,56 @@ export class GeminiPanel {
 
         <div style="display:flex; align-items:center; gap:4px;">
           <!-- Font Size Buttons -->
-          <button class="header-btn" id="btnFontDec" title="छोटा फॉन्ट (Smaller text)" style="padding:4px 8px; font-size:12px; font-weight:700;">A−</button>
-          <button class="header-btn" id="btnFontInc" title="बड़ा फॉन्ट (Larger text)" style="padding:4px 8px; font-size:12px; font-weight:700;">A+</button>
+          <button class="header-btn" id="btnFontDec" title="Smaller text" style="padding:4px 8px; font-size:12px; font-weight:700;">A−</button>
+          <button class="header-btn" id="btnFontInc" title="Larger text" style="padding:4px 8px; font-size:12px; font-weight:700;">A+</button>
           <!-- Dock Cycle Button -->
-          <button class="header-btn" id="btnDockCycle" title="स्थान बदलें (Dock mode)" style="padding:4px 8px; font-size:12px;">⎘</button>
+          <button class="header-btn" id="btnDockCycle" title="Dock mode" style="padding:4px 8px; font-size:12px;">⎘</button>
           <!-- Minimize Button -->
-          <button class="header-btn" id="btnMinimize" title="छोटा करें (Minimize)" style="padding:4px 8px; font-size:12px;">−</button>
+          <button class="header-btn" id="btnMinimize" title="Minimize" style="padding:4px 8px; font-size:12px;">−</button>
           <!-- Maximize Button -->
-          <button class="header-btn" id="btnMaximize" title="पूर्ण स्क्रीन (Maximize)" style="padding:4px 8px; font-size:12px;">⛶</button>
+          <button class="header-btn" id="btnMaximize" title="Maximize" style="padding:4px 8px; font-size:12px;">⛶</button>
           <!-- Close Button -->
-          <button class="media-win-btn" id="btnGeminiClose" title="बंद करें (Close)" style="font-size:16px;">✕</button>
+          <button class="media-win-btn" id="btnGeminiClose" title="Close" style="font-size:16px;">✕</button>
         </div>
       </div>
 
       <!-- Action Button: Explain Slide (Text-First) -->
       <button class="gemini-vision-action" id="btnExplainSlide" style="margin: 8px 12px; border-radius: 8px;">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
-        <span>यह स्लाइड समझाएं (Explain Slide)</span>
+        <span>Explain Slide</span>
       </button>
 
       <!-- Quick Action Chips (Part C6.3) -->
       <div class="quick-action-chips" id="quickActionChips" style="display:flex; gap:6px; overflow-x:auto; padding:0 12px 6px; scrollbar-width:none;">
-        <button class="quick-chip" data-prompt="स्लाइड का सार संक्षेप में हिंदी में बताएं।">स्लाइड का सार</button>
-        <button class="quick-chip" data-prompt="इस स्लाइड के 3-4 मुख्य बिंदु (key points) बुलेट में दें।">मुख्य बिंदु</button>
-        <button class="quick-chip" data-prompt="सरल और बोलचाल की हिंदी में यह विषय समझाएं।">सरल हिंदी</button>
-        <button class="quick-chip" data-prompt="इस स्लाइड से 5 बहुविकल्पीय क्विज़ प्रश्न और उत्तर बनाएं।">5 क्विज़ प्रश्न</button>
-        <button class="quick-chip" data-prompt="यहाँ छात्रों को क्या समझने में कठिनाई हो सकती है और उसका समाधान क्या है?">कठिन बिंदु</button>
+        <button class="quick-chip" data-prompt="Summarize this slide concisely.">Summary</button>
+        <button class="quick-chip" data-prompt="Give 3-4 key points from this slide in bullets.">Key Points</button>
+        <button class="quick-chip" data-prompt="Explain this topic in simple, conversational terms.">Simple Terms</button>
+        <button class="quick-chip" data-prompt="Create 5 multiple choice quiz questions and answers from this slide.">5 Quiz Qs</button>
+        <button class="quick-chip" data-prompt="What difficult points might students have here and how can they be clarified?">Difficult Points</button>
       </div>
 
       <!-- Messages Area -->
       <div class="gemini-messages" id="geminiMessages" style="flex:1; overflow-y:auto; overflow-x:hidden; padding:12px; display:flex; flex-direction:column; gap:10px;">
         <div class="chat-bubble model" style="overflow-wrap:anywhere; word-break:break-word;">
-          नमस्ते! मैं डिकोडिंग इंडोलॉजी का AI शिक्षण सहायक हूँ। आप मुझसे इस स्लाइड या किसी भी विषय पर हिंदी या अंग्रेज़ी में सवाल पूछ सकते हैं।
+          Hello! I am your AI Teaching Assistant. You can ask me any question about this slide or topic.
         </div>
       </div>
 
       <!-- Chrome Gemini Footnote (Part C6.6) -->
       <div class="chrome-gemini-hint" style="font-size:10px; color:rgba(255,255,255,0.45); text-align:center; padding:2px 8px; overflow-wrap:anywhere;">
-        दूसरा तरीका: Chrome के ऊपरी Ask Gemini बटन से भी पूछ सकते हैं
+        Tip: You can also ask questions using Chrome's top Ask Gemini feature.
       </div>
 
       <!-- Input Row -->
       <div class="gemini-input-row" style="padding:8px 12px; display:flex; gap:6px; border-top:1px solid var(--border-glass);">
-        <input type="text" class="gemini-input" id="geminiChatInput" placeholder="AI से पूछें (Ask AI Assistant)..." style="flex:1; padding:10px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.15); background:rgba(0,0,0,0.3); color:#fff; font-size:14px;" />
-        <button class="header-btn" id="btnGeminiSend" style="background: var(--primary-accent); color: #000; font-weight: 700; padding:0 16px; border-radius:8px;">भेजें</button>
+        <input type="text" class="gemini-input" id="geminiChatInput" placeholder="Ask AI Assistant..." style="flex:1; padding:10px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.15); background:rgba(0,0,0,0.3); color:#fff; font-size:14px;" />
+        <button class="header-btn" id="btnGeminiSend" style="background: var(--primary-accent); color: #000; font-weight: 700; padding:0 16px; border-radius:8px;">Send</button>
       </div>
 
       <!-- Minimized Restore Bar (hidden by default) -->
       <div class="gemini-minimized-bar hidden" id="geminiMinimizedBar" style="padding:8px 12px; display:flex; align-items:center; justify-content:space-between; background:var(--bg-surface-elevated); border-radius:8px; cursor:pointer;">
-        <span style="font-weight:700; font-size:13px; color:var(--primary-accent);">AI सहायक (Teaching Assistant)</span>
-        <button class="header-btn" id="btnRestorePanel" style="padding:2px 8px; font-size:12px;">खोलें</button>
+        <span style="font-weight:700; font-size:13px; color:var(--primary-accent);">AI Teaching Assistant</span>
+        <button class="header-btn" id="btnRestorePanel" style="padding:2px 8px; font-size:12px;">Open</button>
       </div>
     `;
 
@@ -436,7 +436,7 @@ export class GeminiPanel {
       window.dispatchEvent(
         new CustomEvent('app-toast', {
           detail: {
-            message: 'कोई AI कुंजी सेट नहीं है। कृपया सेटिंग्स → AI में अपनी API कुंजी जोड़ें।',
+            message: 'No AI key configured. Please add your API key in Settings → Gemini AI Studio.',
             isError: true
           }
         })
@@ -461,7 +461,7 @@ export class GeminiPanel {
   private updateUsageMeter(): void {
     const stats = aiRouter.getUsageStats();
     if (this.usageMeterEl) {
-      this.usageMeterEl.textContent = `कॉल: ${stats.callsToday} आज • ~${stats.totalTokensToday} टोकन`;
+      this.usageMeterEl.textContent = `Calls: ${stats.callsToday} today • ~${stats.totalTokensToday} tok`;
     }
     if (this.modelLabelEl) {
       this.modelLabelEl.textContent = `${stats.currentProvider} • ${stats.currentModel}`;
@@ -476,7 +476,7 @@ export class GeminiPanel {
       window.dispatchEvent(
         new CustomEvent('app-toast', {
           detail: {
-            message: 'कृपया सेटिंग्स → AI में अपनी API Key दर्ज करें।',
+            message: 'Please configure your API Key in Settings → Gemini AI Studio.',
             isError: true
           }
         })
@@ -497,7 +497,7 @@ export class GeminiPanel {
 
     const thinkingBubble = this.appendMessage(
       'assistant',
-      isBetterAnswer ? 'उच्च-गुणवत्ता मॉडल से उत्तर तैयार हो रहा है... (Better answer generating...)' : 'विचार कर रहा हूँ... (Thinking...)'
+      isBetterAnswer ? 'Generating better answer...' : 'Thinking...'
     );
 
     try {
@@ -546,7 +546,7 @@ export class GeminiPanel {
       window.dispatchEvent(
         new CustomEvent('app-toast', {
           detail: {
-            message: 'कृपया सेटिंग्स → AI में अपनी API Key दर्ज करें।',
+            message: 'Please configure your API Key in Settings → Gemini AI Studio.',
             isError: true
           }
         })
@@ -557,25 +557,25 @@ export class GeminiPanel {
     const slideText = this.getSlideText();
     const hasSufficientText = slideText.length >= 50;
 
-    this.appendMessage('user', '📸 [स्लाइड विश्लेषण का अनुरोध किया]');
+    this.appendMessage('user', '📸 [Slide Analysis Request]');
     this.isProcessing = true;
     const sendBtn = this.panelEl.querySelector('#btnGeminiSend') as HTMLButtonElement | null;
     if (sendBtn) sendBtn.disabled = true;
 
-    const thinkingBubble = this.appendMessage('assistant', 'स्लाइड का विश्लेषण हो रहा है... (Analyzing slide...)');
+    const thinkingBubble = this.appendMessage('assistant', 'Analyzing slide...');
 
     try {
       let result: AIRunResult;
 
       if (hasSufficientText) {
         // Text-First path: Send extracted text layer, ZERO image tokens!
-        const prompt = `कृपया इस स्लाइड की सामग्री, मुख्य बिंदु और अवधारणाओं की व्याख्या सरल हिंदी में करें:\n\n${slideText}`;
+        const prompt = `Please explain the content, key takeaways, and concepts from this slide clearly:\n\n${slideText}`;
         result = await aiRouter.run('chat', prompt, { slideTextContext: slideText });
       } else {
         // Pixel fallback: Downscale slide to <= 1024px on long side and JPEG quality 0.8
         const jpegBase64 = this.captureDownscaledSlideJpeg();
         const prompt =
-          'कृपया इस स्लाइड की सामग्री और महत्वपूर्ण अवधारणाओं की व्याख्या सरल हिंदी में करें ताकि छात्रों को आसानी से समझ आ सके।';
+          'Please explain the content and key concepts of this slide clearly so students can easily understand.';
         result = await aiRouter.run('slide-explain', {
           image: jpegBase64,
           prompt,
@@ -583,7 +583,7 @@ export class GeminiPanel {
         });
       }
 
-      this.updateBubbleWithResult(thinkingBubble, result, 'स्लाइड विश्लेषण');
+      this.updateBubbleWithResult(thinkingBubble, result, 'Slide Analysis');
       this.history.push({
         role: 'assistant',
         text: result.text,
@@ -726,13 +726,13 @@ export class GeminiPanel {
     btnCopy.className = 'header-btn';
     btnCopy.style.fontSize = '11px';
     btnCopy.style.padding = '3px 8px';
-    btnCopy.innerHTML = '📋 कॉपी';
-    btnCopy.title = 'उत्तर कॉपी करें (Copy to clipboard)';
+    btnCopy.innerHTML = '📋 Copy';
+    btnCopy.title = 'Copy to clipboard';
     btnCopy.onclick = () => {
       navigator.clipboard.writeText(result.text);
       window.dispatchEvent(
         new CustomEvent('app-toast', {
-          detail: { message: '✓ उत्तर क्लिपबोर्ड पर कॉपी हो गया (Copied to clipboard)' }
+          detail: { message: '✓ Copied to clipboard' }
         })
       );
     };
@@ -743,8 +743,8 @@ export class GeminiPanel {
     btnPutOnSlide.className = 'header-btn';
     btnPutOnSlide.style.fontSize = '11px';
     btnPutOnSlide.style.padding = '3px 8px';
-    btnPutOnSlide.innerHTML = '✍️ स्लाइड पर लिखें';
-    btnPutOnSlide.title = 'स्लाइड पर टेक्स्ट ऑब्जेक्ट बनाएं (Put on slide as text)';
+    btnPutOnSlide.innerHTML = '✍️ Put on Slide';
+    btnPutOnSlide.title = 'Put on slide as text object';
     btnPutOnSlide.onclick = () => {
       this.putAnswerOnSlide(result.text);
     };
@@ -756,8 +756,8 @@ export class GeminiPanel {
     btnBetter.style.fontSize = '11px';
     btnBetter.style.padding = '3px 8px';
     btnBetter.style.color = 'var(--primary-accent)';
-    btnBetter.innerHTML = '⭐ बेहतर जवाब (Better answer)';
-    btnBetter.title = 'अगले सक्षम मॉडल से दोबारा पूछें';
+    btnBetter.innerHTML = '⭐ Better Answer';
+    btnBetter.title = 'Request a deeper answer from next-tier model';
     btnBetter.onclick = () => {
       this.sendMessage(true);
     };
@@ -769,7 +769,7 @@ export class GeminiPanel {
 
   /**
    * ECON: Friendly error card rendering per Part C4
-   * Short Hindi/English message, no URLs, no JSON, collapsible Details expander.
+   * Short English message, no URLs, no JSON, collapsible Details expander.
    */
   private updateBubbleWithError(bubble: HTMLElement, error: any): void {
     bubble.innerHTML = '';
@@ -780,15 +780,9 @@ export class GeminiPanel {
     card.style.flexDirection = 'column';
     card.style.gap = '6px';
 
-    const hindiMsg = document.createElement('div');
-    hindiMsg.style.fontWeight = '600';
-    hindiMsg.style.color = '#ef4444';
-    hindiMsg.textContent = `⚠️ ${friendly.friendlyHindi}`;
-    card.appendChild(hindiMsg);
-
     const engMsg = document.createElement('div');
     engMsg.style.fontSize = '12px';
-    engMsg.style.color = 'rgba(255,255,255,0.7)';
+    engMsg.style.color = 'rgba(255,255,255,0.85)';
     engMsg.textContent = friendly.friendlyEnglish;
     card.appendChild(engMsg);
 
@@ -801,7 +795,7 @@ export class GeminiPanel {
 
       const summary = document.createElement('summary');
       summary.style.cursor = 'pointer';
-      summary.textContent = 'विवरण देखें / Technical Details';
+      summary.textContent = 'Technical Details';
       details.appendChild(summary);
 
       const pre = document.createElement('pre');
@@ -842,7 +836,7 @@ export class GeminiPanel {
     annotationStore.addStroke(stroke);
     window.dispatchEvent(
       new CustomEvent('app-toast', {
-        detail: { message: '✓ उत्तर स्लाइड पर जोड़ा गया (Added to slide as text object)' }
+        detail: { message: '✓ Added to slide as text object' }
       })
     );
   }

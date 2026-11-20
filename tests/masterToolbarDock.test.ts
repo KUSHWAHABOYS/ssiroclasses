@@ -105,11 +105,11 @@ describe('Master Floating Dock & Dynamic Inking Island Suite', () => {
   });
 
   describe('2. Master Floating Dock Sections & Controls', () => {
-    it('has AI अनुवाद prominent glowing card with Neural Live', () => {
+    it('has AI Translate prominent glowing card with Neural Live', () => {
       const aiBtn = document.getElementById('btnToolTranslate');
       expect(aiBtn).not.toBeNull();
       expect(aiBtn?.classList.contains('tool-ai-translate')).toBe(true);
-      expect(aiBtn?.textContent).toContain('AI अनुवाद');
+      expect(aiBtn?.textContent).toContain('AI Translate');
       expect(aiBtn?.textContent).toContain('Neural Live');
     });
 
@@ -166,10 +166,10 @@ describe('Master Floating Dock & Dynamic Inking Island Suite', () => {
       expect(annotationStore.getStrokes()[0].id).toBe('s1');
     });
 
-    it('safely transitions to welcome state on session exit (बंद करें)', () => {
+    it('safely transitions to welcome state on session exit (Exit)', () => {
       const btnClose = document.getElementById('btnCloseSession');
       expect(btnClose).not.toBeNull();
-      expect(btnClose?.textContent).toContain('बंद करें');
+      expect(btnClose?.textContent).toContain('Exit');
 
       btnClose?.click();
       expect(store.getState().appState).toBe('welcome');
@@ -190,20 +190,46 @@ describe('Master Floating Dock & Dynamic Inking Island Suite', () => {
       expect(scaleBadge?.textContent).toBe('50%');
     });
 
-    it('has removed dead Lasso tool to keep screen clean and clutter-free', () => {
+    it('has removed dead Lasso, Curtain, and Split tools to keep screen clean and clutter-free', () => {
       const btnLasso = document.getElementById('btnToolLasso');
+      const btnCurtain = document.getElementById('btnToolCurtain');
+      const btnSplit = document.getElementById('btnToolSplitBoard');
       expect(btnLasso).toBeNull();
+      expect(btnCurtain).toBeNull();
+      expect(btnSplit).toBeNull();
     });
 
-    it('displays compact "स्क्रीन" label for screen button and preserves it in Zen mode', () => {
+    it('supports Dynamic Island across Pen, Marker, Eraser, and Laser', () => {
+      const island = document.getElementById('penDynamicIsland');
+      const markerBtn = document.getElementById('btnToolMarker');
+      const eraserBtn = document.getElementById('btnToolEraser');
+      const laserBtn = document.getElementById('btnToolLaser');
+
+      markerBtn?.click();
+      expect(store.getState().activeTool).toBe('highlighter');
+      expect(island?.classList.contains('collapsed')).toBe(false);
+      expect(document.getElementById('islandPanelMarker')?.style.display).not.toBe('none');
+
+      eraserBtn?.click();
+      expect(store.getState().activeTool).toBe('eraser');
+      expect(island?.classList.contains('collapsed')).toBe(false);
+      expect(document.getElementById('islandPanelEraser')?.style.display).not.toBe('none');
+
+      laserBtn?.click();
+      expect(store.getState().activeTool).toBe('magnifier');
+      expect(island?.classList.contains('collapsed')).toBe(false);
+      expect(document.getElementById('islandPanelLaser')?.style.display).not.toBe('none');
+    });
+
+    it('displays compact "Screen" label for screen button and preserves it in Zen mode', () => {
       const lblFs = document.getElementById('btnToolFitModeTier1Label');
-      expect(lblFs?.textContent).toBe('स्क्रीन');
+      expect(lblFs?.textContent).toBe('Screen');
 
       store.setState({ isZen: true });
-      expect(lblFs?.textContent).toBe('स्क्रीन');
+      expect(lblFs?.textContent).toBe('Screen');
 
       store.setState({ isZen: false });
-      expect(lblFs?.textContent).toBe('स्क्रीन');
+      expect(lblFs?.textContent).toBe('Screen');
     });
 
     it('cycles toolbar through 4 morphable layouts: strip -> box -> circle -> vertical -> strip', () => {
@@ -220,7 +246,7 @@ describe('Master Floating Dock & Dynamic Inking Island Suite', () => {
       btnLayout.click();
       expect(popover?.classList.contains('hidden')).toBe(false);
 
-      // Select Circle (सर्कल डायल) via popover
+      // Select Circle via popover
       const circleOpt = popover?.querySelector('[data-layout="circle"]') as HTMLButtonElement;
       expect(circleOpt).not.toBeNull();
       circleOpt.click();

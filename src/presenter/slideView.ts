@@ -82,7 +82,7 @@ export class SlideView {
     this.pageCounterEl?.addEventListener('click', () => {
       const state = store.getState();
       if (state.appState !== 'deck' || !state.currentDeck) return;
-      const input = window.prompt(`स्लाइड पर जाएं (Go to Slide 1–${state.totalPages}):`, String(state.currentPage));
+      const input = window.prompt(`Go to Slide (1–${state.totalPages}):`, String(state.currentPage));
       if (input !== null) {
         const pageNum = parseInt(input.trim(), 10);
         if (!isNaN(pageNum) && pageNum >= 1 && pageNum <= state.totalPages) {
@@ -92,7 +92,7 @@ export class SlideView {
     });
     if (this.pageCounterEl) {
       this.pageCounterEl.style.cursor = 'pointer';
-      this.pageCounterEl.title = 'स्लाइड पर सीधे जाने के लिए क्लिक करें (Click to jump to slide)';
+      this.pageCounterEl.title = 'Click to jump to slide';
     }
   }
 
@@ -147,32 +147,32 @@ export class SlideView {
     const imageFiles = files.filter(f => /\.(jpe?g|png|webp)$/i.test(f.name));
 
     if (pdfFile) {
-      this.showToast(`PDF लोड हो रहा है: ${pdfFile.name}...`);
+      this.showToast(`Loading PDF: ${pdfFile.name}...`);
       try {
         const deck = await deckLoader.loadPDF(pdfFile, pdfFile.name);
         this.applyDeck(deck);
-        this.showToast(`PDF लोड हो गई: ${deck.totalPages} पेज`);
+        this.showToast(`PDF Loaded: ${deck.totalPages} pages`);
       } catch (err: any) {
         console.error('PDF Load Error:', err);
-        alert(`PDF लोड करने में त्रुटि आई:\n${err.message || 'फाइल नहीं खुल सकी'}\n\nकृपया सुनिश्चित करें कि फाइल एक वैध PDF है।`);
-        this.showToast(`त्रुटि: ${err.message || 'PDF लोड नहीं हो सकी'}`, true);
+        alert(`Error loading PDF:\n${err.message || 'File could not be opened'}\n\nPlease verify that the file is a valid PDF.`);
+        this.showToast(`Error: ${err.message || 'PDF failed to load'}`, true);
       }
     } else if (pptxFile) {
       this.showPPTXGuidanceDialog(pptxFile);
     } else if (imageFiles.length > 0) {
-      this.showToast(`छवियां लोड हो रही हैं: ${imageFiles.length} स्लाइड...`);
+      this.showToast(`Loading Images: ${imageFiles.length} slides...`);
       try {
         const deck = await deckLoader.loadImages(imageFiles);
         this.applyDeck(deck);
       } catch (err: any) {
         console.error('Image Deck Error:', err);
-        this.showToast(`त्रुटि: ${err.message || 'इमेज लोड नहीं हो सकी'}`, true);
+        this.showToast(`Error: ${err.message || 'Images failed to load'}`, true);
       }
     }
   }
 
   private showPPTXGuidanceDialog(file: File): void {
-    const msg = `PowerPoint (${file.name}) को 4K स्मार्ट बोर्ड पर सबसे तेज़ और क्रिस्टल-क्लीयर चलाने के लिए इसे PDF रूप में लोड किया जाता है।\n\n📌 आसान तरीका:\n1. PowerPoint में इस फ़ाइल को खोलें और कीबोर्ड पर 'F12' दबाएँ।\n2. 'Save as type' में 'PDF (*.pdf)' चुनें और सेव कर दें।\n3. फिर उस PDF को Smart Studio में लोड करें!\n\n(💡 मैंने आपके डेस्कटॉप पर 'Convert-PPT-to-PDF' टूल भी बना दिया है, जिस पर PPT डालते ही वह तुरंत PDF बन जाती है!)`;
+    const msg = `PowerPoint files (${file.name}) are converted to PDF for the fastest, crispest 4K digital board experience.\n\nQuick Step:\n1. Open this file in PowerPoint and press 'F12' on keyboard.\n2. Choose 'Save as type: PDF (*.pdf)' and save.\n3. Open the resulting PDF here in Smart Studio!`;
     alert(msg);
   }
 
@@ -209,7 +209,7 @@ export class SlideView {
   closeDeck(skipConfirm = false): boolean {
     if (!skipConfirm && annotationStore.hasAnnotations()) {
       const confirmed = window.confirm(
-        'डेक बंद करें? आपके सभी एनोटेशन साफ़ हो जाएंगे।\n\nClose deck? All annotations on this deck will be cleared.'
+        'Close deck? All annotations on this deck will be cleared.'
       );
       if (!confirmed) return false;
     }
