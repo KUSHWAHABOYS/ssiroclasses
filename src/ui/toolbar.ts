@@ -88,6 +88,29 @@ export class Toolbar {
   private renderToolbar(): void {
     this.containerEl.innerHTML = `
       <div class="master-toolbar-wrapper" id="masterToolbarWrapper">
+        <!-- Layout Selection Popover (Safely placed in wrapper outside dock so NEVER clipped by overflow) -->
+        <div class="dock-layout-popover hidden" id="dockLayoutPopover">
+          <div class="layout-popover-title">टूलबार आकार (Toolbar Shape)</div>
+          <div class="layout-popover-grid">
+            <button class="layout-opt-btn active" data-layout="strip" type="button" title="लंबी पट्टी (Horizontal Strip)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="8" width="20" height="8" rx="2"/></svg>
+              <span>पट्टी</span>
+            </button>
+            <button class="layout-opt-btn" data-layout="box" type="button" title="क्रॉप बॉक्स / चौकोर (Crop Grid Box)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
+              <span>चौकोर</span>
+            </button>
+            <button class="layout-opt-btn" data-layout="circle" type="button" title="सर्कल डायल (Circular Ring Dial)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg>
+              <span>सर्कल</span>
+            </button>
+            <button class="layout-opt-btn" data-layout="vertical" type="button" title="खड़ा पट्टा (Vertical Side Dock)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="8" y="2" width="8" height="20" rx="2"/></svg>
+              <span>खड़ा</span>
+            </button>
+          </div>
+        </div>
+
         <!-- 1. DYNAMIC INKING & PROPERTIES ISLAND (Contextual Floater above Pen) -->
         <div class="pen-dynamic-island" id="penDynamicIsland">
           <!-- Tips: Fountain, Ballpoint, Brush, Calligraphy -->
@@ -146,6 +169,9 @@ export class Toolbar {
 
         <!-- 2. STUDIO MASTER FLOATING DOCK -->
         <div class="studio-master-dock" id="toolbarMasterDock">
+          <!-- Top Border Drag Rim (शीर्ष बॉर्डर से कहीं भी छूकर ड्रैग करने के लिए) -->
+          <div class="dock-drag-rim" id="dockDragRim" title="टूलबार मूव करें (360° Drag Toolbar)"></div>
+
           <!-- SECTION 1: Drag Anchor, Layout Morph, Select, Auto-Straighten -->
           <div class="dock-section">
             <div class="dock-drag-handle" id="dragHandle" title="टूलबार मूव करें (360° Drag Toolbar)">
@@ -169,29 +195,6 @@ export class Toolbar {
               </svg>
               <span class="dock-label" id="dockLayoutLabel">लेआउट</span>
             </button>
-
-            <!-- Layout Selection Menu (never get stuck!) -->
-            <div class="dock-layout-popover hidden" id="dockLayoutPopover">
-              <div class="layout-popover-title">टूलबार आकार (Toolbar Shape)</div>
-              <div class="layout-popover-grid">
-                <button class="layout-opt-btn active" data-layout="strip" type="button" title="लंबी पट्टी (Horizontal Strip)">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="8" width="20" height="8" rx="2"/></svg>
-                  <span>पट्टी</span>
-                </button>
-                <button class="layout-opt-btn" data-layout="box" type="button" title="क्रॉप बॉक्स / चौकोर (Crop Grid Box)">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
-                  <span>चौकोर</span>
-                </button>
-                <button class="layout-opt-btn" data-layout="circle" type="button" title="सर्कल डायल (Circular Ring Dial)">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg>
-                  <span>सर्कल</span>
-                </button>
-                <button class="layout-opt-btn" data-layout="vertical" type="button" title="खड़ा पट्टा (Vertical Side Dock)">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="8" y="2" width="8" height="20" rx="2"/></svg>
-                  <span>खड़ा</span>
-                </button>
-              </div>
-            </div>
 
             <button class="dock-btn tool-btn" id="btnToolSelect" data-tool="select" title="Select (S)">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -487,6 +490,18 @@ export class Toolbar {
               </svg>
               <span>बंद करें</span>
             </button>
+
+            <!-- Dual Drag Handle (दाएँ से पकड़ने के लिए ग्रिप • 360° Drag) -->
+            <div class="dock-drag-handle dock-drag-handle-right" id="dragHandleRight" title="टूलबार मूव करें (दाएँ से पकड़ें • 360° Drag)">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2">
+                <circle cx="8" cy="6" r="1.3" fill="currentColor"/>
+                <circle cx="8" cy="12" r="1.3" fill="currentColor"/>
+                <circle cx="8" cy="18" r="1.3" fill="currentColor"/>
+                <circle cx="16" cy="6" r="1.3" fill="currentColor"/>
+                <circle cx="16" cy="12" r="1.3" fill="currentColor"/>
+                <circle cx="16" cy="18" r="1.3" fill="currentColor"/>
+              </svg>
+            </div>
           </div>
         </div>
 
@@ -572,9 +587,13 @@ export class Toolbar {
         return;
       }
 
-      // Toolbar window movement across the screen is ONLY initiated by dragging the drag handle:
-      const isDragHandle = !!target.closest('#dragHandle, .dock-drag-handle');
-      if (!isDragHandle) {
+      // Toolbar window movement across the screen is initiated by left/right drag handles, drag rim, or touching dock top rim:
+      const dockRect = this.masterDockEl ? this.masterDockEl.getBoundingClientRect() : this.containerEl.getBoundingClientRect();
+      const isHandle = !!target.closest('#dragHandle, #dragHandleRight, .dock-drag-handle, #dockDragRim, .dock-drag-rim');
+      const isTopRim = (e.clientY - dockRect.top) >= 0 && (e.clientY - dockRect.top) <= 12;
+      const isInteractive = !!target.closest('button, input, select, .color-swatch, .stroke-dot-btn, .island-tip-btn, #dockLayoutPopover, .crop-handle, #toolbarResizeHandle, .toolbar-resize-handle');
+
+      if ((!isHandle && !isTopRim) || isInteractive) {
         return;
       }
 
@@ -655,7 +674,7 @@ export class Toolbar {
     // Pointer-based touch, pen, stylus, and mouse horizontal pan
     dock.addEventListener('pointerdown', (e: PointerEvent) => {
       const target = e.target as HTMLElement;
-      if (target.closest('#dragHandle, .dock-drag-handle, .crop-handle, .toolbar-resize-handle, #dockLayoutPopover')) {
+      if (target.closest('#dragHandle, #dragHandleRight, .dock-drag-handle, #dockDragRim, .dock-drag-rim, .crop-handle, .toolbar-resize-handle, #dockLayoutPopover')) {
         return;
       }
       isDown = true;
@@ -1671,22 +1690,6 @@ export class Toolbar {
           this.containerEl.classList.add('zen-hidden');
         } else {
           this.containerEl.classList.remove('zen-hidden');
-        }
-      }
-
-      // Board mode: mount unified toolbar inside bottom board dock if present
-      if (state.isBoardMode !== prev.isBoardMode) {
-        if (state.isBoardMode) {
-          const boardCenter = document.getElementById('boardDockCenter');
-          if (boardCenter && this.contentEl) {
-            boardCenter.appendChild(this.contentEl);
-          }
-          this.containerEl.classList.add('hidden');
-        } else {
-          if (this.containerEl && this.contentEl) {
-            this.containerEl.appendChild(this.contentEl);
-          }
-          this.containerEl.classList.remove('hidden');
         }
       }
     });

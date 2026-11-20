@@ -252,5 +252,15 @@ describe('Master Floating Dock & Dynamic Inking Island Suite', () => {
       expect(handleS).not.toBeNull();
       expect(handleCorner).not.toBeNull();
     });
+
+    it('has dual drag handles (left and right) and a top drag rim for smart board flexibility', () => {
+      const handleLeft = document.getElementById('dragHandle');
+      const handleRight = document.getElementById('dragHandleRight');
+      const dragRim = document.getElementById('dockDragRim');
+
+      expect(handleLeft).not.toBeNull();
+      expect(handleRight).not.toBeNull();
+      expect(dragRim).not.toBeNull();
+    });
   });
 });

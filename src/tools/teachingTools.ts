@@ -414,9 +414,23 @@ export class SpotlightController {
     ctrl.style.display = 'none';
 
     ctrl.innerHTML = `
-      <span>💡 फोकस (Focus)</span>
-      <input type="range" class="spotlight-slider" id="spotlightRadiusSlider" min="70" max="320" value="${this.radius}" title="स्पॉटलाइट का आकार" />
-      <button class="spotlight-close-btn" id="btnSpotlightClose" type="button">✕ बंद</button>
+      <span class="spotlight-icon" title="स्पॉटलाइट फोकस">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#fbbf24" stroke-width="2.2">
+          <circle cx="12" cy="12" r="5" fill="#fbbf24" fill-opacity="0.3"/>
+          <line x1="12" y1="2" x2="12" y2="5"/>
+          <line x1="12" y1="19" x2="12" y2="22"/>
+          <line x1="2" y1="12" x2="5" y2="12"/>
+          <line x1="19" y1="12" x2="22" y2="12"/>
+        </svg>
+      </span>
+      <span class="spotlight-label">फोकस</span>
+      <div class="spotlight-pill-sep"></div>
+      <button class="spotlight-step-btn" id="btnSpotlightDec" type="button" title="छोटा करें (-)">−</button>
+      <span class="spotlight-size-text" id="spotlightSizeDisplay">${this.radius}px</span>
+      <button class="spotlight-step-btn" id="btnSpotlightInc" type="button" title="बड़ा करें (+)">+</button>
+      <input type="range" class="spotlight-slider" id="spotlightRadiusSlider" min="70" max="320" value="${this.radius}" style="display:none;" />
+      <div class="spotlight-pill-sep"></div>
+      <button class="spotlight-close-circle" id="btnSpotlightClose" type="button" title="बंद करें (Close)">✕</button>
     `;
 
     stage.appendChild(ctrl);
@@ -426,10 +440,26 @@ export class SpotlightController {
   private bindEvents(): void {
     if (!this.canvasEl) return;
 
+    const updateRadius = (newRadius: number) => {
+      this.radius = Math.max(50, Math.min(360, newRadius));
+      const sizeDisplay = document.getElementById('spotlightSizeDisplay');
+      if (sizeDisplay) sizeDisplay.textContent = `${this.radius}px`;
+      const slider = document.getElementById('spotlightRadiusSlider') as HTMLInputElement;
+      if (slider) slider.value = String(this.radius);
+      this.redraw();
+    };
+
+    document.getElementById('btnSpotlightDec')?.addEventListener('click', () => {
+      updateRadius(this.radius - 20);
+    });
+
+    document.getElementById('btnSpotlightInc')?.addEventListener('click', () => {
+      updateRadius(this.radius + 20);
+    });
+
     const slider = document.getElementById('spotlightRadiusSlider') as HTMLInputElement;
     slider?.addEventListener('input', () => {
-      this.radius = Number(slider.value);
-      this.redraw();
+      updateRadius(Number(slider.value));
     });
 
     document.getElementById('btnSpotlightClose')?.addEventListener('click', () => {
@@ -465,10 +495,7 @@ export class SpotlightController {
       if (!this.isActive) return;
       e.preventDefault();
       const delta = e.deltaY < 0 ? 15 : -15;
-      this.radius = Math.max(50, Math.min(380, this.radius + delta));
-      const slider = document.getElementById('spotlightRadiusSlider') as HTMLInputElement;
-      if (slider) slider.value = String(this.radius);
-      this.redraw();
+      updateRadius(this.radius + delta);
     }, { passive: false });
 
     window.addEventListener('resize', () => {
@@ -551,6 +578,11 @@ export class SpotlightController {
 // ============================================================================
 export class SplitScreenController {
   private isSplit = false;
+  private canvasEl: HTMLCanvasElement | null = null;
+  private ctx: CanvasRenderingContext2D | null = null;
+  private isDrawing = false;
+  private lastX = 0;
+  private lastY = 0;
 
   toggle(): void {
     this.isSplit = !this.isSplit;
@@ -558,7 +590,6 @@ export class SplitScreenController {
     stage?.classList.toggle('split-mode', this.isSplit);
 
     if (this.isSplit) {
-      // Create split blackboard if not present
       let splitBoard = document.getElementById('splitBoardSurface');
       if (!splitBoard) {
         splitBoard = document.createElement('div');
@@ -566,16 +597,123 @@ export class SplitScreenController {
         splitBoard.className = 'split-board-surface';
         splitBoard.innerHTML = `
           <div class="split-board-header">
-            <span class="split-board-title">📝 रफ ब्लैकबोर्ड (Rough Board)</span>
-            <button id="btnSplitClose" style="background:transparent; border:none; color:#cbd5e1; cursor:pointer;">✕</button>
+            <span class="split-board-title">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#fbbf24" stroke-width="2"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/></svg>
+              रफ ब्लैकबोर्ड (Rough Blackboard)
+            </span>
+            <div class="split-board-tools">
+              <button class="split-board-btn" id="btnSplitClear" title="ब्लैकबोर्ड साफ़ करें">
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
+                साफ़ करें
+              </button>
+              <button class="split-board-btn" id="btnSplitClose" title="स्प्लिट मोड बंद करें">✕ बंद करें</button>
+            </div>
           </div>
+          <canvas id="splitBoardCanvas" class="split-board-canvas"></canvas>
         `;
         stage?.appendChild(splitBoard);
+
         document.getElementById('btnSplitClose')?.addEventListener('click', () => {
           this.toggle();
         });
+
+        document.getElementById('btnSplitClear')?.addEventListener('click', () => {
+          this.clearBoard();
+        });
+
+        this.initCanvas();
+      } else {
+        splitBoard.style.display = 'flex';
+        this.resizeCanvas();
+      }
+    } else {
+      const splitBoard = document.getElementById('splitBoardSurface');
+      if (splitBoard) {
+        splitBoard.style.display = 'none';
       }
     }
+  }
+
+  private initCanvas(): void {
+    const canvas = document.getElementById('splitBoardCanvas') as HTMLCanvasElement;
+    if (!canvas) return;
+    this.canvasEl = canvas;
+    this.ctx = canvas.getContext('2d');
+
+    this.resizeCanvas();
+
+    const startDraw = (e: PointerEvent) => {
+      this.isDrawing = true;
+      try { canvas.setPointerCapture(e.pointerId); } catch {}
+      const rect = canvas.getBoundingClientRect();
+      this.lastX = e.clientX - rect.left;
+      this.lastY = e.clientY - rect.top;
+    };
+
+    const draw = (e: PointerEvent) => {
+      if (!this.isDrawing || !this.ctx || !this.canvasEl) return;
+      const rect = this.canvasEl.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      this.ctx.beginPath();
+      this.ctx.moveTo(this.lastX, this.lastY);
+      this.ctx.lineTo(x, y);
+      this.ctx.strokeStyle = '#fde68a';
+      this.ctx.lineWidth = 3.5;
+      this.ctx.lineCap = 'round';
+      this.ctx.lineJoin = 'round';
+      this.ctx.stroke();
+
+      this.lastX = x;
+      this.lastY = y;
+    };
+
+    const endDraw = (e: PointerEvent) => {
+      if (!this.isDrawing) return;
+      this.isDrawing = false;
+      try { canvas.releasePointerCapture(e.pointerId); } catch {}
+    };
+
+    canvas.addEventListener('pointerdown', startDraw);
+    canvas.addEventListener('pointermove', draw);
+    canvas.addEventListener('pointerup', endDraw);
+    canvas.addEventListener('pointercancel', endDraw);
+
+    window.addEventListener('resize', () => {
+      if (this.isSplit) this.resizeCanvas();
+    });
+  }
+
+  private resizeCanvas(): void {
+    if (!this.canvasEl) return;
+    const rect = this.canvasEl.getBoundingClientRect();
+    if (rect.width > 0 && rect.height > 0) {
+      const temp = document.createElement('canvas');
+      temp.width = this.canvasEl.width;
+      temp.height = this.canvasEl.height;
+      const tempCtx = temp.getContext('2d');
+      if (tempCtx && this.canvasEl.width > 0) {
+        tempCtx.drawImage(this.canvasEl, 0, 0);
+      }
+
+      this.canvasEl.width = rect.width * (window.devicePixelRatio || 1);
+      this.canvasEl.height = rect.height * (window.devicePixelRatio || 1);
+      if (this.ctx) {
+        this.ctx.scale(window.devicePixelRatio || 1, window.devicePixelRatio || 1);
+        if (temp.width > 0) {
+          this.ctx.drawImage(temp, 0, 0, rect.width, rect.height);
+        }
+      }
+    }
+  }
+
+  private clearBoard(): void {
+    if (!this.canvasEl || !this.ctx) return;
+    this.ctx.save();
+    this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+    this.ctx.clearRect(0, 0, this.canvasEl.width, this.canvasEl.height);
+    this.ctx.restore();
   }
 
   getIsSplit(): boolean {

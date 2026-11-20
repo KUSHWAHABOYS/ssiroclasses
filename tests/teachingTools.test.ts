@@ -129,7 +129,7 @@ describe('Teaching Tools & Screen Cleanup Suite', () => {
   });
 
   describe('4. Spotlight Focus Tool', () => {
-    it('initializes and toggles spotlight focus', () => {
+    it('initializes and toggles spotlight focus with modern mini-controls', () => {
       const spotlight = document.getElementById('spotlightLayer');
       const controls = document.getElementById('spotlightControls');
       expect(spotlight).not.toBeNull();
@@ -139,6 +139,21 @@ describe('Teaching Tools & Screen Cleanup Suite', () => {
       expect(spotlight?.classList.contains('hidden')).toBe(false);
       expect(controls?.style.display).toBe('flex');
 
+      // Check modern mini-pill elements
+      const btnDec = document.getElementById('btnSpotlightDec');
+      const btnInc = document.getElementById('btnSpotlightInc');
+      const sizeDisplay = document.getElementById('spotlightSizeDisplay');
+      const btnClose = document.getElementById('btnSpotlightClose');
+
+      expect(btnDec).not.toBeNull();
+      expect(btnInc).not.toBeNull();
+      expect(sizeDisplay).not.toBeNull();
+      expect(btnClose).not.toBeNull();
+
+      // Step resize
+      btnInc?.click();
+      expect(sizeDisplay?.textContent).toContain('px');
+
       spotlightController.hide();
       expect(spotlight?.classList.contains('hidden')).toBe(true);
       expect(controls?.style.display).toBe('none');
@@ -146,7 +161,7 @@ describe('Teaching Tools & Screen Cleanup Suite', () => {
   });
 
   describe('5. 50:50 Dual Split-Screen Board', () => {
-    it('toggles split screen mode and mounts rough blackboard', () => {
+    it('toggles split screen mode and mounts rough blackboard with inking canvas', () => {
       const stage = document.getElementById('stage');
       expect(splitScreenController.getIsSplit()).toBe(false);
 
@@ -155,7 +170,14 @@ describe('Teaching Tools & Screen Cleanup Suite', () => {
       expect(stage?.classList.contains('split-mode')).toBe(true);
 
       const splitBoard = document.getElementById('splitBoardSurface');
+      const splitCanvas = document.getElementById('splitBoardCanvas');
+      const btnClear = document.getElementById('btnSplitClear');
+      const btnClose = document.getElementById('btnSplitClose');
+
       expect(splitBoard).not.toBeNull();
+      expect(splitCanvas).not.toBeNull();
+      expect(btnClear).not.toBeNull();
+      expect(btnClose).not.toBeNull();
 
       splitScreenController.toggle();
       expect(splitScreenController.getIsSplit()).toBe(false);

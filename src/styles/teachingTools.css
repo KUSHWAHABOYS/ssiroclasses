@@ -279,27 +279,109 @@
 }
 
 /* --------------------------------------------------------------------------
-   3. SPOTLIGHT FOCUS TOOL (स्पॉटलाइट)
+   3. SPOTLIGHT FOCUS TOOL (अल्ट्रा-मॉडर्न कॉम्पैक्ट ग्लास पिल)
    -------------------------------------------------------------------------- */
 .spotlight-controls-badge {
   position: fixed;
-  top: 18px;
+  top: 16px;
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(13, 18, 28, 0.95);
-  border: 1px solid rgba(251, 191, 36, 0.6);
+  background: rgba(15, 20, 32, 0.94);
+  border: 1px solid rgba(251, 191, 36, 0.45);
   border-radius: 9999px;
-  padding: 5px 16px;
+  height: 34px;
+  padding: 0 12px;
   display: flex;
   align-items: center;
-  gap: 12px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), 0 0 15px rgba(245, 158, 11, 0.25);
+  gap: 8px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.85), 0 0 16px rgba(245, 158, 11, 0.2);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   z-index: 80;
   color: #ffffff;
-  font-size: 12px;
-  font-weight: 700;
+  font-size: 11px;
+  font-weight: 600;
   user-select: none;
   pointer-events: auto;
+}
+
+.spotlight-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(0 0 4px rgba(245, 158, 11, 0.6));
+}
+
+.spotlight-label {
+  color: #fde68a;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+
+.spotlight-pill-sep {
+  width: 1px;
+  height: 14px;
+  background: rgba(255, 255, 255, 0.16);
+  margin: 0 2px;
+}
+
+.spotlight-step-btn {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #f1f5f9;
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 120ms ease;
+  padding: 0;
+  line-height: 1;
+}
+
+.spotlight-step-btn:hover {
+  background: rgba(251, 191, 36, 0.25);
+  border-color: #fbbf24;
+  color: #fbbf24;
+  transform: scale(1.08);
+}
+
+.spotlight-size-text {
+  font-family: 'JetBrains Mono', monospace, sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  color: #fbbf24;
+  min-width: 38px;
+  text-align: center;
+}
+
+.spotlight-close-circle {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #fca5a5;
+  font-size: 10px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 120ms ease;
+  padding: 0;
+  line-height: 1;
+}
+
+.spotlight-close-circle:hover {
+  background: rgba(239, 68, 68, 0.85);
+  border-color: #ef4444;
+  color: #ffffff;
 }
 
 .spotlight-slider {
@@ -309,42 +391,31 @@
   cursor: pointer;
 }
 
-.spotlight-close-btn {
-  background: rgba(239, 68, 68, 0.22);
-  border: 1px solid rgba(239, 68, 68, 0.5);
-  color: #fca5a5;
-  border-radius: 9999px;
-  padding: 3px 10px;
-  font-size: 11px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 140ms ease;
-}
-
-.spotlight-close-btn:hover {
-  background: rgba(239, 68, 68, 0.4);
-  color: #ffffff;
-}
-
 /* --------------------------------------------------------------------------
    4. 50:50 DUAL SPLIT-SCREEN BOARD (रफ ब्लैकबोर्ड साइड शीट)
    -------------------------------------------------------------------------- */
+.stage.split-mode #slideCanvas,
+.stage.split-mode #annotationCanvas,
+.stage.split-mode #previewCanvas {
+  width: 50% !important;
+  left: 0 !important;
+  right: auto !important;
+  object-fit: contain !important;
+  transition: width 200ms ease;
+}
+
 .split-board-surface {
   position: absolute;
   top: 0;
   right: 0;
   bottom: 0;
-  width: 48%;
-  background: rgba(15, 20, 30, 0.96);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
+  width: 50%;
+  background: #0d121c;
   z-index: 38;
-  border-left: 2px solid rgba(251, 191, 36, 0.4);
+  border-left: 2px solid rgba(251, 191, 36, 0.45);
   display: none;
   flex-direction: column;
-  box-shadow: -15px 0 40px rgba(0, 0, 0, 0.85);
-  border-top-left-radius: 20px;
-  border-bottom-left-radius: 20px;
+  box-shadow: -20px 0 45px rgba(0, 0, 0, 0.9);
 }
 
 .stage.split-mode .split-board-surface {
@@ -352,14 +423,14 @@
 }
 
 .split-board-header {
-  height: 44px;
-  background: rgba(0, 0, 0, 0.4);
+  height: 42px;
+  background: rgba(15, 23, 42, 0.85);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 16px;
+  padding: 0 14px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  border-top-left-radius: 20px;
+  user-select: none;
 }
 
 .split-board-title {
@@ -368,6 +439,44 @@
   font-weight: 700;
   display: flex;
   align-items: center;
+  gap: 6px;
+}
+
+.split-board-tools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.split-board-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  color: #e2e8f0;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 120ms ease;
+}
+
+.split-board-btn:hover {
+  background: rgba(251, 191, 36, 0.2);
+  border-color: #fbbf24;
+  color: #fbbf24;
+}
+
+.split-board-canvas {
+  flex: 1;
+  width: 100%;
+  height: calc(100% - 42px);
+  touch-action: none;
+  cursor: crosshair;
+  background: radial-gradient(circle at center, #131b2a 0%, #0a0e17 100%);
+}
   gap: 6px;
 }
 
