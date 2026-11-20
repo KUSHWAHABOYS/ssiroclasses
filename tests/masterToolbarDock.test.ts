@@ -331,5 +331,44 @@ describe('Master Floating Dock & Dynamic Inking Island Suite', () => {
       expect(badge?.textContent).toBe('480px');
       expect(localStorage.getItem('ssiro_circle_dock_size')).toBe('480');
     });
+
+    it('supports freeform pen/mouse dragging in circle mode from center hub or dial body', () => {
+      toolbar.setLayout('circle');
+      const container = document.getElementById('toolbarContainer')!;
+      const centerHub = document.getElementById('btnToolTranslate')!;
+      expect(centerHub).not.toBeNull();
+
+      // Check inner spokes count in SVG
+      const innerSpokes = document.querySelectorAll('.dial-inner-spokes line');
+      expect(innerSpokes.length).toBe(15);
+
+      // Simulate pointerdown on center hub and drag
+      container.dispatchEvent(new PointerEvent('pointerdown', {
+        clientX: 100,
+        clientY: 100,
+        bubbles: true,
+        pointerId: 1
+      }));
+
+      // Simulate pointermove beyond threshold (e.g. 50px)
+      window.dispatchEvent(new PointerEvent('pointermove', {
+        clientX: 160,
+        clientY: 180,
+        bubbles: true,
+        pointerId: 1
+      }));
+
+      expect(container.classList.contains('is-dragging')).toBe(true);
+
+      // Simulate pointerup to release
+      window.dispatchEvent(new PointerEvent('pointerup', {
+        clientX: 160,
+        clientY: 180,
+        bubbles: true,
+        pointerId: 1
+      }));
+
+      expect(container.classList.contains('is-dragging')).toBe(false);
+    });
   });
 });

@@ -362,13 +362,23 @@ export class Toolbar {
               <line x1="303.0" y1="252.9" x2="193.2" y2="115.3" />
             </g>
 
-            <!-- Inner Ring: 5 Radial Spoke Dividers -->
+            <!-- Inner Ring: 15 Radial Spoke Dividers -->
             <g class="dial-inner-spokes" stroke="rgba(56, 189, 248, 0.3)" stroke-width="1.5">
-              <line x1="404.8" y1="368.9" x2="314.3" y2="244.4" />
+              <line x1="533.7" y1="341.5" x2="565.7" y2="190.9" />
               <line x1="595.2" y1="368.9" x2="685.7" y2="244.4" />
+              <line x1="640.3" y1="419.0" x2="773.7" y2="342.0" />
+              <line x1="661.1" y1="483.1" x2="814.3" y2="467.0" />
               <line x1="654.1" y1="550.1" x2="800.5" y2="597.6" />
+              <line x1="620.4" y1="608.4" x2="734.8" y2="711.4" />
+              <line x1="565.9" y1="648.0" x2="628.5" y2="788.7" />
               <line x1="500.0" y1="662.0" x2="500.0" y2="816.0" />
+              <line x1="434.1" y1="648.0" x2="371.5" y2="788.7" />
+              <line x1="379.6" y1="608.4" x2="265.2" y2="711.4" />
               <line x1="345.9" y1="550.1" x2="199.5" y2="597.6" />
+              <line x1="338.9" y1="483.1" x2="185.7" y2="467.0" />
+              <line x1="359.7" y1="419.0" x2="226.3" y2="342.0" />
+              <line x1="404.8" y1="368.9" x2="314.3" y2="244.4" />
+              <line x1="466.3" y1="341.5" x2="434.3" y2="190.9" />
             </g>
 
             <!-- Exit / Power Wedge Sector (Bottom 6 o'clock) -->
@@ -484,19 +494,19 @@ export class Toolbar {
 
           <!-- SECTION 3: Smart Assist & AI Suite -->
           <div class="dock-section">
-            <!-- AI Live Translate Glowing Card -->
-            <button class="dock-btn tool-btn tool-ai-translate" id="btnToolTranslate" data-tool="translate" title="AI Live Translate (Neural Live)">
+            <!-- AI Live Suite Glowing Hub -->
+            <button class="dock-btn tool-btn tool-ai-translate" id="btnToolTranslate" data-tool="translate" title="AI Live Tools • Drag Center Hub to Move Dial">
               <div class="ai-ping-dot"></div>
               <div class="ai-icon-box">
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2">
-                  <circle cx="12" cy="12" r="10"/>
-                  <line x1="2" y1="12" x2="22" y2="12"/>
-                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1 4-10z"/>
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2">
+                  <rect x="4" y="4" width="16" height="16" rx="2"/>
+                  <rect x="9" y="9" width="6" height="6"/>
+                  <path d="M9 1v3M15 1v3M9 20v3M15 20v3M20 9h3M20 14h3M1 9h3M1 14h3"/>
                 </svg>
               </div>
               <div class="ai-text-box">
-                <span class="ai-title">AI Translate</span>
-                <span class="ai-sub">Neural Live</span>
+                <span class="ai-title">AI Tools ▾</span>
+                <span class="ai-sub">⠿ Drag Dial</span>
               </div>
             </button>
 
@@ -787,7 +797,31 @@ export class Toolbar {
     this.containerEl.addEventListener('pointerdown', (e: PointerEvent) => {
       // Don't drag if interacting with resize handles, crop handles, or layout popover
       const target = e.target as HTMLElement;
-      if (target.closest('#toolbarResizeHandle, .toolbar-resize-handle, .crop-handle, #dockLayoutPopover')) {
+      if (target.closest('#toolbarResizeHandle, .toolbar-resize-handle, .crop-handle, #dockLayoutPopover, #circleResizeHandle, .circle-resize-handle')) {
+        return;
+      }
+
+      // In Circle Mode: Full-surface tactile drag with stylus, pen, mouse, or touch
+      if (this.currentLayout === 'circle') {
+        this.dragStartX = e.clientX;
+        this.dragStartY = e.clientY;
+        pendingPointerId = e.pointerId;
+
+        const rect = this.containerEl.getBoundingClientRect();
+        this.initialToolbarLeft = rect.left;
+        this.initialToolbarTop = rect.top;
+
+        this.wakeFromGhost();
+        pendingDrag = true;
+
+        // If touching center hub or dial body directly, prepare pointer capture early
+        const isCenterOrBody = !!target.closest('#btnToolTranslate, .circle-wheel-svg, .studio-master-dock, #dockDragRim, .dock-drag-rim');
+        const isOtherButton = !!target.closest('button:not(#btnToolTranslate), .color-swatch, .stroke-dot-btn, .island-tip-btn');
+        if (isCenterOrBody && !isOtherButton) {
+          try {
+            this.containerEl.setPointerCapture(e.pointerId);
+          } catch {}
+        }
         return;
       }
 
@@ -828,7 +862,8 @@ export class Toolbar {
 
       if (pendingDrag && !this.isDragging) {
         const dist = Math.hypot(dx, dy);
-        if (dist > 5) {
+        const threshold = this.currentLayout === 'circle' ? 3 : 5;
+        if (dist > threshold) {
           this.isDragging = true;
           dragThresholdMet = true;
           pendingDrag = false;
@@ -877,6 +912,7 @@ export class Toolbar {
 
     // Pointer-based touch, pen, stylus, and mouse horizontal pan
     dock.addEventListener('pointerdown', (e: PointerEvent) => {
+      if (this.currentLayout === 'circle') return;
       const target = e.target as HTMLElement;
       if (target.closest('#dragHandle, #dragHandleRight, .dock-drag-handle, #dockDragRim, .dock-drag-rim, .crop-handle, .toolbar-resize-handle, #dockLayoutPopover')) {
         return;
@@ -1416,16 +1452,16 @@ export class Toolbar {
       if (activeTool === 'shape' && activeShape) {
         const shapeAngles: Record<string, number> = {
           rect: -90,
-          circle: -18,
-          triangle: 54,
-          arrow: 126,
-          line: 198
+          circle: -66,
+          triangle: -42,
+          arrow: -18,
+          line: 6
         };
         const sAngle = shapeAngles[activeShape];
         if (sAngle !== undefined) {
           innerWedge.style.display = 'block';
-          const a1 = ((sAngle - 36) * Math.PI) / 180;
-          const a2 = ((sAngle + 36) * Math.PI) / 180;
+          const a1 = ((sAngle - 12) * Math.PI) / 180;
+          const a2 = ((sAngle + 12) * Math.PI) / 180;
           const x1 = 500 + 316 * Math.cos(a1);
           const y1 = 500 + 316 * Math.sin(a1);
           const x2 = 500 + 316 * Math.cos(a2);

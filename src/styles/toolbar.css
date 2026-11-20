@@ -436,6 +436,11 @@
 .toolbar-container.layout-circle {
   white-space: normal;
   border-radius: 50% !important;
+  cursor: grab;
+}
+
+.toolbar-container.layout-circle.is-dragging {
+  cursor: grabbing !important;
 }
 
 .toolbar-container.layout-circle .master-toolbar-wrapper {
@@ -594,69 +599,124 @@
 .toolbar-container.layout-circle #btnToolAutoStraighten { left: 19.51%; top: 25.68%; }
 .toolbar-container.layout-circle #btnToolSelect         { left: 33.08%; top: 14.86%; }
 
-/* Inner Ring: Shapes Pill & 5 Shapes */
-.toolbar-container.layout-circle .dock-shapes-pill {
+/* ==========================================================================
+   INNER RING: 15 Utility Tools & Shapes (Concentrically embedded)
+   ========================================================================== */
+.toolbar-container.layout-circle .dock-shapes-pill,
+.toolbar-container.layout-circle .dock-section-secondary {
   display: contents !important;
 }
 
-.toolbar-container.layout-circle .shape-dock-btn {
+/* Base styling for all 15 inner ring items */
+.toolbar-container.layout-circle .shape-dock-btn,
+.toolbar-container.layout-circle .dock-section-secondary .dock-btn-icon,
+.toolbar-container.layout-circle #btnDockLayout {
   position: absolute;
-  z-index: 5;
-  width: calc(var(--circle-dock-size, 480px) * 0.095);
-  height: calc(var(--circle-dock-size, 480px) * 0.095);
-  padding: 0;
-  border: none !important;
-  background: transparent !important;
+  z-index: 6;
+  width: calc(var(--circle-dock-size, 480px) * 0.082);
+  height: calc(var(--circle-dock-size, 480px) * 0.082);
+  min-width: unset !important;
+  min-height: unset !important;
+  padding: 0 !important;
+  border-radius: 50% !important;
+  border: 1px solid rgba(56, 189, 248, 0.25) !important;
+  background: rgba(10, 19, 36, 0.75) !important;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.5) !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  color: #e2e8f0;
+  color: #cbd5e1;
   transform: translate(-50%, -50%);
-  transition: transform 120ms ease, color 120ms ease;
+  transition: transform 120ms ease, color 120ms ease, background 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
+  cursor: pointer;
+  outline: none;
 }
 
-.toolbar-container.layout-circle .shape-dock-btn svg {
-  width: calc(var(--circle-dock-size, 480px) * 0.046);
-  height: calc(var(--circle-dock-size, 480px) * 0.046);
+.toolbar-container.layout-circle .shape-dock-btn svg,
+.toolbar-container.layout-circle .dock-section-secondary .dock-btn-icon svg,
+.toolbar-container.layout-circle #btnDockLayout svg {
+  width: calc(var(--circle-dock-size, 480px) * 0.042);
+  height: calc(var(--circle-dock-size, 480px) * 0.042);
   stroke-width: 2.2;
 }
 
-.toolbar-container.layout-circle .shape-dock-btn:hover {
-  transform: translate(-50%, -50%) scale(1.2);
-  color: #38bdf8;
+.toolbar-container.layout-circle .shape-dock-btn:hover,
+.toolbar-container.layout-circle .dock-section-secondary .dock-btn-icon:hover,
+.toolbar-container.layout-circle #btnDockLayout:hover {
+  transform: translate(-50%, -50%) scale(1.22);
+  color: #38bdf8 !important;
+  background: rgba(14, 165, 233, 0.28) !important;
+  border-color: #38bdf8 !important;
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.8) !important;
 }
 
-.toolbar-container.layout-circle .shape-dock-btn.active {
+.toolbar-container.layout-circle .shape-dock-btn.active,
+.toolbar-container.layout-circle .dock-section-secondary .dock-btn-icon.active,
+.toolbar-container.layout-circle #btnDockLayout.active {
   color: #fbbf24 !important;
-  filter: drop-shadow(0 0 10px rgba(245, 158, 11, 0.85));
+  background: rgba(245, 158, 11, 0.28) !important;
+  border-color: #fbbf24 !important;
+  box-shadow: 0 0 18px rgba(245, 158, 11, 0.8) !important;
 }
 
-.toolbar-container.layout-circle #btnToolRect     { left: 50.00%; top: 26.50%; }
-.toolbar-container.layout-circle #btnToolCircle   { left: 72.35%; top: 42.74%; }
-.toolbar-container.layout-circle #btnToolTriangle { left: 63.81%; top: 69.01%; }
-.toolbar-container.layout-circle #btnToolArrow    { left: 36.19%; top: 69.01%; }
-.toolbar-container.layout-circle #btnToolLine     { left: 27.65%; top: 42.74%; }
+/* Hide text labels inside inner ring buttons for clean visual icons */
+.toolbar-container.layout-circle #btnDockLayout .dock-label {
+  display: none !important;
+}
 
-/* Center Hub: [AI] AI Tools ▾ */
+/* Exact Coordinates for 15 Inner Tools (Circle Radius = 23.9%, Step = 24°) */
+.toolbar-container.layout-circle #btnToolRect       { top: 26.1%; left: 50.0%; } /* 12 o'clock (0°) Square */
+.toolbar-container.layout-circle #btnToolCircle     { top: 28.2%; left: 59.7%; } /* 24° Circle */
+.toolbar-container.layout-circle #btnToolTriangle   { top: 34.0%; left: 67.8%; } /* 48° Triangle */
+.toolbar-container.layout-circle #btnToolArrow      { top: 42.6%; left: 72.7%; } /* 72° Arrow */
+.toolbar-container.layout-circle #btnToolLine       { top: 52.5%; left: 73.8%; } /* 96° Line */
+.toolbar-container.layout-circle #btnToolTimer      { top: 61.9%; left: 70.7%; } /* 120° Timer */
+.toolbar-container.layout-circle #btnToolSpotlight  { top: 69.3%; left: 64.0%; } /* 144° Spotlight */
+.toolbar-container.layout-circle #btnToolExportPdf  { top: 73.4%; left: 55.0%; } /* 168° Export */
+.toolbar-container.layout-circle #btnMediaOverlay   { top: 73.4%; left: 45.0%; } /* 192° Media */
+.toolbar-container.layout-circle #btnBrowserOverlay { top: 69.3%; left: 36.0%; } /* 216° Browser */
+.toolbar-container.layout-circle #btnBoard          { top: 61.9%; left: 29.3%; } /* 240° Board */
+.toolbar-container.layout-circle #btnToolOpenDeck   { top: 52.5%; left: 26.2%; } /* 264° Deck */
+.toolbar-container.layout-circle #btnToolLibrary    { top: 42.6%; left: 27.3%; } /* 288° Library */
+.toolbar-container.layout-circle #btnSettings       { top: 34.0%; left: 32.2%; } /* 312° Settings */
+.toolbar-container.layout-circle #btnDockLayout     { top: 28.2%; left: 40.3%; } /* 336° Layout */
+
+/* ==========================================================================
+   CENTER HUB: AI Tools Suite & Tactile Drag Steering Wheel
+   ========================================================================== */
 .toolbar-container.layout-circle #btnToolTranslate {
   position: absolute;
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-  width: calc(var(--circle-dock-size, 480px) * 0.28);
-  height: calc(var(--circle-dock-size, 480px) * 0.28);
+  width: calc(var(--circle-dock-size, 480px) * 0.31);
+  height: calc(var(--circle-dock-size, 480px) * 0.31);
   border-radius: 50% !important;
-  background: radial-gradient(circle, #0284c7 0%, #0369a1 70%, #082f49 100%) !important;
+  background: radial-gradient(circle at 50% 36%, #0369a1 0%, #075985 45%, #082f49 85%, #051329 100%) !important;
   border: 2px solid #38bdf8 !important;
-  box-shadow: 0 0 24px rgba(56, 189, 248, 0.65), inset 0 0 14px rgba(255, 255, 255, 0.3) !important;
+  box-shadow: 0 0 28px rgba(56, 189, 248, 0.65), inset 0 0 16px rgba(56, 189, 248, 0.35) !important;
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
   justify-content: center !important;
   gap: 2px;
-  z-index: 6;
-  cursor: pointer;
+  z-index: 10;
+  cursor: grab !important;
   padding: 0 !important;
+  user-select: none;
+  touch-action: none;
+  transition: transform 120ms ease, box-shadow 120ms ease;
+}
+
+.toolbar-container.layout-circle #btnToolTranslate:active,
+.toolbar-container.layout-circle.is-dragging #btnToolTranslate {
+  cursor: grabbing !important;
+  transform: translate(-50%, -50%) scale(0.97);
+}
+
+.toolbar-container.layout-circle #btnToolTranslate:hover {
+  transform: translate(-50%, -50%) scale(1.05);
+  box-shadow: 0 0 35px rgba(56, 189, 248, 0.9), inset 0 0 20px rgba(255, 255, 255, 0.45) !important;
 }
 
 .toolbar-container.layout-circle #btnToolTranslate .ai-ping-dot {
@@ -664,9 +724,10 @@
 }
 
 .toolbar-container.layout-circle #btnToolTranslate .ai-icon-box svg {
-  width: calc(var(--circle-dock-size, 480px) * 0.056);
-  height: calc(var(--circle-dock-size, 480px) * 0.056);
+  width: calc(var(--circle-dock-size, 480px) * 0.058);
+  height: calc(var(--circle-dock-size, 480px) * 0.058);
   stroke: #ffffff;
+  filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.8));
 }
 
 .toolbar-container.layout-circle #btnToolTranslate .ai-text-box {
@@ -674,57 +735,23 @@
   flex-direction: column;
   align-items: center;
   margin: 0;
+  pointer-events: none;
 }
 
 .toolbar-container.layout-circle #btnToolTranslate .ai-title {
-  font-size: calc(var(--circle-dock-size, 480px) * 0.024);
+  font-size: calc(var(--circle-dock-size, 480px) * 0.025);
   font-weight: 700;
   color: #ffffff;
   line-height: 1;
+  text-shadow: 0 0 8px rgba(56, 189, 248, 0.8);
 }
 
 .toolbar-container.layout-circle #btnToolTranslate .ai-sub {
   font-size: calc(var(--circle-dock-size, 480px) * 0.018);
-  color: #bae6fd;
-  line-height: 1;
-}
-
-.toolbar-container.layout-circle #btnToolTranslate:hover {
-  transform: translate(-50%, -50%) scale(1.06);
-  box-shadow: 0 0 32px rgba(56, 189, 248, 0.9), inset 0 0 16px rgba(255, 255, 255, 0.5) !important;
-}
-
-/* Secondary Tools Satellite Pill (Floats neatly above the dial in circle mode) */
-.toolbar-container.layout-circle .dock-section-secondary {
-  position: absolute;
-  top: -46px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(13, 18, 28, 0.94);
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(56, 189, 248, 0.4);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), 0 0 18px rgba(56, 189, 248, 0.25);
-  border-radius: 30px;
-  padding: 4px 12px;
-  display: flex !important;
-  align-items: center;
-  gap: 5px;
-  z-index: 10;
-  white-space: nowrap;
-}
-
-/* Layout Button in Circle Mode (Neatly docked with the satellite controls) */
-.toolbar-container.layout-circle #btnDockLayout {
-  position: absolute;
-  top: -46px;
-  right: calc(50% + 175px);
-  z-index: 11;
-  background: rgba(13, 18, 28, 0.94);
-  border: 1px solid rgba(251, 191, 36, 0.4);
-  border-radius: 20px;
-  padding: 4px 10px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
-  color: #fbbf24;
+  color: #7dd3fc;
+  line-height: 1.1;
+  letter-spacing: 0.3px;
+  margin-top: 1px;
 }
 
 /* Circular Resize Grip Handle (Interactive direct drag & touch scale) */
