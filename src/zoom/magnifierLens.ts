@@ -374,10 +374,22 @@ export class MagnifierLensController {
     const controls = document.createElement('div');
     controls.className = 'pinned-lens-controls';
     controls.innerHTML = `
-      <button class="lens-ctrl-btn btn-mode" title="Toggle Fixed/Glass">🔍</button>
-      <button class="lens-ctrl-btn btn-zoom-in" title="Zoom In">+</button>
-      <button class="lens-ctrl-btn btn-zoom-out" title="Zoom Out">−</button>
-      <button class="lens-ctrl-btn btn-close" title="Close">✕</button>
+      <button class="lens-ctrl-btn btn-mode" title="Toggle Glass (Follows Content) / Lock (Frozen Snapshot)">
+        <svg class="icon-glass" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <svg class="icon-lock" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" style="display:none;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      </button>
+      <div class="lens-ctrl-sep"></div>
+      <button class="lens-ctrl-btn btn-zoom-out" title="Zoom Out (−)">
+        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </button>
+      <span class="lens-ctrl-badge" id="zoomBadge_${id}">${zoom.toFixed(1)}×</span>
+      <button class="lens-ctrl-btn btn-zoom-in" title="Zoom In (+)">
+        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </button>
+      <div class="lens-ctrl-sep"></div>
+      <button class="lens-ctrl-btn btn-close" title="Close Lens">
+        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
     `;
     container.appendChild(controls);
 
@@ -519,17 +531,29 @@ export class MagnifierLensController {
 
     // 2. Controls buttons (Mode, Zoom In, Zoom Out, Close)
     const btnMode = container.querySelector('.btn-mode') as HTMLElement;
+    const iconGlass = container.querySelector('.icon-glass') as HTMLElement;
+    const iconLock = container.querySelector('.icon-lock') as HTMLElement;
     btnMode?.addEventListener('click', (e) => {
       e.stopPropagation();
       lens.mode = lens.mode === 'glass' ? 'fixed' : 'glass';
-      btnMode.textContent = lens.mode === 'fixed' ? '🔒' : '🔍';
+      if (iconGlass && iconLock) {
+        iconGlass.style.display = lens.mode === 'fixed' ? 'none' : 'block';
+        iconLock.style.display = lens.mode === 'fixed' ? 'block' : 'none';
+      }
+      btnMode.classList.toggle('active', lens.mode === 'fixed');
       this.needsRedraw = true;
     });
+
+    const zoomBadge = container.querySelector('.lens-ctrl-badge') as HTMLElement;
+    const updateZoomBadge = () => {
+      if (zoomBadge) zoomBadge.textContent = `${lens.zoom.toFixed(1)}×`;
+    };
 
     const btnZoomIn = container.querySelector('.btn-zoom-in') as HTMLElement;
     btnZoomIn?.addEventListener('click', (e) => {
       e.stopPropagation();
       lens.zoom = Math.min(8.0, lens.zoom + 0.5);
+      updateZoomBadge();
       this.needsRedraw = true;
     });
 
@@ -537,6 +561,7 @@ export class MagnifierLensController {
     btnZoomOut?.addEventListener('click', (e) => {
       e.stopPropagation();
       lens.zoom = Math.max(1.5, lens.zoom - 0.5);
+      updateZoomBadge();
       this.needsRedraw = true;
     });
 

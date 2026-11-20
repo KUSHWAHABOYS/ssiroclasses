@@ -45,19 +45,19 @@ export class SettingsPanel {
         <!-- Top Modal Header -->
         <header class="stitch-header">
           <div style="display:flex; align-items:center; gap:16px;">
-            <div style="width:48px; height:48px; border-radius:14px; background:rgba(223,130,0,0.18); display:flex; align-items:center; justify-content:center; color:#ffd76a; border:1px solid rgba(255,215,106,0.3);">
+            <div style="width:48px; height:48px; border-radius:14px; background:linear-gradient(135deg, rgba(245,158,11,0.22), rgba(217,119,6,0.12)); display:flex; align-items:center; justify-content:center; color:#fbbf24; border:1px solid rgba(245,158,11,0.35);">
               <span class="material-symbols-outlined" style="font-size:26px;">tune</span>
             </div>
             <div style="display:flex; flex-direction:column;">
               <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
-                <h1 style="font-size:22px; font-weight:700; color:#fff7eb; margin:0; letter-spacing:-0.3px;">
+                <h1 style="font-size:22px; font-weight:700; color:#f8fafc; margin:0; letter-spacing:-0.3px;">
                   Settings
                 </h1>
-                <span style="padding:3px 10px; border-radius:9999px; background:#293452; color:#e9c258; font-size:12px; font-weight:600; letter-spacing:0.3px;">
+                <span style="padding:3px 10px; border-radius:9999px; background:rgba(245,158,11,0.12); color:#fbbf24; border:1px solid rgba(245,158,11,0.28); font-size:12px; font-weight:600; letter-spacing:0.3px;">
                   Smart Studio Pro v4.2 • 4K IFP Edition
                 </span>
               </div>
-              <p style="font-size:12.5px; color:#d0c5b1; margin:2px 0 0 0;">
+              <p style="font-size:12.5px; color:#94a3b8; margin:2px 0 0 0;">
                 65"–86" Maxhub &amp; Studio Flat Panel Master Controller
               </p>
             </div>
@@ -66,10 +66,10 @@ export class SettingsPanel {
           <!-- Top Right Quick Actions -->
           <div style="display:flex; align-items:center; gap:12px;">
             <button id="reset-all-btn" class="stitch-btn-cancel" style="min-height:46px; padding:0 18px; display:flex; align-items:center; gap:8px; font-size:13.5px;" title="Reset all settings to recommended defaults">
-              <span class="material-symbols-outlined" style="font-size:18px; color:#e9c258;">restart_alt</span>
+              <span class="material-symbols-outlined" style="font-size:18px; color:#fbbf24;">restart_alt</span>
               <span>Reset All</span>
             </button>
-            <button id="btnSettingsClose" aria-label="Close Settings" style="width:46px; height:46px; border-radius:50%; background:rgba(30,41,71,0.8); border:1px solid rgba(255,255,255,0.1); color:#dae2ff; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all 160ms ease;">
+            <button id="btnSettingsClose" aria-label="Close Settings" style="width:46px; height:46px; border-radius:50%; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); color:#cbd5e1; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all 160ms ease;">
               <span class="material-symbols-outlined" style="font-size:22px;">close</span>
             </button>
           </div>
