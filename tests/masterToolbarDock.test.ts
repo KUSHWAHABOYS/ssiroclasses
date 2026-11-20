@@ -232,7 +232,7 @@ describe('Master Floating Dock & Dynamic Inking Island Suite', () => {
       expect(lblFs?.textContent).toBe('Screen');
     });
 
-    it('cycles toolbar through 4 morphable layouts: strip -> box -> circle -> vertical -> strip', () => {
+    it('cycles toolbar through 2 streamlined layouts: strip <-> vertical', () => {
       const btnLayout = document.getElementById('btnDockLayout') as HTMLButtonElement;
       const container = document.getElementById('toolbarContainer');
       const popover = document.getElementById('dockLayoutPopover');
@@ -246,27 +246,25 @@ describe('Master Floating Dock & Dynamic Inking Island Suite', () => {
       btnLayout.click();
       expect(popover?.classList.contains('hidden')).toBe(false);
 
-      // Select Circle via popover
-      const circleOpt = popover?.querySelector('[data-layout="circle"]') as HTMLButtonElement;
-      expect(circleOpt).not.toBeNull();
-      circleOpt.click();
-      expect(toolbar.getLayout()).toBe('circle');
-      expect(container?.classList.contains('layout-circle')).toBe(true);
-      expect(popover?.classList.contains('hidden')).toBe(true);
-      expect(localStorage.getItem('ssiro_toolbar_layout')).toBe('circle');
-
-      // Test cycleLayout directly
-      toolbar.cycleLayout(); // circle -> vertical
+      // Select Vertical via popover
+      const verticalOpt = popover?.querySelector('[data-layout="vertical"]') as HTMLButtonElement;
+      expect(verticalOpt).not.toBeNull();
+      verticalOpt.click();
       expect(toolbar.getLayout()).toBe('vertical');
       expect(container?.classList.contains('layout-vertical')).toBe(true);
+      expect(popover?.classList.contains('hidden')).toBe(true);
+      expect(localStorage.getItem('ssiro_toolbar_layout')).toBe('vertical');
 
-      toolbar.cycleLayout(); // vertical -> strip
+      // Test cycleLayout directly: vertical -> strip
+      toolbar.cycleLayout();
       expect(toolbar.getLayout()).toBe('strip');
       expect(container?.classList.contains('layout-strip')).toBe(true);
+      expect(localStorage.getItem('ssiro_toolbar_layout')).toBe('strip');
 
-      toolbar.cycleLayout(); // strip -> box
-      expect(toolbar.getLayout()).toBe('box');
-      expect(container?.classList.contains('layout-box')).toBe(true);
+      // cycleLayout again: strip -> vertical
+      toolbar.cycleLayout();
+      expect(toolbar.getLayout()).toBe('vertical');
+      expect(container?.classList.contains('layout-vertical')).toBe(true);
     });
 
     it('provides crop-style resize handles for width and thickness adjustment', () => {
@@ -287,126 +285,6 @@ describe('Master Floating Dock & Dynamic Inking Island Suite', () => {
       expect(handleLeft).not.toBeNull();
       expect(handleRight).not.toBeNull();
       expect(dragRim).not.toBeNull();
-    });
-
-    it('renders concentric radial dial wheel SVG and perimeter resize handle with tactile grooves', () => {
-      const svg = document.getElementById('circleWheelSvg');
-      const circleHandle = document.getElementById('circleResizeHandle');
-      const activeWedge = document.getElementById('circleActiveWedge');
-      const exitWedge = document.getElementById('circleExitWedge');
-
-      expect(svg).not.toBeNull();
-      expect(circleHandle).not.toBeNull();
-      expect(activeWedge).not.toBeNull();
-      expect(exitWedge).not.toBeNull();
-
-      const grooves = circleHandle?.querySelectorAll('.bezel-notch-groove');
-      expect(grooves?.length).toBe(3);
-    });
-
-    it('renders and scales orbital halo crown dynamic island in circle layout', () => {
-      toolbar.setLayout('circle');
-      const island = document.getElementById('penDynamicIsland');
-      const container = document.getElementById('toolbarContainer');
-      const trackSvg = document.getElementById('islandOrbitTrackSvg');
-      const orbitRim = document.getElementById('orbitGlowRim');
-
-      expect(island).not.toBeNull();
-      expect(container?.classList.contains('layout-circle')).toBe(true);
-      expect(trackSvg).not.toBeNull();
-      expect(orbitRim).not.toBeNull();
-
-      // Test active tool attribute and rim glow sync
-      expect(container?.getAttribute('data-active-tool')).toBe('pen');
-      expect(orbitRim?.getAttribute('stroke')).toBe('#f59e0b');
-
-      // Switch to highlighter
-      store.setState({ activeTool: 'highlighter' });
-      expect(container?.getAttribute('data-active-tool')).toBe('highlighter');
-      expect(orbitRim?.getAttribute('stroke')).toBe('#38bdf8');
-
-      // Switch to eraser
-      store.setState({ activeTool: 'eraser' });
-      expect(container?.getAttribute('data-active-tool')).toBe('eraser');
-      expect(orbitRim?.getAttribute('stroke')).toBe('#ef4444');
-
-      // Switch to magnifier (laser)
-      store.setState({ activeTool: 'magnifier' });
-      expect(container?.getAttribute('data-active-tool')).toBe('magnifier');
-      expect(orbitRim?.getAttribute('stroke')).toBe('#a855f7');
-
-      // Reset back to pen
-      store.setState({ activeTool: 'pen' });
-    });
-
-    it('supports scaling dial size via slider, preset pills, and reset button', () => {
-      const slider = document.getElementById('layoutSizeSlider') as HTMLInputElement;
-      const badge = document.getElementById('layoutSizeBadge');
-      const resetBtn = document.getElementById('btnResetDialSize') as HTMLButtonElement;
-      const pills = document.querySelectorAll('.layout-size-pill[data-size]');
-
-      expect(slider).not.toBeNull();
-      expect(badge).not.toBeNull();
-      expect(resetBtn).not.toBeNull();
-      expect(pills.length).toBeGreaterThanOrEqual(4);
-
-      // Switch to circle layout
-      toolbar.setLayout('circle');
-      expect(toolbar.getLayout()).toBe('circle');
-
-      // Test preset pill click
-      const pill580 = Array.from(pills).find(p => p.getAttribute('data-size') === '580') as HTMLButtonElement;
-      expect(pill580).not.toBeNull();
-      pill580.click();
-
-      expect(slider.value).toBe('580');
-      expect(badge?.textContent).toBe('580px');
-      expect(localStorage.getItem('ssiro_circle_dock_size')).toBe('580');
-
-      // Test reset button
-      resetBtn.click();
-      expect(slider.value).toBe('480');
-      expect(badge?.textContent).toBe('480px');
-      expect(localStorage.getItem('ssiro_circle_dock_size')).toBe('480');
-    });
-
-    it('supports freeform pen/mouse dragging in circle mode from center hub or dial body', () => {
-      toolbar.setLayout('circle');
-      const container = document.getElementById('toolbarContainer')!;
-      const centerHub = document.getElementById('btnToolTranslate')!;
-      expect(centerHub).not.toBeNull();
-
-      // Check inner spokes count in SVG
-      const innerSpokes = document.querySelectorAll('.dial-inner-spokes line');
-      expect(innerSpokes.length).toBe(15);
-
-      // Simulate pointerdown on center hub and drag
-      container.dispatchEvent(new PointerEvent('pointerdown', {
-        clientX: 100,
-        clientY: 100,
-        bubbles: true,
-        pointerId: 1
-      }));
-
-      // Simulate pointermove beyond threshold (e.g. 50px)
-      window.dispatchEvent(new PointerEvent('pointermove', {
-        clientX: 160,
-        clientY: 180,
-        bubbles: true,
-        pointerId: 1
-      }));
-
-      expect(container.classList.contains('is-dragging')).toBe(true);
-
-      // Simulate pointerup to release
-      window.dispatchEvent(new PointerEvent('pointerup', {
-        clientX: 160,
-        clientY: 180,
-        bubbles: true,
-        pointerId: 1
-      }));
-
-      expect(container.classList.contains('is-dragging')).toBe(false);
     });
 
     it('keeps master toolbar active and independent on Blackboard Studio deck mode', () => {
