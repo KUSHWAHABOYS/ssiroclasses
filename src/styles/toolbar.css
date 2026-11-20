@@ -738,7 +738,13 @@
   pointer-events: none;
 }
 
-.toolbar-container.layout-circle #btnToolTranslate .ai-title {
+.toolbar-container.layout-circle #btnToolTranslate .ai-title,
+.toolbar-container.layout-circle #btnToolTranslate .ai-sub {
+  display: none !important;
+}
+
+.toolbar-container.layout-circle #btnToolTranslate .ai-circle-title {
+  display: block !important;
   font-size: calc(var(--circle-dock-size, 480px) * 0.025);
   font-weight: 700;
   color: #ffffff;
@@ -746,7 +752,8 @@
   text-shadow: 0 0 8px rgba(56, 189, 248, 0.8);
 }
 
-.toolbar-container.layout-circle #btnToolTranslate .ai-sub {
+.toolbar-container.layout-circle #btnToolTranslate .ai-circle-sub {
+  display: block !important;
   font-size: calc(var(--circle-dock-size, 480px) * 0.018);
   color: #7dd3fc;
   line-height: 1.1;

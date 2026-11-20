@@ -505,8 +505,10 @@ export class Toolbar {
                 </svg>
               </div>
               <div class="ai-text-box">
-                <span class="ai-title">AI Tools ▾</span>
-                <span class="ai-sub">⠿ Drag Dial</span>
+                <span class="ai-title">AI Translate</span>
+                <span class="ai-sub">Neural Live</span>
+                <span class="ai-circle-title" style="display:none;">AI Tools ▾</span>
+                <span class="ai-circle-sub" style="display:none;">⠿ Drag Dial</span>
               </div>
             </button>
 
