@@ -432,17 +432,6 @@
   box-shadow: 0 0 16px rgba(56, 189, 248, 0.4);
 }
 
-/* Laser Presenter Layer */
-.laser-layer {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 35;
-}
-
 .dock-sep {
   width: 1px;
   height: 24px;

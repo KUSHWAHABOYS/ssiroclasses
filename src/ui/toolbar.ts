@@ -12,7 +12,7 @@ import { gestureWatchdog } from '../core/gestureWatchdog';
 import { welcomeScreen } from './welcomeScreen';
 // TEACHER-SUITE: Smart Classroom Tools Suite
 import { timerController, curtainController, spotlightController, splitScreenController, pdfNotesExporter } from '../tools/teachingTools';
-import { laserController, LaserMode } from '../tools/laserController';
+import { magnifierLensController } from '../zoom/magnifierLens';
 import { slideView } from '../presenter/slideView';
 
 export class Toolbar {
@@ -63,14 +63,8 @@ export class Toolbar {
     this.restorePositionAndScale();
     this.restoreLayout();
 
-    // Initialize Laser Controller
-    laserController.init();
-
     // Ensure initial tool in UI matches store (Pen active by default)
     const initialTool = store.getState().activeTool || 'pen';
-    if (initialTool === 'magnifier') {
-      laserController.activate();
-    }
     const toolBtns = this.containerEl?.querySelectorAll<HTMLButtonElement>('[data-tool]');
     toolBtns?.forEach((btn) => {
       const t = btn.getAttribute('data-tool');
@@ -246,38 +240,43 @@ export class Toolbar {
             </button>
           </div>
 
-          <!-- 1D. LASER / MAGNIFIER PANEL -->
-          <div class="island-panel island-panel-laser" id="islandPanelLaser" style="display:none;">
-            <div class="island-tips-group" id="laserModesGroup">
-              <button class="island-tip-btn laser-mode-btn active" data-laser-mode="dot" type="button">Dot</button>
-              <button class="island-tip-btn laser-mode-btn" data-laser-mode="trail" type="button">Trail</button>
-              <button class="island-tip-btn laser-mode-btn" data-laser-mode="ring" type="button">Ring</button>
-              <button class="island-tip-btn laser-mode-btn" data-laser-mode="box" type="button" title="Box Frame (चौकोर खंड)">Box</button>
+          <!-- 1D. MAGNIFIER LENS PANEL (Circle vs Box, Resizable, Zoomable • Zero clutter) -->
+          <div class="island-panel island-panel-laser island-panel-lens" id="islandPanelLaser" style="display:none;">
+            <!-- Shape: Circle vs Box -->
+            <div class="island-tips-group" id="magShapeGroup">
+              <button class="island-tip-btn mag-shape-btn active" data-mag-shape="circle" type="button" title="Circle Lens (गोल लेंस)">Circle</button>
+              <button class="island-tip-btn mag-shape-btn" data-mag-shape="rect" type="button" title="Box Lens (चौकोर लेंस)">Box</button>
             </div>
 
             <div class="island-sep"></div>
 
-            <div class="island-stroke-group" id="laserSizeGroup">
-              <span class="island-stroke-label">SIZE</span>
-              <button class="stroke-dot-btn laser-size-btn" data-laser-size="6" type="button" title="Fine (6px)">
-                <span class="stroke-dot dot-1"></span>
-              </button>
-              <button class="stroke-dot-btn laser-size-btn active" data-laser-size="12" type="button" title="Medium (12px)">
-                <span class="stroke-dot dot-2"></span>
-              </button>
-              <button class="stroke-dot-btn laser-size-btn" data-laser-size="24" type="button" title="Large (24px)">
-                <span class="stroke-dot dot-4"></span>
-              </button>
+            <!-- Size Selector: Small, Medium, Large -->
+            <div class="island-tips-group" id="magSizeGroup">
+              <span class="island-stroke-label" style="font-size:10px; font-weight:700; color:#94a3b8; margin-right:2px;">SIZE</span>
+              <button class="island-tip-btn mag-size-btn" data-mag-size="200" type="button" title="Small Lens (200px)">Small</button>
+              <button class="island-tip-btn mag-size-btn active" data-mag-size="300" type="button" title="Medium Lens (300px)">Medium</button>
+              <button class="island-tip-btn mag-size-btn" data-mag-size="440" type="button" title="Large Lens (440px)">Large</button>
             </div>
 
             <div class="island-sep"></div>
 
-            <div class="island-swatches-group" id="laserSwatchesGroup">
-              <div class="color-swatch color-swatch-tactile laser-swatch active" style="background-color: #ef4444;" data-laser-color="#ef4444" title="Ruby Red"></div>
-              <div class="color-swatch color-swatch-tactile laser-swatch" style="background-color: #10b981;" data-laser-color="#10b981" title="Emerald Green"></div>
-              <div class="color-swatch color-swatch-tactile laser-swatch" style="background-color: #3b82f6;" data-laser-color="#3b82f6" title="Sapphire Blue"></div>
-              <div class="color-swatch color-swatch-tactile laser-swatch" style="background-color: #f59e0b;" data-laser-color="#f59e0b" title="Amber Gold"></div>
+            <!-- Zoom Multiplier: 2×, 3×, 4× -->
+            <div class="island-tips-group" id="magZoomGroup">
+              <span class="island-stroke-label" style="font-size:10px; font-weight:700; color:#94a3b8; margin-right:2px;">ZOOM</span>
+              <button class="island-tip-btn mag-zoom-btn active" data-mag-zoom="2.0" type="button" title="2× Clear Zoom">2×</button>
+              <button class="island-tip-btn mag-zoom-btn" data-mag-zoom="3.0" type="button" title="3× Standard Zoom">3×</button>
+              <button class="island-tip-btn mag-zoom-btn" data-mag-zoom="4.0" type="button" title="4× Deep Zoom">4×</button>
             </div>
+
+            <div class="island-sep"></div>
+
+            <!-- Pin Lens Action -->
+            <button class="island-action-btn" id="btnMagPin" type="button" title="Pin Lens (Drag anywhere & Resize with handles)" style="background:rgba(56,189,248,0.15); border-color:rgba(56,189,248,0.4); color:#38bdf8;">
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 17v5M9 2h6l-1 7h3l-5 8-5-8h3z"/>
+              </svg>
+              <span>Pin Lens</span>
+            </button>
           </div>
         </div>
 
@@ -373,15 +372,14 @@ export class Toolbar {
               <span class="dock-label">Clear</span>
             </button>
 
-            <!-- Laser Tool (Dot, Trail, Ring, Box • Double-tap for menu) -->
-            <button class="dock-btn tool-btn" id="btnToolMagnifier" data-tool="magnifier" data-has-sub="true" title="Laser (Double-tap for property bar)">
+            <!-- Magnifier Lens Tool (Circle/Box Zoom Lens • Double-tap for properties) -->
+            <button class="dock-btn tool-btn" id="btnToolMagnifier" data-tool="magnifier" data-has-sub="true" title="Magnifier Lens (Double-tap for Circle/Box & Zoom)">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="3" fill="currentColor"/>
-                <path d="M12 2v4M12 18v4M2 12h4M18 12h4"/>
-                <circle cx="12" cy="12" r="8"/>
+                <circle cx="11" cy="11" r="7"/>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
               </svg>
               <div class="dock-label-group">
-                <span class="dock-label">Laser</span>
+                <span class="dock-label">Lens</span>
                 <span class="dock-sub-arrow">▾</span>
               </div>
             </button>
@@ -1513,59 +1511,69 @@ export class Toolbar {
       annotationStore.clearAll();
     });
 
-    // Inking Island: Laser Pointer Controls
-    const laserModeBtns = this.containerEl.querySelectorAll<HTMLButtonElement>('.laser-mode-btn');
-    laserModeBtns.forEach((btn) => {
+    // Inking Island: Magnifier Lens Controls (Shape: Circle/Box, Size, Zoom, Pin)
+    const magShapeBtns = this.containerEl.querySelectorAll<HTMLButtonElement>('.mag-shape-btn');
+    magShapeBtns.forEach((btn) => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
         if (this.isDragging) return;
-        laserModeBtns.forEach((b) => b.classList.remove('active'));
+        magShapeBtns.forEach((b) => b.classList.remove('active'));
         btn.classList.add('active');
-        const mode = btn.getAttribute('data-laser-mode') as LaserMode;
-        if (mode) {
-          laserController.setMode(mode);
-        }
+        const shape = (btn.getAttribute('data-mag-shape') || 'circle') as 'circle' | 'rect';
+        store.updateSettings({ magnifierShape: shape });
       });
     });
 
-    const laserSizeBtns = this.containerEl.querySelectorAll<HTMLButtonElement>('.laser-size-btn');
-    laserSizeBtns.forEach((btn) => {
+    const magSizeBtns = this.containerEl.querySelectorAll<HTMLButtonElement>('.mag-size-btn');
+    magSizeBtns.forEach((btn) => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
         if (this.isDragging) return;
-        laserSizeBtns.forEach((b) => b.classList.remove('active'));
+        magSizeBtns.forEach((b) => b.classList.remove('active'));
         btn.classList.add('active');
-        const size = parseInt(btn.getAttribute('data-laser-size') || '12', 10);
-        laserController.setSize(size);
+        const size = parseInt(btn.getAttribute('data-mag-size') || '300', 10);
+        store.updateSettings({ magnifierSize: size });
       });
     });
 
-    const laserSwatches = this.containerEl.querySelectorAll<HTMLElement>('.laser-swatch');
-    laserSwatches.forEach((sw) => {
-      sw.addEventListener('click', (e) => {
+    const magZoomBtns = this.containerEl.querySelectorAll<HTMLButtonElement>('.mag-zoom-btn');
+    magZoomBtns.forEach((btn) => {
+      btn.addEventListener('click', (e) => {
         e.stopPropagation();
         if (this.isDragging) return;
-        laserSwatches.forEach((s) => s.classList.remove('active'));
-        sw.classList.add('active');
-        const color = sw.getAttribute('data-color');
-        if (color) {
-          laserController.setColor(color);
-        }
+        magZoomBtns.forEach((b) => b.classList.remove('active'));
+        btn.classList.add('active');
+        const zoom = parseFloat(btn.getAttribute('data-mag-zoom') || '2.0');
+        store.updateSettings({ magnifierZoom: zoom });
       });
     });
 
-    // Sync initial active state for Laser controls
-    const curLaserMode = laserController.getMode();
-    laserModeBtns.forEach((b) => {
-      b.classList.toggle('active', b.getAttribute('data-laser-mode') === curLaserMode);
+    // Pin Lens Button
+    document.getElementById('btnMagPin')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (this.isDragging) return;
+      const stage = document.getElementById('stage') || document.body;
+      const rect = stage.getBoundingClientRect();
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+      magnifierLensController.pinLensAt(centerX, centerY);
     });
-    const curLaserSize = laserController.getSize();
-    laserSizeBtns.forEach((b) => {
-      b.classList.toggle('active', parseInt(b.getAttribute('data-laser-size') || '12', 10) === curLaserSize);
+
+    // Sync initial active state for Magnifier Lens controls
+    const curSettings = store.getState().settings;
+    const curMagShape = curSettings.magnifierShape || 'circle';
+    magShapeBtns.forEach((b) => {
+      b.classList.toggle('active', b.getAttribute('data-mag-shape') === curMagShape);
     });
-    const curLaserColor = laserController.getColor();
-    laserSwatches.forEach((s) => {
-      s.classList.toggle('active', s.getAttribute('data-color') === curLaserColor);
+    const curMagSize = curSettings.magnifierSize || 300;
+    magSizeBtns.forEach((b) => {
+      const s = parseInt(b.getAttribute('data-mag-size') || '300', 10);
+      b.classList.toggle('active', Math.abs(s - curMagSize) < 60);
+    });
+    const curMagZoom = curSettings.magnifierZoom || 2.0;
+    magZoomBtns.forEach((b) => {
+      const z = parseFloat(b.getAttribute('data-mag-zoom') || '2.0');
+      b.classList.toggle('active', Math.abs(z - curMagZoom) < 0.3);
     });
 
     // Undo & Redo & Clear All
@@ -1853,13 +1861,6 @@ export class Toolbar {
             btn.classList.toggle('active', t === state.activeTool);
           }
         });
-
-        // Laser controller activation/deactivation
-        if (state.activeTool === 'magnifier') {
-          laserController.activate();
-        } else if (prev.activeTool === 'magnifier') {
-          laserController.deactivate();
-        }
 
         // Toggle and morph Dynamic Inking Island when switching tools:
         if (this.penIslandEl) {

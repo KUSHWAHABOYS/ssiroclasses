@@ -948,35 +948,33 @@ export class MagnifierLensController {
 
     ctx.restore(); // Restore clip
 
-    // 7. Clean, Modern 1.5px/2px Accent Border (NO black shadows/artifacts)
+    // 7. Ultra-Sleek, Clean 1.5px Precision Optical Glass Bezel (Light, subtle, no clunky borders)
     ctx.save();
-    const ringGrad = ctx.createLinearGradient(
-      destOffsetX, destOffsetY,
-      destOffsetX + width, destOffsetY + height
-    );
-    ringGrad.addColorStop(0, '#FFD76A');
-    ringGrad.addColorStop(1, '#F59E0B');
-
-    ctx.strokeStyle = ringGrad;
-    ctx.lineWidth = 2; // Crisp, modern 2px solid accent border
-
-    // Soft warm golden glow - completely removes black corner smudges
-    ctx.shadowColor = 'rgba(245, 158, 11, 0.35)';
-    ctx.shadowBlur = 6;
+    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.25)';
+    ctx.shadowBlur = 4;
 
     ctx.beginPath();
     if (isCircle) {
       const radius = Math.min(width, height) / 2;
-      ctx.arc(destOffsetX + width / 2, destOffsetY + height / 2, radius - 1, 0, Math.PI * 2);
+      ctx.arc(destOffsetX + width / 2, destOffsetY + height / 2, radius - 0.75, 0, Math.PI * 2);
     } else {
-      const radius = Math.min(12, width / 4, height / 4);
-      const x = destOffsetX + 1;
-      const y = destOffsetY + 1;
-      const w = width - 2;
-      const h = height - 2;
+      const radius = Math.min(10, width / 4, height / 4);
+      const x = destOffsetX + 0.75;
+      const y = destOffsetY + 0.75;
+      const w = width - 1.5;
+      const h = height - 1.5;
       ctx.roundRect ? ctx.roundRect(x, y, w, h, radius) : ctx.rect(x, y, w, h);
     }
     ctx.stroke();
+
+    // Subtle delicate outer hairline rim
+    ctx.lineWidth = 0.75;
+    ctx.strokeStyle = 'rgba(56, 189, 248, 0.5)';
+    ctx.shadowBlur = 0;
+    ctx.stroke();
+
     ctx.restore();
   }
 

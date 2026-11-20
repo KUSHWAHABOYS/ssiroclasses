@@ -204,11 +204,11 @@ describe('Master Floating Dock & Dynamic Inking Island Suite', () => {
       expect(btnSplit).toBeNull();
     });
 
-    it('supports Dynamic Island across Pen, Marker, Eraser, and Laser with double-tap expand', () => {
+    it('supports Dynamic Island across Pen, Marker, Eraser, and Lens with double-tap expand', () => {
       const island = document.getElementById('penDynamicIsland');
       const markerBtn = document.getElementById('btnToolHighlighter');
       const eraserBtn = document.getElementById('btnToolEraser');
-      const laserBtn = document.getElementById('btnToolMagnifier');
+      const lensBtn = document.getElementById('btnToolMagnifier');
 
       // Single click selects tool and keeps island collapsed
       markerBtn?.click();
@@ -230,29 +230,35 @@ describe('Master Floating Dock & Dynamic Inking Island Suite', () => {
       expect(island?.classList.contains('collapsed')).toBe(false);
       expect(document.getElementById('islandPanelEraser')?.style.display).not.toBe('none');
 
-      // Single click on Laser selects it, collapses island
-      laserBtn?.click();
+      // Single click on Lens selects it, collapses island
+      lensBtn?.click();
       expect(store.getState().activeTool).toBe('magnifier');
       expect(island?.classList.contains('collapsed')).toBe(true);
 
-      // Double-click on Laser opens island with 4 laser modes
-      laserBtn?.dispatchEvent(new MouseEvent('dblclick', { bubbles: true }));
+      // Double-click on Lens opens island with Circle and Box lens modes
+      lensBtn?.dispatchEvent(new MouseEvent('dblclick', { bubbles: true }));
       expect(island?.classList.contains('collapsed')).toBe(false);
       expect(document.getElementById('islandPanelLaser')?.style.display).not.toBe('none');
 
-      // Check 4 modes: Dot, Trail, Ring, Box
-      const btnDot = document.querySelector('.laser-mode-btn[data-laser-mode="dot"]') as HTMLButtonElement;
-      const btnTrail = document.querySelector('.laser-mode-btn[data-laser-mode="trail"]') as HTMLButtonElement;
-      const btnRing = document.querySelector('.laser-mode-btn[data-laser-mode="ring"]') as HTMLButtonElement;
-      const btnBox = document.querySelector('.laser-mode-btn[data-laser-mode="box"]') as HTMLButtonElement;
+      // Check Shape: Circle and Box
+      const btnCircle = document.querySelector('.mag-shape-btn[data-mag-shape="circle"]') as HTMLButtonElement;
+      const btnBox = document.querySelector('.mag-shape-btn[data-mag-shape="rect"]') as HTMLButtonElement;
 
-      expect(btnDot).not.toBeNull();
-      expect(btnTrail).not.toBeNull();
-      expect(btnRing).not.toBeNull();
+      expect(btnCircle).not.toBeNull();
       expect(btnBox).not.toBeNull();
 
       btnBox?.click();
       expect(btnBox?.classList.contains('active')).toBe(true);
+      expect(store.getState().settings.magnifierShape).toBe('rect');
+
+      // Check Size and Zoom buttons
+      const btnSizeLarge = document.querySelector('.mag-size-btn[data-mag-size="440"]') as HTMLButtonElement;
+      btnSizeLarge?.click();
+      expect(store.getState().settings.magnifierSize).toBe(440);
+
+      const btnZoom3x = document.querySelector('.mag-zoom-btn[data-mag-zoom="3.0"]') as HTMLButtonElement;
+      btnZoom3x?.click();
+      expect(store.getState().settings.magnifierZoom).toBe(3.0);
     });
 
     it('starts toolbar in compact mode with More button expanding secondary suite', () => {
