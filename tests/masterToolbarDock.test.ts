@@ -206,34 +206,51 @@ describe('Master Floating Dock & Dynamic Inking Island Suite', () => {
       expect(lblFs?.textContent).toBe('स्क्रीन');
     });
 
-    it('cycles toolbar through 4 morphable layouts: strip -> box -> vertical -> orb -> strip', () => {
+    it('cycles toolbar through 4 morphable layouts: strip -> box -> circle -> vertical -> strip', () => {
       const btnLayout = document.getElementById('btnDockLayout') as HTMLButtonElement;
       const container = document.getElementById('toolbarContainer');
+      const popover = document.getElementById('dockLayoutPopover');
       expect(btnLayout).not.toBeNull();
+      expect(popover).not.toBeNull();
 
       expect(toolbar.getLayout()).toBe('strip');
       expect(container?.classList.contains('layout-strip')).toBe(true);
 
-      // Cycle 1: Box (चौकोर)
+      // Tapping btnDockLayout opens popover
       btnLayout.click();
-      expect(toolbar.getLayout()).toBe('box');
-      expect(container?.classList.contains('layout-box')).toBe(true);
-      expect(localStorage.getItem('ssiro_toolbar_layout')).toBe('box');
+      expect(popover?.classList.contains('hidden')).toBe(false);
 
-      // Cycle 2: Vertical (खड़ा)
-      btnLayout.click();
+      // Select Circle (सर्कल डायल) via popover
+      const circleOpt = popover?.querySelector('[data-layout="circle"]') as HTMLButtonElement;
+      expect(circleOpt).not.toBeNull();
+      circleOpt.click();
+      expect(toolbar.getLayout()).toBe('circle');
+      expect(container?.classList.contains('layout-circle')).toBe(true);
+      expect(popover?.classList.contains('hidden')).toBe(true);
+      expect(localStorage.getItem('ssiro_toolbar_layout')).toBe('circle');
+
+      // Test cycleLayout directly
+      toolbar.cycleLayout(); // circle -> vertical
       expect(toolbar.getLayout()).toBe('vertical');
       expect(container?.classList.contains('layout-vertical')).toBe(true);
 
-      // Cycle 3: Orb (मिनी गोलाकार बटन)
-      btnLayout.click();
-      expect(toolbar.getLayout()).toBe('orb');
-      expect(container?.classList.contains('layout-orb')).toBe(true);
-
-      // Cycle 4: Back to Strip
-      btnLayout.click();
+      toolbar.cycleLayout(); // vertical -> strip
       expect(toolbar.getLayout()).toBe('strip');
       expect(container?.classList.contains('layout-strip')).toBe(true);
+
+      toolbar.cycleLayout(); // strip -> box
+      expect(toolbar.getLayout()).toBe('box');
+      expect(container?.classList.contains('layout-box')).toBe(true);
+    });
+
+    it('provides crop-style resize handles for width and thickness adjustment', () => {
+      const handleE = document.getElementById('cropHandleE');
+      const handleS = document.getElementById('cropHandleS');
+      const handleCorner = document.getElementById('toolbarResizeHandle');
+
+      expect(handleE).not.toBeNull();
+      expect(handleS).not.toBeNull();
+      expect(handleCorner).not.toBeNull();
     });
   });
 });

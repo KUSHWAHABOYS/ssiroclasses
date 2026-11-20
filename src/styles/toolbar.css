@@ -277,32 +277,19 @@
   overflow-x: auto;
   overflow-y: hidden;
   user-select: none;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(245, 158, 11, 0.45) rgba(0, 0, 0, 0.25);
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
   touch-action: pan-x;
 }
 
 .studio-master-dock::-webkit-scrollbar {
-  height: 4px;
-  display: block;
-}
-
-.studio-master-dock::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.25);
-  border-radius: 9999px;
-}
-
-.studio-master-dock::-webkit-scrollbar-thumb {
-  background: rgba(245, 158, 11, 0.45);
-  border-radius: 9999px;
-}
-
-.studio-master-dock::-webkit-scrollbar-thumb:hover {
-  background: rgba(245, 158, 11, 0.85);
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
 }
 
 /* ==========================================================================
-   MULTI-LAYOUT MORPHING STYLES (Strip, Box, Vertical, Orb)
+   MULTI-LAYOUT MORPHING STYLES (Strip, Box, Circle, Vertical)
    ========================================================================== */
 
 /* Layout 1: Compact Grid Box (चौकोर ग्रिड - Fits any 4:3 or narrow screen) */
@@ -311,7 +298,7 @@
 }
 
 .toolbar-container.layout-box .studio-master-dock {
-  width: 540px;
+  width: var(--box-dock-width, 540px);
   max-width: calc(100vw - 24px);
   flex-wrap: wrap;
   justify-content: center;
@@ -345,7 +332,11 @@
   padding: 10px 4px;
   border-radius: 28px;
   gap: 6px;
-  scrollbar-width: thin;
+  scrollbar-width: none !important;
+}
+
+.toolbar-container.layout-vertical .studio-master-dock::-webkit-scrollbar {
+  display: none !important;
 }
 
 .toolbar-container.layout-vertical .dock-section {
@@ -387,75 +378,66 @@
   display: none;
 }
 
-.toolbar-container.layout-vertical .studio-master-dock::-webkit-scrollbar {
-  width: 3px;
-  display: block;
-}
-
-/* Layout 3: Mini Orb / Floating Bubble (अल्ट्रा-क्लीन 52px फ्लोटिंग बटन) */
-.toolbar-container.layout-orb {
-  width: 52px !important;
-  height: 52px !important;
-  min-width: 52px !important;
-  min-height: 52px !important;
+/* Layout 3: Circular Radial Teaching Dial (सर्कल डायल / एकदम गोल टूलबार) */
+.toolbar-container.layout-circle {
+  white-space: normal;
   border-radius: 50% !important;
-  overflow: visible !important;
 }
 
-.toolbar-container.layout-orb .master-toolbar-wrapper {
-  width: 52px !important;
-  height: 52px !important;
+.toolbar-container.layout-circle .master-toolbar-wrapper {
+  align-items: center;
+  justify-content: center;
 }
 
-.toolbar-container.layout-orb .pen-dynamic-island,
-.toolbar-container.layout-orb .toolbar-resize-handle,
-.toolbar-container.layout-orb .toolbar-scale-badge {
-  display: none !important;
-}
-
-.toolbar-container.layout-orb .studio-master-dock {
-  width: 52px !important;
-  height: 52px !important;
-  min-width: 52px !important;
-  min-height: 52px !important;
-  padding: 0 !important;
+.toolbar-container.layout-circle .studio-master-dock {
+  width: var(--circle-dock-size, 490px);
+  height: var(--circle-dock-size, 490px);
+  min-width: var(--circle-dock-size, 490px);
+  min-height: var(--circle-dock-size, 490px);
   border-radius: 50% !important;
-  background: radial-gradient(circle at 35% 35%, rgba(245, 158, 11, 0.45), rgba(11, 15, 24, 0.96)) !important;
-  border: 2px solid rgba(251, 191, 36, 0.9) !important;
-  box-shadow: 0 0 24px rgba(245, 158, 11, 0.65), 0 10px 25px rgba(0, 0, 0, 0.8) !important;
-  cursor: pointer !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  overflow: hidden !important;
+  background: radial-gradient(circle at center, rgba(17, 24, 39, 0.98) 0%, rgba(11, 15, 24, 0.98) 72%, rgba(245, 158, 11, 0.22) 100%) !important;
+  border: 2.5px solid rgba(245, 158, 11, 0.6) !important;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.9), 0 0 40px rgba(245, 158, 11, 0.35), inset 0 0 30px rgba(245, 158, 11, 0.12) !important;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  box-sizing: border-box;
+  overflow: hidden;
+  position: relative;
 }
 
-.toolbar-container.layout-orb .studio-master-dock > *:not(#btnDockLayout) {
-  display: none !important;
+/* Outer Ring Tool Rows (Top arc and Bottom arc) */
+.toolbar-container.layout-circle .dock-section:not(.dock-section-secondary) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 5px;
+  z-index: 2;
+  max-width: 90%;
 }
 
-.toolbar-container.layout-orb #btnDockLayout {
-  width: 100% !important;
-  height: 100% !important;
-  min-width: 52px !important;
-  border-radius: 50% !important;
-  background: transparent !important;
-  border: none !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  cursor: pointer !important;
-  padding: 0 !important;
+/* Center Core Hub: Secondary Tools (Timer, Spotlight, Screen, Mic, etc.) */
+.toolbar-container.layout-circle .dock-section-secondary {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 24px;
+  padding: 8px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  max-width: 260px;
+  gap: 6px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.6), inset 0 1px 2px rgba(255, 255, 255, 0.15);
+  z-index: 3;
 }
 
-.toolbar-container.layout-orb #btnDockLayout svg {
-  width: 24px !important;
-  height: 24px !important;
-  color: #fbbf24 !important;
-}
-
-.toolbar-container.layout-orb #btnDockLayout .dock-label {
-  display: none !important;
+.toolbar-container.layout-circle .pen-dynamic-island {
+  position: static;
+  margin-bottom: 6px;
 }
 
 /* Dock Sections & Dividers */
@@ -792,7 +774,53 @@
   box-shadow: 0 0 12px rgba(239, 68, 68, 0.35);
 }
 
-/* Corner Resize Handle */
+/* ==========================================================================
+   CROP-STYLE RESIZE HANDLES (क्रॉपिंग बॉक्स की तरह रिसाइज)
+   ========================================================================== */
+
+.crop-handle {
+  position: absolute;
+  z-index: 40;
+  touch-action: none;
+  background: transparent;
+  transition: border-color 140ms ease, box-shadow 140ms ease;
+}
+
+/* Right Edge Handle (चौड़ाई: पतला / चौड़ा) */
+.crop-handle-e {
+  top: 15%;
+  right: -6px;
+  width: 12px;
+  height: 70%;
+  cursor: ew-resize;
+  border-right: 3px solid rgba(245, 158, 11, 0.45);
+  border-radius: 4px;
+}
+
+.crop-handle-e:hover,
+.toolbar-container.is-resizing-w .crop-handle-e {
+  border-right-color: #fbbf24;
+  box-shadow: 2px 0 10px rgba(245, 158, 11, 0.7);
+}
+
+/* Bottom Edge Handle (ऊँचाई / मोटाई: पतला / मोटा) */
+.crop-handle-s {
+  left: 20%;
+  bottom: -6px;
+  width: 60%;
+  height: 12px;
+  cursor: ns-resize;
+  border-bottom: 3px solid rgba(245, 158, 11, 0.45);
+  border-radius: 4px;
+}
+
+.crop-handle-s:hover,
+.toolbar-container.is-resizing-h .crop-handle-s {
+  border-bottom-color: #fbbf24;
+  box-shadow: 0 2px 10px rgba(245, 158, 11, 0.7);
+}
+
+/* Corner Resize Handle (Crop Frame corner) */
 .toolbar-resize-handle {
   position: absolute;
   right: -6px;
@@ -804,16 +832,104 @@
   justify-content: flex-end;
   padding: 4px;
   cursor: nwse-resize;
-  color: rgba(255, 255, 255, 0.35);
+  color: rgba(245, 158, 11, 0.5);
+  border-right: 2.5px solid rgba(245, 158, 11, 0.6);
+  border-bottom: 2.5px solid rgba(245, 158, 11, 0.6);
+  border-bottom-right-radius: 8px;
   touch-action: none;
-  z-index: 25;
-  transition: color 150ms ease, transform 150ms ease;
+  z-index: 45;
+  transition: color 150ms ease, transform 150ms ease, border-color 150ms ease;
 }
 
 .toolbar-resize-handle:hover,
 .toolbar-container.is-resizing .toolbar-resize-handle {
   color: #fbbf24;
-  transform: scale(1.15);
+  border-color: #fbbf24;
+  box-shadow: 3px 3px 12px rgba(245, 158, 11, 0.55);
+  transform: scale(1.12);
+}
+
+/* ==========================================================================
+   LAYOUT SELECTOR POPOVER (Never get stuck)
+   ========================================================================== */
+.dock-layout-popover {
+  position: absolute;
+  top: -115px;
+  left: 36px;
+  background: rgba(13, 18, 28, 0.97);
+  border: 1px solid rgba(245, 158, 11, 0.45);
+  border-radius: 16px;
+  padding: 8px 12px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.85), 0 0 24px rgba(245, 158, 11, 0.25);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  z-index: 80;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: opacity 160ms ease, transform 160ms ease;
+  user-select: none;
+}
+
+.dock-layout-popover.hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(6px);
+  display: none !important;
+}
+
+.layout-popover-title {
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  color: #fde68a;
+  letter-spacing: 0.02em;
+  text-align: center;
+}
+
+.layout-popover-grid {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.layout-opt-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 6px 10px;
+  min-width: 62px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #cbd5e1;
+  cursor: pointer;
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  font-size: 9.5px;
+  font-weight: 600;
+  transition: all 140ms ease;
+  outline: none;
+}
+
+.layout-opt-btn:hover {
+  background: rgba(245, 158, 11, 0.18);
+  border-color: rgba(245, 158, 11, 0.5);
+  color: #fbbf24;
+  transform: translateY(-1px);
+}
+
+.layout-opt-btn.active {
+  background: rgba(245, 158, 11, 0.28);
+  border-color: #fbbf24;
+  color: #fbbf24;
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.45);
+}
+
+.layout-opt-btn svg {
+  width: 18px;
+  height: 18px;
 }
 
 /* Real-time Scale Badge */

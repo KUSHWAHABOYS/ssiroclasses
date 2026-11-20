@@ -24,7 +24,7 @@ export class Toolbar {
   private resizeHandleEl!: HTMLElement;
   private scaleBadgeEl: HTMLElement | null = null;
   private btnTierToggleEl!: HTMLButtonElement;
-  private currentLayout: 'strip' | 'box' | 'vertical' | 'orb' = 'strip';
+  private currentLayout: 'strip' | 'box' | 'circle' | 'vertical' = 'strip';
 
   private idleDimTimer: number = 0;
   private isDragging = false;
@@ -54,20 +54,13 @@ export class Toolbar {
     this.containerEl = document.getElementById('toolbarContainer') as HTMLElement;
     this.renderToolbar();
     this.bindDragging();
+    this.bindDockScroll();
     this.bindResizing();
     this.bindGhostMode();
     this.bindEvents();
     this.bindStore();
     this.restorePositionAndScale();
     this.restoreLayout();
-
-    // Smooth horizontal mouse wheel scroll on dock (converts deltaY to horizontal scroll)
-    this.masterDockEl?.addEventListener('wheel', (e: WheelEvent) => {
-      if (this.currentLayout === 'strip' && e.deltaY !== 0) {
-        this.masterDockEl.scrollLeft += e.deltaY;
-        e.preventDefault();
-      }
-    }, { passive: false });
 
     // Ensure initial tool in UI matches store (Pen active by default)
     const initialTool = store.getState().activeTool || 'pen';
@@ -167,7 +160,7 @@ export class Toolbar {
             </div>
 
             <!-- Shape / Morph Mode Switcher -->
-            <button class="dock-btn tool-btn" id="btnDockLayout" title="टूलबार लेआउट बदलें (पट्टी ➔ चौकोर ➔ खड़ा ➔ मिनी बटन)">
+            <button class="dock-btn tool-btn" id="btnDockLayout" title="टूलबार लेआउट बदलें (पट्टी, चौकोर, सर्कल, खड़ा)">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <rect x="3" y="3" width="7" height="7" rx="1.5"/>
                 <rect x="14" y="3" width="7" height="7" rx="1.5"/>
@@ -176,6 +169,29 @@ export class Toolbar {
               </svg>
               <span class="dock-label" id="dockLayoutLabel">लेआउट</span>
             </button>
+
+            <!-- Layout Selection Menu (never get stuck!) -->
+            <div class="dock-layout-popover hidden" id="dockLayoutPopover">
+              <div class="layout-popover-title">टूलबार आकार (Toolbar Shape)</div>
+              <div class="layout-popover-grid">
+                <button class="layout-opt-btn active" data-layout="strip" type="button" title="लंबी पट्टी (Horizontal Strip)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="8" width="20" height="8" rx="2"/></svg>
+                  <span>पट्टी</span>
+                </button>
+                <button class="layout-opt-btn" data-layout="box" type="button" title="क्रॉप बॉक्स / चौकोर (Crop Grid Box)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
+                  <span>चौकोर</span>
+                </button>
+                <button class="layout-opt-btn" data-layout="circle" type="button" title="सर्कल डायल (Circular Ring Dial)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg>
+                  <span>सर्कल</span>
+                </button>
+                <button class="layout-opt-btn" data-layout="vertical" type="button" title="खड़ा पट्टा (Vertical Side Dock)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="8" y="2" width="8" height="20" rx="2"/></svg>
+                  <span>खड़ा</span>
+                </button>
+              </div>
+            </div>
 
             <button class="dock-btn tool-btn" id="btnToolSelect" data-tool="select" title="Select (S)">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -377,7 +393,7 @@ export class Toolbar {
           <div class="dock-sep"></div>
 
           <!-- SECTION 6: Studio Hub & Extensions -->
-          <div class="dock-section">
+          <div class="dock-section dock-section-secondary">
             <!-- TEACHER TOOLS SUITE -->
             <button class="dock-btn-icon" id="btnToolTimer" title="टाइमर / स्टॉपवॉच (Countdown Timer & Stopwatch)">
               <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
@@ -486,8 +502,12 @@ export class Toolbar {
       <!-- Scale feedback badge -->
       <div class="toolbar-scale-badge" id="toolbarScaleBadge">100%</div>
 
-      <!-- Resize Handle (Corner grip, >= 44px touch target) -->
-      <div class="toolbar-resize-handle" id="toolbarResizeHandle" title="टूलबार का आकार बदलें (Resize Toolbar • खींचकर छोटा-बड़ा करें • डबल-टैप से 100%)">
+      <!-- Crop-Style Resizing Handles (क्रॉपिंग बॉक्स की तरह पतला/चौड़ा/मोटा रिसाइज) -->
+      <div class="crop-handle crop-handle-e" id="cropHandleE" title="चौड़ाई बदलें (पतला / चौड़ा • Drag Width)"></div>
+      <div class="crop-handle crop-handle-s" id="cropHandleS" title="ऊँचाई / मोटाई बदलें (पतला / मोटा • Drag Height)"></div>
+
+      <!-- Corner Resize Handle (Crop Frame corner, >= 44px touch target) -->
+      <div class="toolbar-resize-handle" id="toolbarResizeHandle" title="2D आकार बदलें (Crop Resize Corner • खींचकर छोटा-बड़ा करें • डबल-टैप से 100%)">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5">
           <line x1="20" y1="6" x2="6" y2="20"/>
           <line x1="20" y1="12" x2="12" y2="20"/>
@@ -546,14 +566,17 @@ export class Toolbar {
     };
 
     this.containerEl.addEventListener('pointerdown', (e: PointerEvent) => {
-      // Don't drag if interacting with the resize handle
+      // Don't drag if interacting with resize handles, crop handles, or layout popover
       const target = e.target as HTMLElement;
-      if (target.closest('#toolbarResizeHandle, .toolbar-resize-handle')) {
+      if (target.closest('#toolbarResizeHandle, .toolbar-resize-handle, .crop-handle, #dockLayoutPopover')) {
         return;
       }
 
-      // Check if clicked an interactive element (button, color swatch, input, etc.)
-      const isInteractive = !!target.closest('.dock-btn, .shape-dock-btn, .dock-btn-icon, .dock-btn-exit, .island-tip-btn, .stroke-dot-btn, .color-swatch-tactile, .color-swatch-spectrum, button, input, select');
+      // Toolbar window movement across the screen is ONLY initiated by dragging the drag handle:
+      const isDragHandle = !!target.closest('#dragHandle, .dock-drag-handle');
+      if (!isDragHandle) {
+        return;
+      }
 
       this.dragStartX = e.clientX;
       this.dragStartY = e.clientY;
@@ -564,21 +587,13 @@ export class Toolbar {
       this.initialToolbarTop = rect.top;
 
       this.wakeFromGhost();
-
-      if (!isInteractive) {
-        // Empty space, toolbar background, or drag handle: start dragging immediately!
-        this.isDragging = true;
-        dragThresholdMet = true;
-        this.containerEl.classList.add('is-dragging');
-        try {
-          this.containerEl.setPointerCapture(e.pointerId);
-        } catch {}
-        gestureWatchdog.registerGesture('toolbar-drag', () => stopDrag(), e.pointerId);
-      } else {
-        // On a button or swatch: wait for slight movement (> 5px) to distinguish tap from drag
-        pendingDrag = true;
-        dragThresholdMet = false;
-      }
+      this.isDragging = true;
+      dragThresholdMet = true;
+      this.containerEl.classList.add('is-dragging');
+      try {
+        this.containerEl.setPointerCapture(e.pointerId);
+      } catch {}
+      gestureWatchdog.registerGesture('toolbar-drag', () => stopDrag(), e.pointerId);
     });
 
     window.addEventListener('pointermove', (e: PointerEvent) => {
@@ -628,6 +643,71 @@ export class Toolbar {
     this.containerEl.addEventListener('lostpointercapture', () => stopDrag());
   }
 
+  private bindDockScroll(): void {
+    const dock = this.masterDockEl;
+    if (!dock) return;
+
+    let isDown = false;
+    let startX = 0;
+    let scrollStart = 0;
+    let didMove = false;
+
+    // Pointer-based touch, pen, stylus, and mouse horizontal pan
+    dock.addEventListener('pointerdown', (e: PointerEvent) => {
+      const target = e.target as HTMLElement;
+      if (target.closest('#dragHandle, .dock-drag-handle, .crop-handle, .toolbar-resize-handle, #dockLayoutPopover')) {
+        return;
+      }
+      isDown = true;
+      didMove = false;
+      startX = e.clientX;
+      scrollStart = dock.scrollLeft;
+    });
+
+    window.addEventListener('pointermove', (e: PointerEvent) => {
+      if (!isDown) return;
+      const dx = e.clientX - startX;
+      if (!didMove && Math.abs(dx) > 4) {
+        didMove = true;
+        try { dock.setPointerCapture(e.pointerId); } catch {}
+      }
+      if (didMove) {
+        dock.scrollLeft = scrollStart - dx;
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    });
+
+    const finishDockScroll = (e?: PointerEvent) => {
+      if (!isDown) return;
+      isDown = false;
+      if (didMove) {
+        if (e && e.pointerId !== undefined) {
+          try { dock.releasePointerCapture(e.pointerId); } catch {}
+        }
+        const suppressClick = (ev: MouseEvent) => {
+          ev.stopPropagation();
+          ev.preventDefault();
+        };
+        window.addEventListener('click', suppressClick, { capture: true, once: true });
+        setTimeout(() => window.removeEventListener('click', suppressClick, { capture: true }), 150);
+      }
+      didMove = false;
+    };
+
+    window.addEventListener('pointerup', finishDockScroll);
+    window.addEventListener('pointercancel', finishDockScroll);
+
+    // Mouse wheel horizontal scroll without yellow scrollbar
+    dock.addEventListener('wheel', (e: WheelEvent) => {
+      if (this.currentLayout === 'strip' && e.deltaY !== 0) {
+        dock.scrollLeft += e.deltaY;
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    }, { passive: false });
+  }
+
   private bindResizing(): void {
     const handle = this.resizeHandleEl;
     if (!handle) return;
@@ -637,6 +717,7 @@ export class Toolbar {
     let initialScale = 1.0;
     let unscaledWidth = 0;
     let originLeft = 0;
+    let initialCircleSize = 490;
 
     const stopResize = (e?: PointerEvent) => {
       if (!this.isResizing) return;
@@ -673,6 +754,10 @@ export class Toolbar {
       originLeft = rect.left;
       unscaledWidth = rect.width / initialScale;
 
+      if (this.currentLayout === 'circle') {
+        initialCircleSize = parseFloat(getComputedStyle(this.containerEl).getPropertyValue('--circle-dock-size')) || 490;
+      }
+
       gestureWatchdog.registerGesture('toolbar-resize', () => stopResize(), e.pointerId);
       this.wakeFromGhost();
     });
@@ -682,19 +767,28 @@ export class Toolbar {
       gestureWatchdog.recordActivity('toolbar-resize');
 
       const dx = e.clientX - startX;
-      const targetRenderedWidth = (unscaledWidth * initialScale) + dx;
-      const newScale = targetRenderedWidth / Math.max(100, unscaledWidth);
 
-      // Clamp scale between 0.50 and 2.50
-      const clampedScale = Math.max(0.50, Math.min(2.50, Math.round(newScale * 100) / 100));
-      this.applyScale(clampedScale, false);
+      if (this.currentLayout === 'circle') {
+        const newSize = Math.max(320, Math.min(780, Math.round(initialCircleSize + dx)));
+        this.containerEl.style.setProperty('--circle-dock-size', `${newSize}px`);
+        if (this.scaleBadgeEl) {
+          this.scaleBadgeEl.textContent = `${newSize}px (सर्कल व्यास)`;
+        }
+      } else {
+        const targetRenderedWidth = (unscaledWidth * initialScale) + dx;
+        const newScale = targetRenderedWidth / Math.max(100, unscaledWidth);
 
-      // If enlarged beyond viewport right boundary, shift left so it stays on screen
-      const currentRenderedWidth = unscaledWidth * clampedScale;
-      const maxLeft = window.innerWidth - currentRenderedWidth - 8;
-      const curLeft = parseFloat(this.containerEl.style.left) || originLeft;
-      if (curLeft > maxLeft && maxLeft > 8) {
-        this.containerEl.style.left = `${maxLeft}px`;
+        // Clamp scale between 0.50 and 2.50
+        const clampedScale = Math.max(0.50, Math.min(2.50, Math.round(newScale * 100) / 100));
+        this.applyScale(clampedScale, false);
+
+        // If enlarged beyond viewport right boundary, shift left so it stays on screen
+        const currentRenderedWidth = unscaledWidth * clampedScale;
+        const maxLeft = window.innerWidth - currentRenderedWidth - 8;
+        const curLeft = parseFloat(this.containerEl.style.left) || originLeft;
+        if (curLeft > maxLeft && maxLeft > 8) {
+          this.containerEl.style.left = `${maxLeft}px`;
+        }
       }
     });
 
@@ -709,9 +803,116 @@ export class Toolbar {
     // Double-click/double-tap to reset to 100% (1.0)
     handle.addEventListener('dblclick', (e) => {
       e.stopPropagation();
+      this.containerEl.style.removeProperty('--circle-dock-size');
+      this.containerEl.style.removeProperty('--box-dock-width');
+      if (this.masterDockEl) this.masterDockEl.style.removeProperty('width');
       this.applyScale(1.0, true);
       this.clampToViewport();
     });
+
+    // Crop Right Edge: width resize (पतला / चौड़ा)
+    const handleE = document.getElementById('cropHandleE');
+    if (handleE) {
+      let isResizingW = false;
+      let startX_E = 0;
+      let initialW = 0;
+
+      handleE.addEventListener('pointerdown', (e: PointerEvent) => {
+        e.stopPropagation();
+        e.preventDefault();
+        isResizingW = true;
+        startX_E = e.clientX;
+        try { handleE.setPointerCapture(e.pointerId); } catch {}
+        this.containerEl.classList.add('is-resizing-w');
+        if (this.currentLayout === 'circle') {
+          initialW = parseFloat(getComputedStyle(this.containerEl).getPropertyValue('--circle-dock-size')) || 490;
+        } else if (this.currentLayout === 'box') {
+          initialW = parseFloat(getComputedStyle(this.containerEl).getPropertyValue('--box-dock-width')) || 540;
+        } else {
+          initialW = this.masterDockEl.getBoundingClientRect().width / (this.toolbarScale || 1);
+        }
+        this.wakeFromGhost();
+      });
+
+      window.addEventListener('pointermove', (e: PointerEvent) => {
+        if (!isResizingW) return;
+        const dx = (e.clientX - startX_E) / (this.toolbarScale || 1);
+        if (this.currentLayout === 'circle') {
+          const newSize = Math.max(320, Math.min(780, Math.round(initialW + dx)));
+          this.containerEl.style.setProperty('--circle-dock-size', `${newSize}px`);
+          if (this.scaleBadgeEl) {
+            this.scaleBadgeEl.textContent = `${newSize}px (सर्कल व्यास)`;
+          }
+        } else if (this.currentLayout === 'box') {
+          const newW = Math.max(340, Math.min(window.innerWidth - 32, Math.round(initialW + dx)));
+          this.containerEl.style.setProperty('--box-dock-width', `${newW}px`);
+          if (this.scaleBadgeEl) {
+            this.scaleBadgeEl.textContent = `${newW}px (${newW > 540 ? 'चौड़ा' : 'पतला'})`;
+          }
+        } else {
+          const newW = Math.max(300, Math.min(window.innerWidth - 32, Math.round(initialW + dx)));
+          this.masterDockEl.style.width = `${newW}px`;
+          if (this.scaleBadgeEl) {
+            this.scaleBadgeEl.textContent = `${newW}px (चौड़ाई)`;
+          }
+        }
+      });
+
+      const stopResizingW = (e?: PointerEvent) => {
+        if (!isResizingW) return;
+        isResizingW = false;
+        this.containerEl.classList.remove('is-resizing-w');
+        if (e?.pointerId !== undefined) {
+          try { handleE.releasePointerCapture(e.pointerId); } catch {}
+        }
+        this.clampToViewport();
+      };
+      window.addEventListener('pointerup', stopResizingW);
+      window.addEventListener('pointercancel', stopResizingW);
+    }
+
+    // Crop Bottom Edge: height / scale resize (पतला / मोटा)
+    const handleS = document.getElementById('cropHandleS');
+    if (handleS) {
+      let isResizingH = false;
+      let startY_S = 0;
+      let initialScale_S = 1.0;
+
+      handleS.addEventListener('pointerdown', (e: PointerEvent) => {
+        e.stopPropagation();
+        e.preventDefault();
+        isResizingH = true;
+        startY_S = e.clientY;
+        initialScale_S = this.toolbarScale || 1.0;
+        try { handleS.setPointerCapture(e.pointerId); } catch {}
+        this.containerEl.classList.add('is-resizing-h');
+        this.wakeFromGhost();
+      });
+
+      window.addEventListener('pointermove', (e: PointerEvent) => {
+        if (!isResizingH) return;
+        const dy = e.clientY - startY_S;
+        const factor = 1 + (dy / 250);
+        const newScale = Math.max(0.50, Math.min(2.50, Math.round(initialScale_S * factor * 100) / 100));
+        this.applyScale(newScale, false);
+        if (this.scaleBadgeEl) {
+          this.scaleBadgeEl.textContent = `${Math.round(newScale * 100)}% (मोटाई)`;
+        }
+      });
+
+      const stopResizingH = (e?: PointerEvent) => {
+        if (!isResizingH) return;
+        isResizingH = false;
+        this.containerEl.classList.remove('is-resizing-h');
+        if (e?.pointerId !== undefined) {
+          try { handleS.releasePointerCapture(e.pointerId); } catch {}
+        }
+        this.applyScale(this.toolbarScale, true);
+        this.clampToViewport();
+      };
+      window.addEventListener('pointerup', stopResizingH);
+      window.addEventListener('pointercancel', stopResizingH);
+    }
 
     // Touch pinch-to-scale for 2-finger multi-touch boards
     let initialPinchDist = 0;
@@ -777,10 +978,10 @@ export class Toolbar {
     this.applyScale(scale, true);
   }
 
-  public setLayout(layout: 'strip' | 'box' | 'vertical' | 'orb'): void {
+  public setLayout(layout: 'strip' | 'box' | 'circle' | 'vertical'): void {
     this.currentLayout = layout;
     if (!this.containerEl) return;
-    this.containerEl.classList.remove('layout-strip', 'layout-box', 'layout-vertical', 'layout-orb');
+    this.containerEl.classList.remove('layout-strip', 'layout-box', 'layout-circle', 'layout-vertical', 'layout-orb');
     this.containerEl.classList.add(`layout-${layout}`);
 
     const labelEl = document.getElementById('dockLayoutLabel');
@@ -788,11 +989,17 @@ export class Toolbar {
       const names: Record<string, string> = {
         strip: 'पट्टी',
         box: 'चौकोर',
-        vertical: 'खड़ा',
-        orb: 'मिनी'
+        circle: 'सर्कल',
+        vertical: 'खड़ा'
       };
       labelEl.textContent = names[layout] || 'लेआउट';
     }
+
+    // Update active state in popover buttons
+    const popBtns = document.querySelectorAll<HTMLButtonElement>('.layout-opt-btn');
+    popBtns.forEach((b) => {
+      b.classList.toggle('active', b.getAttribute('data-layout') === layout);
+    });
 
     try {
       localStorage.setItem('ssiro_toolbar_layout', layout);
@@ -802,19 +1009,19 @@ export class Toolbar {
   }
 
   public cycleLayout(): void {
-    const sequence: ('strip' | 'box' | 'vertical' | 'orb')[] = ['strip', 'box', 'vertical', 'orb'];
+    const sequence: ('strip' | 'box' | 'circle' | 'vertical')[] = ['strip', 'box', 'circle', 'vertical'];
     const nextIdx = (sequence.indexOf(this.currentLayout) + 1) % sequence.length;
     this.setLayout(sequence[nextIdx]);
   }
 
-  public getLayout(): 'strip' | 'box' | 'vertical' | 'orb' {
+  public getLayout(): 'strip' | 'box' | 'circle' | 'vertical' {
     return this.currentLayout;
   }
 
   private restoreLayout(): void {
     try {
-      const saved = localStorage.getItem('ssiro_toolbar_layout') as 'strip' | 'box' | 'vertical' | 'orb' | null;
-      if (saved && ['strip', 'box', 'vertical', 'orb'].includes(saved)) {
+      const saved = localStorage.getItem('ssiro_toolbar_layout') as 'strip' | 'box' | 'circle' | 'vertical' | null;
+      if (saved && ['strip', 'box', 'circle', 'vertical'].includes(saved)) {
         this.setLayout(saved);
       } else {
         this.setLayout('strip');
@@ -1339,18 +1546,35 @@ export class Toolbar {
       window.dispatchEvent(new CustomEvent('toggle-settings'));
     });
 
-    // Dock Layout Switcher button
+    // Dock Layout Switcher button: toggles Layout Popover
     document.getElementById('btnDockLayout')?.addEventListener('click', (e) => {
       e.stopPropagation();
       if (this.isDragging) return;
-      this.cycleLayout();
+      const pop = document.getElementById('dockLayoutPopover');
+      if (pop) {
+        pop.classList.toggle('hidden');
+      }
     });
 
-    // In layout-orb mode, clicking anywhere on the master dock restores to normal strip
-    this.masterDockEl?.addEventListener('click', (e) => {
-      if (this.currentLayout === 'orb') {
+    // Layout option buttons in popover
+    const layoutOptBtns = document.querySelectorAll<HTMLButtonElement>('.layout-opt-btn');
+    layoutOptBtns.forEach((btn) => {
+      btn.addEventListener('click', (e) => {
         e.stopPropagation();
-        this.setLayout('strip');
+        const l = btn.getAttribute('data-layout') as 'strip' | 'box' | 'circle' | 'vertical' | null;
+        if (l) this.setLayout(l);
+        document.getElementById('dockLayoutPopover')?.classList.add('hidden');
+      });
+    });
+
+    // Close layout popover on outside click
+    window.addEventListener('click', (e) => {
+      const pop = document.getElementById('dockLayoutPopover');
+      if (pop && !pop.classList.contains('hidden')) {
+        const target = e.target as HTMLElement;
+        if (!target.closest('#dockLayoutPopover, #btnDockLayout')) {
+          pop.classList.add('hidden');
+        }
       }
     });
 
