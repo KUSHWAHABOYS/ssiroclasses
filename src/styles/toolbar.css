@@ -321,22 +321,47 @@
    MULTI-LAYOUT MORPHING STYLES (Strip, Box, Circle, Vertical)
    ========================================================================== */
 
-/* Layout 1: Compact Grid Box (चौकोर ग्रिड - Fits any 4:3 or narrow screen) */
+/* Layout 1: Compact Grid Box (Responsive wrap & flexible resize) */
 .toolbar-container.layout-box {
   white-space: normal;
 }
 
 .toolbar-container.layout-box .studio-master-dock {
   width: var(--box-dock-width, 540px);
-  max-width: calc(100vw - 24px);
+  height: var(--box-dock-height, auto);
+  min-width: 260px;
+  max-width: calc(100vw - 20px);
+  min-height: 90px;
+  max-height: calc(100vh - 60px);
+  display: flex;
   flex-wrap: wrap;
+  align-content: flex-start;
   justify-content: center;
   align-items: center;
   row-gap: 8px;
   column-gap: 6px;
-  padding: 10px 14px;
+  padding: 12px 14px;
   border-radius: 22px;
-  overflow: visible;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none !important;
+}
+
+.toolbar-container.layout-box .studio-master-dock::-webkit-scrollbar {
+  display: none !important;
+}
+
+.toolbar-container.layout-box .dock-section {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  flex-shrink: 1;
+}
+
+.toolbar-container.layout-box .dock-sep {
+  display: none;
 }
 
 .toolbar-container.layout-box .pen-dynamic-island {
@@ -407,66 +432,340 @@
   display: none;
 }
 
-/* Layout 3: Circular Radial Teaching Dial (सर्कल डायल / एकदम गोल टूलबार) */
+/* Layout 3: Circular Radial Teaching Dial (Concentric Radial Wheel UI) */
 .toolbar-container.layout-circle {
   white-space: normal;
   border-radius: 50% !important;
 }
 
 .toolbar-container.layout-circle .master-toolbar-wrapper {
+  position: relative;
   align-items: center;
   justify-content: center;
 }
 
 .toolbar-container.layout-circle .studio-master-dock {
-  width: var(--circle-dock-size, 490px);
-  height: var(--circle-dock-size, 490px);
-  min-width: var(--circle-dock-size, 490px);
-  min-height: var(--circle-dock-size, 490px);
+  width: var(--circle-dock-size, 480px);
+  height: var(--circle-dock-size, 480px);
+  min-width: var(--circle-dock-size, 480px);
+  min-height: var(--circle-dock-size, 480px);
   border-radius: 50% !important;
-  background: radial-gradient(circle at center, rgba(17, 24, 39, 0.98) 0%, rgba(11, 15, 24, 0.98) 72%, rgba(245, 158, 11, 0.22) 100%) !important;
-  border: 2.5px solid rgba(245, 158, 11, 0.6) !important;
-  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.9), 0 0 40px rgba(245, 158, 11, 0.35), inset 0 0 30px rgba(245, 158, 11, 0.12) !important;
-  padding: 24px;
+  background: radial-gradient(circle at center, #070d18 0%, #0a1324 75%, #050912 100%) !important;
+  border: 2px solid #0ea5e9 !important;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.9), 0 0 35px rgba(14, 165, 233, 0.45), inset 0 0 25px rgba(14, 165, 233, 0.18) !important;
+  padding: 0 !important;
+  display: block !important;
+  position: relative !important;
+  overflow: visible !important;
+  box-sizing: border-box;
+  touch-action: none;
+}
+
+/* Background Concentric SVG */
+.circle-wheel-svg {
+  display: none;
+}
+.toolbar-container.layout-circle .circle-wheel-svg {
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+  border-radius: 50%;
+}
+
+/* Outer Ring & Inner Ring Section Flattening */
+.toolbar-container.layout-circle .dock-section {
+  display: contents !important;
+}
+
+.toolbar-container.layout-circle .dock-sep,
+.toolbar-container.layout-circle .dock-drag-rim,
+.toolbar-container.layout-circle #dragHandle,
+.toolbar-container.layout-circle #dragHandleRight {
+  display: none !important;
+}
+
+/* Base styling for all dial buttons in layout-circle */
+.toolbar-container.layout-circle .dock-btn.tool-btn,
+.toolbar-container.layout-circle .dock-btn-exit {
+  position: absolute;
+  z-index: 4;
+  width: calc(var(--circle-dock-size, 480px) * 0.125);
+  height: calc(var(--circle-dock-size, 480px) * 0.125);
+  min-width: unset;
+  min-height: unset;
+  padding: 0;
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 2px;
+  cursor: pointer;
+  color: #f1f5f9;
+  transform: translate(-50%, -50%);
+  transition: transform 120ms ease, color 120ms ease;
+}
+
+.toolbar-container.layout-circle .dock-btn.tool-btn svg,
+.toolbar-container.layout-circle .dock-btn-exit svg {
+  width: calc(var(--circle-dock-size, 480px) * 0.048);
+  height: calc(var(--circle-dock-size, 480px) * 0.048);
+  stroke-width: 2.2;
+}
+
+.toolbar-container.layout-circle .dock-label {
+  font-size: calc(var(--circle-dock-size, 480px) * 0.023);
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  color: #e2e8f0;
+  line-height: 1;
+  display: block !important;
+}
+
+.toolbar-container.layout-circle .dock-sub-arrow,
+.toolbar-container.layout-circle .pen-active-dot {
+  display: none !important;
+}
+
+/* Hover on dial buttons */
+.toolbar-container.layout-circle .dock-btn.tool-btn:hover {
+  transform: translate(-50%, -50%) scale(1.12);
+  color: #38bdf8;
+}
+
+/* Active State for Pen and Tools */
+.toolbar-container.layout-circle .tool-pen.active,
+.toolbar-container.layout-circle .dock-btn.tool-btn.active {
+  color: #fbbf24 !important;
+}
+.toolbar-container.layout-circle .tool-pen.active .dock-label,
+.toolbar-container.layout-circle .dock-btn.tool-btn.active .dock-label {
+  color: #fbbf24 !important;
+  text-shadow: 0 0 10px rgba(245, 158, 11, 0.8);
+}
+
+/* Exit Power Button (6 o'clock) */
+.toolbar-container.layout-circle #btnCloseSession {
+  position: absolute;
+  left: 50.00%;
+  top: 89.00%;
+  transform: translate(-50%, -50%);
+  width: calc(var(--circle-dock-size, 480px) * 0.125);
+  height: calc(var(--circle-dock-size, 480px) * 0.125);
+  background: transparent !important;
+  border: none !important;
+  color: #ef4444;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  z-index: 5;
+}
+.toolbar-container.layout-circle #btnCloseSession svg {
+  width: calc(var(--circle-dock-size, 480px) * 0.054);
+  height: calc(var(--circle-dock-size, 480px) * 0.054);
+  stroke-width: 2.5;
+  filter: drop-shadow(0 0 8px rgba(239, 68, 68, 0.85));
+}
+.toolbar-container.layout-circle #btnCloseSession span {
+  display: none !important;
+}
+
+/* Exact Radial Coordinates for Outer 14 Ring Tools */
+.toolbar-container.layout-circle #btnToolPen            { left: 50.00%; top: 11.00%; }
+.toolbar-container.layout-circle #btnToolHighlighter    { left: 66.92%; top: 14.86%; }
+.toolbar-container.layout-circle #btnToolEraser         { left: 80.49%; top: 25.68%; }
+.toolbar-container.layout-circle #btnToolMagnifier      { left: 88.02%; top: 41.32%; }
+.toolbar-container.layout-circle #btnToolHandwriting    { left: 88.02%; top: 58.68%; }
+.toolbar-container.layout-circle #btnGemini             { left: 80.49%; top: 74.32%; }
+.toolbar-container.layout-circle #btnToolFitModeTier1   { left: 66.92%; top: 85.14%; }
+.toolbar-container.layout-circle #btnToolMic            { left: 33.08%; top: 85.14%; }
+.toolbar-container.layout-circle #btnClearAll           { left: 19.51%; top: 74.32%; }
+.toolbar-container.layout-circle #btnRedo               { left: 11.98%; top: 58.68%; }
+.toolbar-container.layout-circle #btnUndo               { left: 11.98%; top: 41.32%; }
+.toolbar-container.layout-circle #btnToolAutoStraighten { left: 19.51%; top: 25.68%; }
+.toolbar-container.layout-circle #btnToolSelect         { left: 33.08%; top: 14.86%; }
+
+/* Inner Ring: Shapes Pill & 5 Shapes */
+.toolbar-container.layout-circle .dock-shapes-pill {
+  display: contents !important;
+}
+
+.toolbar-container.layout-circle .shape-dock-btn {
+  position: absolute;
+  z-index: 5;
+  width: calc(var(--circle-dock-size, 480px) * 0.095);
+  height: calc(var(--circle-dock-size, 480px) * 0.095);
+  padding: 0;
+  border: none !important;
+  background: transparent !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  color: #e2e8f0;
+  transform: translate(-50%, -50%);
+  transition: transform 120ms ease, color 120ms ease;
+}
+
+.toolbar-container.layout-circle .shape-dock-btn svg {
+  width: calc(var(--circle-dock-size, 480px) * 0.046);
+  height: calc(var(--circle-dock-size, 480px) * 0.046);
+  stroke-width: 2.2;
+}
+
+.toolbar-container.layout-circle .shape-dock-btn:hover {
+  transform: translate(-50%, -50%) scale(1.2);
+  color: #38bdf8;
+}
+
+.toolbar-container.layout-circle .shape-dock-btn.active {
+  color: #fbbf24 !important;
+  filter: drop-shadow(0 0 10px rgba(245, 158, 11, 0.85));
+}
+
+.toolbar-container.layout-circle #btnToolRect     { left: 50.00%; top: 26.50%; }
+.toolbar-container.layout-circle #btnToolCircle   { left: 72.35%; top: 42.74%; }
+.toolbar-container.layout-circle #btnToolTriangle { left: 63.81%; top: 69.01%; }
+.toolbar-container.layout-circle #btnToolArrow    { left: 36.19%; top: 69.01%; }
+.toolbar-container.layout-circle #btnToolLine     { left: 27.65%; top: 42.74%; }
+
+/* Center Hub: [AI] AI Tools ▾ */
+.toolbar-container.layout-circle #btnToolTranslate {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: calc(var(--circle-dock-size, 480px) * 0.28);
+  height: calc(var(--circle-dock-size, 480px) * 0.28);
+  border-radius: 50% !important;
+  background: radial-gradient(circle, #0284c7 0%, #0369a1 70%, #082f49 100%) !important;
+  border: 2px solid #38bdf8 !important;
+  box-shadow: 0 0 24px rgba(56, 189, 248, 0.65), inset 0 0 14px rgba(255, 255, 255, 0.3) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 2px;
+  z-index: 6;
+  cursor: pointer;
+  padding: 0 !important;
+}
+
+.toolbar-container.layout-circle #btnToolTranslate .ai-ping-dot {
+  display: none !important;
+}
+
+.toolbar-container.layout-circle #btnToolTranslate .ai-icon-box svg {
+  width: calc(var(--circle-dock-size, 480px) * 0.056);
+  height: calc(var(--circle-dock-size, 480px) * 0.056);
+  stroke: #ffffff;
+}
+
+.toolbar-container.layout-circle #btnToolTranslate .ai-text-box {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: space-between;
-  box-sizing: border-box;
-  overflow: hidden;
-  position: relative;
+  margin: 0;
 }
 
-/* Outer Ring Tool Rows (Top arc and Bottom arc) */
-.toolbar-container.layout-circle .dock-section:not(.dock-section-secondary) {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 5px;
-  z-index: 2;
-  max-width: 90%;
+.toolbar-container.layout-circle #btnToolTranslate .ai-title {
+  font-size: calc(var(--circle-dock-size, 480px) * 0.024);
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1;
 }
 
-/* Center Core Hub: Secondary Tools (Timer, Spotlight, Screen, Mic, etc.) */
+.toolbar-container.layout-circle #btnToolTranslate .ai-sub {
+  font-size: calc(var(--circle-dock-size, 480px) * 0.018);
+  color: #bae6fd;
+  line-height: 1;
+}
+
+.toolbar-container.layout-circle #btnToolTranslate:hover {
+  transform: translate(-50%, -50%) scale(1.06);
+  box-shadow: 0 0 32px rgba(56, 189, 248, 0.9), inset 0 0 16px rgba(255, 255, 255, 0.5) !important;
+}
+
+/* Secondary Tools Satellite Pill (Floats neatly above the dial in circle mode) */
 .toolbar-container.layout-circle .dock-section-secondary {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 24px;
-  padding: 8px 14px;
+  position: absolute;
+  top: -46px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(13, 18, 28, 0.94);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), 0 0 18px rgba(56, 189, 248, 0.25);
+  border-radius: 30px;
+  padding: 4px 12px;
+  display: flex !important;
+  align-items: center;
+  gap: 5px;
+  z-index: 10;
+  white-space: nowrap;
+}
+
+/* Layout Button in Circle Mode (Neatly docked with the satellite controls) */
+.toolbar-container.layout-circle #btnDockLayout {
+  position: absolute;
+  top: -46px;
+  right: calc(50% + 175px);
+  z-index: 11;
+  background: rgba(13, 18, 28, 0.94);
+  border: 1px solid rgba(251, 191, 36, 0.4);
+  border-radius: 20px;
+  padding: 4px 10px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+  color: #fbbf24;
+}
+
+/* Circular Resize Grip Handle (Interactive direct drag & touch scale) */
+.circle-resize-handle {
+  display: none;
+}
+
+.toolbar-container.layout-circle .circle-resize-handle {
   display: flex;
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(14, 165, 233, 0.25);
+  border: 2px solid #38bdf8;
+  box-shadow: 0 0 15px rgba(56, 189, 248, 0.7);
   align-items: center;
   justify-content: center;
-  flex-wrap: wrap;
-  max-width: 260px;
-  gap: 6px;
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.6), inset 0 1px 2px rgba(255, 255, 255, 0.15);
-  z-index: 3;
+  color: #38bdf8;
+  cursor: nwse-resize;
+  z-index: 12;
+  transition: transform 120ms ease, background 120ms ease;
+  touch-action: none;
+}
+
+.toolbar-container.layout-circle .circle-resize-handle:hover {
+  transform: scale(1.15);
+  background: rgba(14, 165, 233, 0.45);
+  box-shadow: 0 0 22px rgba(56, 189, 248, 0.95);
+  color: #ffffff;
 }
 
 .toolbar-container.layout-circle .pen-dynamic-island {
-  position: static;
-  margin-bottom: 6px;
+  position: absolute;
+  bottom: calc(100% + 56px);
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: 0;
+  z-index: 20;
 }
 
 /* Dock Sections & Dividers */
@@ -890,7 +1189,7 @@
    ========================================================================== */
 .dock-layout-popover {
   position: absolute;
-  top: -85px;
+  bottom: calc(100% + 12px);
   left: 10px;
   background: rgba(13, 18, 28, 0.98);
   border: 1px solid rgba(251, 191, 36, 0.5);
@@ -969,9 +1268,97 @@
   height: 18px;
 }
 
+/* Layout Size Section in Popover */
+.layout-size-section {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 8px;
+  margin-top: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.layout-size-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  color: #fde68a;
+  letter-spacing: 0.02em;
+}
+
+.layout-size-badge {
+  background: rgba(245, 158, 11, 0.2);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  color: #fde68a;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 9px;
+  font-family: monospace;
+}
+
+.layout-size-slider {
+  width: 100%;
+  height: 4px;
+  accent-color: #f59e0b;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 2px;
+  outline: none;
+}
+
+.layout-size-presets {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  justify-content: space-between;
+}
+
+.layout-size-pill {
+  padding: 3px 6px;
+  font-size: 9px;
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  color: #cbd5e1;
+  cursor: pointer;
+  transition: all 120ms ease;
+  outline: none;
+}
+
+.layout-size-pill:hover {
+  background: rgba(245, 158, 11, 0.2);
+  border-color: rgba(245, 158, 11, 0.5);
+  color: #fbbf24;
+}
+
+.layout-size-pill.layout-size-reset {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.35);
+  color: #fca5a5;
+}
+
+.layout-size-pill.layout-size-reset:hover {
+  background: rgba(239, 68, 68, 0.3);
+  border-color: #ef4444;
+  color: #ffffff;
+}
+
 .toolbar-container.layout-vertical .dock-layout-popover {
   top: 10px;
+  bottom: auto;
   left: 70px;
+}
+
+.toolbar-container.layout-circle .dock-layout-popover {
+  bottom: calc(100% + 56px);
+  left: 50%;
+  transform: translateX(-50%);
+  top: auto;
 }
 
 /* Real-time Scale Badge */

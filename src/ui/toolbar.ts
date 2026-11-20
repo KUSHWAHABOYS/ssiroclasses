@@ -109,6 +109,21 @@ export class Toolbar {
               <span>Vertical</span>
             </button>
           </div>
+
+          <div class="layout-size-section">
+            <div class="layout-size-header">
+              <span>Resize &amp; Scale</span>
+              <span class="layout-size-badge" id="layoutSizeBadge">480px</span>
+            </div>
+            <input type="range" class="layout-size-slider" id="layoutSizeSlider" min="240" max="950" value="480" step="10" />
+            <div class="layout-size-presets">
+              <button type="button" class="layout-size-pill" data-size="320">320px</button>
+              <button type="button" class="layout-size-pill" data-size="460">460px</button>
+              <button type="button" class="layout-size-pill" data-size="580">580px</button>
+              <button type="button" class="layout-size-pill" data-size="740">740px</button>
+              <button type="button" class="layout-size-pill layout-size-reset" id="btnResetDialSize">↺ Reset</button>
+            </div>
+          </div>
         </div>
 
         <!-- 1. DYNAMIC INKING & TOOL PROPERTIES ISLAND (Contextual Floater above Inking Tools) -->
@@ -285,6 +300,96 @@ export class Toolbar {
         <div class="studio-master-dock" id="toolbarMasterDock">
           <!-- Top Border Drag Rim (Touch & drag from top border anywhere) -->
           <div class="dock-drag-rim" id="dockDragRim" title="Drag Toolbar (360°)"></div>
+
+          <!-- 360° Radial Concentric Dial Wheel (SVG background for layout-circle) -->
+          <svg class="circle-wheel-svg" id="circleWheelSvg" viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid meet">
+            <defs>
+              <filter id="dialBlueGlow" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="8" result="blur"/>
+                <feMerge>
+                  <feMergeNode in="blur"/>
+                  <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+              </filter>
+              <filter id="dialGoldGlow" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="10" result="blur"/>
+                <feMerge>
+                  <feMergeNode in="blur"/>
+                  <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+              </filter>
+              <filter id="dialRedGlow" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="10" result="blur"/>
+                <feMerge>
+                  <feMergeNode in="blur"/>
+                  <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+              </filter>
+              <linearGradient id="goldWedgeGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.45"/>
+                <stop offset="100%" stop-color="#d97706" stop-opacity="0.16"/>
+              </linearGradient>
+              <linearGradient id="redWedgeGrad" x1="0" y1="1" x2="0" y2="0">
+                <stop offset="0%" stop-color="#ef4444" stop-opacity="0.48"/>
+                <stop offset="100%" stop-color="#991b1b" stop-opacity="0.18"/>
+              </linearGradient>
+              <linearGradient id="innerShapeGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.3"/>
+                <stop offset="100%" stop-color="#0284c7" stop-opacity="0.08"/>
+              </linearGradient>
+            </defs>
+
+            <!-- Concentric Dial Rings -->
+            <circle cx="500" cy="500" r="492" stroke="#0ea5e9" stroke-width="2.5" fill="#070d18" filter="url(#dialBlueGlow)"/>
+            <circle cx="500" cy="500" r="316" stroke="rgba(56, 189, 248, 0.45)" stroke-width="1.8" fill="none"/>
+            <circle cx="500" cy="500" r="162" stroke="#38bdf8" stroke-width="2.2" fill="none" filter="url(#dialBlueGlow)"/>
+
+            <!-- Outer Ring: 14 Radial Spoke Dividers -->
+            <g class="dial-outer-spokes" stroke="rgba(56, 189, 248, 0.3)" stroke-width="1.5">
+              <line x1="429.7" y1="191.9" x2="390.5" y2="20.3" />
+              <line x1="570.3" y1="191.9" x2="609.5" y2="20.3" />
+              <line x1="697.0" y1="252.9" x2="806.8" y2="115.3" />
+              <line x1="784.7" y1="362.9" x2="943.3" y2="286.5" />
+              <line x1="816.0" y1="500.0" x2="992.0" y2="500.0" />
+              <line x1="784.7" y1="637.1" x2="943.3" y2="713.5" />
+              <line x1="697.0" y1="747.1" x2="806.8" y2="884.7" />
+              <line x1="570.3" y1="808.1" x2="609.5" y2="979.7" />
+              <line x1="429.7" y1="808.1" x2="390.5" y2="979.7" />
+              <line x1="303.0" y1="747.1" x2="193.2" y2="884.7" />
+              <line x1="215.3" y1="637.1" x2="56.7" y2="713.5" />
+              <line x1="184.0" y1="500.0" x2="8.0" y2="500.0" />
+              <line x1="215.3" y1="362.9" x2="56.7" y2="286.5" />
+              <line x1="303.0" y1="252.9" x2="193.2" y2="115.3" />
+            </g>
+
+            <!-- Inner Ring: 5 Radial Spoke Dividers -->
+            <g class="dial-inner-spokes" stroke="rgba(56, 189, 248, 0.3)" stroke-width="1.5">
+              <line x1="404.8" y1="368.9" x2="314.3" y2="244.4" />
+              <line x1="595.2" y1="368.9" x2="685.7" y2="244.4" />
+              <line x1="654.1" y1="550.1" x2="800.5" y2="597.6" />
+              <line x1="500.0" y1="662.0" x2="500.0" y2="816.0" />
+              <line x1="345.9" y1="550.1" x2="199.5" y2="597.6" />
+            </g>
+
+            <!-- Exit / Power Wedge Sector (Bottom 6 o'clock) -->
+            <path id="circleExitWedge" d="M 609.5 979.7 A 492 492 0 0 1 390.5 979.7 L 429.7 808.1 A 316 316 0 0 0 570.3 808.1 Z" fill="url(#redWedgeGrad)" stroke="#ef4444" stroke-width="2.2" filter="url(#dialRedGlow)"/>
+
+            <!-- Active Outer Tool Wedge (Defaults to Pen at 12 o'clock, dynamically moves to active tool) -->
+            <path id="circleActiveWedge" d="M 390.5 20.3 A 492 492 0 0 1 609.5 20.3 L 570.3 191.9 A 316 316 0 0 0 429.7 191.9 Z" fill="url(#goldWedgeGrad)" stroke="#f59e0b" stroke-width="2.5" filter="url(#dialGoldGlow)"/>
+
+            <!-- Active Inner Shape Wedge -->
+            <path id="circleInnerActiveWedge" d="" fill="url(#innerShapeGrad)" stroke="#38bdf8" stroke-width="2" style="display:none;"/>
+          </svg>
+
+          <!-- Dedicated Circular Dial Resize Grip Handle (Direct Drag & Touch Resize) -->
+          <div class="circle-resize-handle" id="circleResizeHandle" title="Drag to Resize Dial (or 2-finger pinch)">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="15 3 21 3 21 9"/>
+              <polyline points="9 21 3 21 3 15"/>
+              <line x1="21" y1="3" x2="14" y2="10"/>
+              <line x1="3" y1="21" x2="10" y2="14"/>
+            </svg>
+          </div>
 
           <!-- SECTION 1: Drag Anchor, Layout Morph, Select, Auto-Straighten -->
           <div class="dock-section">
@@ -887,10 +992,15 @@ export class Toolbar {
       const dx = e.clientX - startX;
 
       if (this.currentLayout === 'circle') {
-        const newSize = Math.max(320, Math.min(780, Math.round(initialCircleSize + dx)));
+        const newSize = Math.max(240, Math.min(950, Math.round(initialCircleSize + dx)));
         this.containerEl.style.setProperty('--circle-dock-size', `${newSize}px`);
+        localStorage.setItem('ssiro_circle_dock_size', String(newSize));
+        const slider = document.getElementById('layoutSizeSlider') as HTMLInputElement | null;
+        if (slider) slider.value = String(newSize);
+        const badge = document.getElementById('layoutSizeBadge');
+        if (badge) badge.textContent = `${newSize}px`;
         if (this.scaleBadgeEl) {
-          this.scaleBadgeEl.textContent = `${newSize}px (Circle)`;
+          this.scaleBadgeEl.textContent = `Circle: ${newSize}px (${Math.round((newSize / 480) * 100)}%)`;
         }
       } else {
         const targetRenderedWidth = (unscaledWidth * initialScale) + dx;
@@ -956,16 +1066,22 @@ export class Toolbar {
         if (!isResizingW) return;
         const dx = (e.clientX - startX_E) / (this.toolbarScale || 1);
         if (this.currentLayout === 'circle') {
-          const newSize = Math.max(320, Math.min(780, Math.round(initialW + dx)));
+          const newSize = Math.max(240, Math.min(950, Math.round(initialW + dx)));
           this.containerEl.style.setProperty('--circle-dock-size', `${newSize}px`);
+          localStorage.setItem('ssiro_circle_dock_size', String(newSize));
+          const slider = document.getElementById('layoutSizeSlider') as HTMLInputElement | null;
+          if (slider) slider.value = String(newSize);
+          const badge = document.getElementById('layoutSizeBadge');
+          if (badge) badge.textContent = `${newSize}px`;
           if (this.scaleBadgeEl) {
-            this.scaleBadgeEl.textContent = `${newSize}px (Circle)`;
+            this.scaleBadgeEl.textContent = `Circle: ${newSize}px (${Math.round((newSize / 480) * 100)}%)`;
           }
         } else if (this.currentLayout === 'box') {
-          const newW = Math.max(340, Math.min(window.innerWidth - 32, Math.round(initialW + dx)));
+          const newW = Math.max(280, Math.min(window.innerWidth - 32, Math.round(initialW + dx)));
           this.containerEl.style.setProperty('--box-dock-width', `${newW}px`);
+          localStorage.setItem('ssiro_box_dock_width', String(newW));
           if (this.scaleBadgeEl) {
-            this.scaleBadgeEl.textContent = `${newW}px (${newW > 540 ? 'Wide' : 'Narrow'})`;
+            this.scaleBadgeEl.textContent = `${newW}px (Width)`;
           }
         } else {
           const newW = Math.max(300, Math.min(window.innerWidth - 32, Math.round(initialW + dx)));
@@ -995,6 +1111,7 @@ export class Toolbar {
       let isResizingH = false;
       let startY_S = 0;
       let initialScale_S = 1.0;
+      let initialSize_S = 480;
 
       handleS.addEventListener('pointerdown', (e: PointerEvent) => {
         e.stopPropagation();
@@ -1002,6 +1119,11 @@ export class Toolbar {
         isResizingH = true;
         startY_S = e.clientY;
         initialScale_S = this.toolbarScale || 1.0;
+        if (this.currentLayout === 'circle') {
+          initialSize_S = parseFloat(getComputedStyle(this.containerEl).getPropertyValue('--circle-dock-size')) || 480;
+        } else if (this.currentLayout === 'box') {
+          initialSize_S = parseFloat(getComputedStyle(this.containerEl).getPropertyValue('--box-dock-height')) || 180;
+        }
         try { handleS.setPointerCapture(e.pointerId); } catch {}
         this.containerEl.classList.add('is-resizing-h');
         this.wakeFromGhost();
@@ -1010,11 +1132,31 @@ export class Toolbar {
       window.addEventListener('pointermove', (e: PointerEvent) => {
         if (!isResizingH) return;
         const dy = e.clientY - startY_S;
-        const factor = 1 + (dy / 250);
-        const newScale = Math.max(0.50, Math.min(2.50, Math.round(initialScale_S * factor * 100) / 100));
-        this.applyScale(newScale, false);
-        if (this.scaleBadgeEl) {
-          this.scaleBadgeEl.textContent = `${Math.round(newScale * 100)}% (Scale)`;
+        if (this.currentLayout === 'circle') {
+          const newSize = Math.max(240, Math.min(950, Math.round(initialSize_S + dy)));
+          this.containerEl.style.setProperty('--circle-dock-size', `${newSize}px`);
+          localStorage.setItem('ssiro_circle_dock_size', String(newSize));
+          const slider = document.getElementById('layoutSizeSlider') as HTMLInputElement | null;
+          if (slider) slider.value = String(newSize);
+          const badge = document.getElementById('layoutSizeBadge');
+          if (badge) badge.textContent = `${newSize}px`;
+          if (this.scaleBadgeEl) {
+            this.scaleBadgeEl.textContent = `Circle: ${newSize}px (${Math.round((newSize / 480) * 100)}%)`;
+          }
+        } else if (this.currentLayout === 'box') {
+          const newH = Math.max(120, Math.min(window.innerHeight - 60, Math.round(initialSize_S + dy)));
+          this.containerEl.style.setProperty('--box-dock-height', `${newH}px`);
+          localStorage.setItem('ssiro_box_dock_height', String(newH));
+          if (this.scaleBadgeEl) {
+            this.scaleBadgeEl.textContent = `${newH}px (Height)`;
+          }
+        } else {
+          const factor = 1 + (dy / 250);
+          const newScale = Math.max(0.50, Math.min(2.50, Math.round(initialScale_S * factor * 100) / 100));
+          this.applyScale(newScale, false);
+          if (this.scaleBadgeEl) {
+            this.scaleBadgeEl.textContent = `${Math.round(newScale * 100)}% (Scale)`;
+          }
         }
       });
 
@@ -1025,22 +1167,91 @@ export class Toolbar {
         if (e?.pointerId !== undefined) {
           try { handleS.releasePointerCapture(e.pointerId); } catch {}
         }
-        this.applyScale(this.toolbarScale, true);
+        if (this.currentLayout !== 'circle' && this.currentLayout !== 'box') {
+          this.applyScale(this.toolbarScale, true);
+        }
         this.clampToViewport();
       };
       window.addEventListener('pointerup', stopResizingH);
       window.addEventListener('pointercancel', stopResizingH);
     }
 
+    // Dedicated Circle Resize Handle (Direct 360° Drag & Touch Resize for Circular Dial)
+    const circleResizeHandle = document.getElementById('circleResizeHandle');
+    if (circleResizeHandle) {
+      let isResizingCircle = false;
+      let centerCenterX = 0;
+      let centerCenterY = 0;
+
+      circleResizeHandle.addEventListener('pointerdown', (e: PointerEvent) => {
+        e.stopPropagation();
+        e.preventDefault();
+        isResizingCircle = true;
+        try { circleResizeHandle.setPointerCapture(e.pointerId); } catch {}
+        this.containerEl.classList.add('is-resizing');
+        const rect = this.masterDockEl.getBoundingClientRect();
+        centerCenterX = rect.left + rect.width / 2;
+        centerCenterY = rect.top + rect.height / 2;
+        this.wakeFromGhost();
+      });
+
+      window.addEventListener('pointermove', (e: PointerEvent) => {
+        if (!isResizingCircle) return;
+        const dist = Math.hypot(e.clientX - centerCenterX, e.clientY - centerCenterY);
+        const newSize = Math.max(240, Math.min(950, Math.round(dist * 2)));
+        this.containerEl.style.setProperty('--circle-dock-size', `${newSize}px`);
+        localStorage.setItem('ssiro_circle_dock_size', String(newSize));
+        const slider = document.getElementById('layoutSizeSlider') as HTMLInputElement | null;
+        if (slider) slider.value = String(newSize);
+        const badge = document.getElementById('layoutSizeBadge');
+        if (badge) badge.textContent = `${newSize}px`;
+        if (this.scaleBadgeEl) {
+          this.scaleBadgeEl.textContent = `Circle: ${newSize}px (${Math.round((newSize / 480) * 100)}%)`;
+          this.scaleBadgeEl.classList.remove('hidden');
+        }
+      });
+
+      const stopCircleResize = () => {
+        if (!isResizingCircle) return;
+        isResizingCircle = false;
+        this.containerEl.classList.remove('is-resizing');
+        if (this.scaleBadgeEl) {
+          setTimeout(() => this.scaleBadgeEl?.classList.add('hidden'), 1200);
+        }
+        this.clampToViewport();
+      };
+
+      window.addEventListener('pointerup', stopCircleResize);
+      window.addEventListener('pointercancel', stopCircleResize);
+
+      circleResizeHandle.addEventListener('dblclick', (e) => {
+        e.stopPropagation();
+        this.containerEl.style.setProperty('--circle-dock-size', '480px');
+        localStorage.setItem('ssiro_circle_dock_size', '480');
+        const slider = document.getElementById('layoutSizeSlider') as HTMLInputElement | null;
+        if (slider) slider.value = '480';
+        const badge = document.getElementById('layoutSizeBadge');
+        if (badge) badge.textContent = '480px';
+        if (this.scaleBadgeEl) {
+          this.scaleBadgeEl.textContent = 'Circle: 480px (100%)';
+          this.scaleBadgeEl.classList.remove('hidden');
+          setTimeout(() => this.scaleBadgeEl?.classList.add('hidden'), 1000);
+        }
+        this.clampToViewport();
+      });
+    }
+
     // Touch pinch-to-scale for 2-finger multi-touch boards
     let initialPinchDist = 0;
     let initialPinchScale = 1.0;
+    let initialCirclePinchSize = 480;
     let isPinching = false;
 
     this.containerEl.addEventListener('touchstart', (e: TouchEvent) => {
       if (e.touches.length === 2) {
         isPinching = true;
         initialPinchScale = this.toolbarScale || 1.0;
+        initialCirclePinchSize = parseFloat(getComputedStyle(this.containerEl).getPropertyValue('--circle-dock-size')) || 480;
         initialPinchDist = Math.hypot(
           e.touches[0].clientX - e.touches[1].clientX,
           e.touches[0].clientY - e.touches[1].clientY
@@ -1057,8 +1268,22 @@ export class Toolbar {
         );
         if (initialPinchDist > 10) {
           const factor = currentDist / initialPinchDist;
-          const newScale = Math.max(0.50, Math.min(2.50, Math.round(initialPinchScale * factor * 100) / 100));
-          this.applyScale(newScale, false);
+          if (this.currentLayout === 'circle') {
+            const newSize = Math.max(240, Math.min(950, Math.round(initialCirclePinchSize * factor)));
+            this.containerEl.style.setProperty('--circle-dock-size', `${newSize}px`);
+            localStorage.setItem('ssiro_circle_dock_size', String(newSize));
+            const slider = document.getElementById('layoutSizeSlider') as HTMLInputElement | null;
+            if (slider) slider.value = String(newSize);
+            const badge = document.getElementById('layoutSizeBadge');
+            if (badge) badge.textContent = `${newSize}px`;
+            if (this.scaleBadgeEl) {
+              this.scaleBadgeEl.textContent = `Circle: ${newSize}px (${Math.round((newSize / 480) * 100)}%)`;
+              this.scaleBadgeEl.classList.remove('hidden');
+            }
+          } else {
+            const newScale = Math.max(0.50, Math.min(2.50, Math.round(initialPinchScale * factor * 100) / 100));
+            this.applyScale(newScale, false);
+          }
         }
       }
     }, { passive: true });
@@ -1067,7 +1292,15 @@ export class Toolbar {
       if (isPinching) {
         isPinching = false;
         this.containerEl.classList.remove('is-resizing');
-        this.applyScale(this.toolbarScale, true);
+        if (this.currentLayout !== 'circle') {
+          this.applyScale(this.toolbarScale, true);
+        }
+        if (this.scaleBadgeEl) {
+          setTimeout(() => this.scaleBadgeEl?.classList.add('hidden'), 1000);
+        }
+        this.clampToViewport();
+      }
+    };
         this.clampToViewport();
       }
     };
@@ -1119,11 +1352,100 @@ export class Toolbar {
       b.classList.toggle('active', b.getAttribute('data-layout') === layout);
     });
 
+    const sizeSlider = document.getElementById('layoutSizeSlider') as HTMLInputElement | null;
+    const sizeBadge = document.getElementById('layoutSizeBadge');
+
+    if (layout === 'circle') {
+      const savedCircleSize = localStorage.getItem('ssiro_circle_dock_size') || '480';
+      this.containerEl.style.setProperty('--circle-dock-size', `${savedCircleSize}px`);
+      if (sizeSlider) sizeSlider.value = savedCircleSize;
+      if (sizeBadge) sizeBadge.textContent = `${savedCircleSize}px`;
+      this.updateCircleDialActiveWedge(store.getState().activeTool, store.getState().activeShape);
+    } else if (layout === 'box') {
+      const savedBoxW = localStorage.getItem('ssiro_box_dock_width') || '540';
+      this.containerEl.style.setProperty('--box-dock-width', `${savedBoxW}px`);
+      if (sizeSlider) sizeSlider.value = savedBoxW;
+      if (sizeBadge) sizeBadge.textContent = `${savedBoxW}px`;
+    }
+
     try {
       localStorage.setItem('ssiro_toolbar_layout', layout);
     } catch {}
 
     setTimeout(() => this.clampToViewport(), 50);
+  }
+
+  public updateCircleDialActiveWedge(activeTool: string, activeShape?: string): void {
+    const activeWedge = document.getElementById('circleActiveWedge');
+    if (!activeWedge) return;
+
+    const toolAngles: Record<string, number> = {
+      pen: -90,
+      highlighter: -64.29,
+      eraser: -38.57,
+      magnifier: -12.86,
+      handwriting: 12.86,
+      gemini: 38.57,
+      screen: 64.29,
+      mic: 115.71,
+      clear: 141.43,
+      redo: 167.14,
+      undo: 192.86,
+      auto: 218.57,
+      select: 244.29
+    };
+
+    const angle = toolAngles[activeTool];
+    if (angle !== undefined) {
+      activeWedge.style.display = 'block';
+      const a1 = ((angle - 12.857) * Math.PI) / 180;
+      const a2 = ((angle + 12.857) * Math.PI) / 180;
+      const x1 = 500 + 492 * Math.cos(a1);
+      const y1 = 500 + 492 * Math.sin(a1);
+      const x2 = 500 + 492 * Math.cos(a2);
+      const y2 = 500 + 492 * Math.sin(a2);
+      const x3 = 500 + 316 * Math.cos(a2);
+      const y3 = 500 + 316 * Math.sin(a2);
+      const x4 = 500 + 316 * Math.cos(a1);
+      const y4 = 500 + 316 * Math.sin(a1);
+      const d = `M ${x1.toFixed(1)} ${y1.toFixed(1)} A 492 492 0 0 1 ${x2.toFixed(1)} ${y2.toFixed(1)} L ${x3.toFixed(1)} ${y3.toFixed(1)} A 316 316 0 0 0 ${x4.toFixed(1)} ${y4.toFixed(1)} Z`;
+      activeWedge.setAttribute('d', d);
+    } else {
+      activeWedge.style.display = 'none';
+    }
+
+    const innerWedge = document.getElementById('circleInnerActiveWedge');
+    if (innerWedge) {
+      if (activeTool === 'shape' && activeShape) {
+        const shapeAngles: Record<string, number> = {
+          rect: -90,
+          circle: -18,
+          triangle: 54,
+          arrow: 126,
+          line: 198
+        };
+        const sAngle = shapeAngles[activeShape];
+        if (sAngle !== undefined) {
+          innerWedge.style.display = 'block';
+          const a1 = ((sAngle - 36) * Math.PI) / 180;
+          const a2 = ((sAngle + 36) * Math.PI) / 180;
+          const x1 = 500 + 316 * Math.cos(a1);
+          const y1 = 500 + 316 * Math.sin(a1);
+          const x2 = 500 + 316 * Math.cos(a2);
+          const y2 = 500 + 316 * Math.sin(a2);
+          const x3 = 500 + 162 * Math.cos(a2);
+          const y3 = 500 + 162 * Math.sin(a2);
+          const x4 = 500 + 162 * Math.cos(a1);
+          const y4 = 500 + 162 * Math.sin(a1);
+          const d = `M ${x1.toFixed(1)} ${y1.toFixed(1)} A 316 316 0 0 1 ${x2.toFixed(1)} ${y2.toFixed(1)} L ${x3.toFixed(1)} ${y3.toFixed(1)} A 162 162 0 0 0 ${x4.toFixed(1)} ${y4.toFixed(1)} Z`;
+          innerWedge.setAttribute('d', d);
+        } else {
+          innerWedge.style.display = 'none';
+        }
+      } else {
+        innerWedge.style.display = 'none';
+      }
+    }
   }
 
   public cycleLayout(): void {
@@ -1774,6 +2096,55 @@ export class Toolbar {
       });
     });
 
+    // Layout Popover Size Slider & Presets
+    const sizeSlider = document.getElementById('layoutSizeSlider') as HTMLInputElement | null;
+    const sizeBadge = document.getElementById('layoutSizeBadge');
+    if (sizeSlider) {
+      sizeSlider.addEventListener('input', () => {
+        const val = parseInt(sizeSlider.value, 10);
+        if (sizeBadge) sizeBadge.textContent = `${val}px`;
+        if (this.currentLayout === 'circle') {
+          this.containerEl.style.setProperty('--circle-dock-size', `${val}px`);
+          localStorage.setItem('ssiro_circle_dock_size', String(val));
+        } else if (this.currentLayout === 'box') {
+          this.containerEl.style.setProperty('--box-dock-width', `${val}px`);
+          localStorage.setItem('ssiro_box_dock_width', String(val));
+        } else {
+          this.applyScale(val / 480, true);
+        }
+      });
+    }
+
+    const sizePills = document.querySelectorAll<HTMLButtonElement>('.layout-size-pill[data-size]');
+    sizePills.forEach((pill) => {
+      pill.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const val = parseInt(pill.getAttribute('data-size') || '480', 10);
+        if (sizeSlider) sizeSlider.value = String(val);
+        if (sizeBadge) sizeBadge.textContent = `${val}px`;
+        if (this.currentLayout === 'circle') {
+          this.containerEl.style.setProperty('--circle-dock-size', `${val}px`);
+          localStorage.setItem('ssiro_circle_dock_size', String(val));
+        } else if (this.currentLayout === 'box') {
+          this.containerEl.style.setProperty('--box-dock-width', `${val}px`);
+          localStorage.setItem('ssiro_box_dock_width', String(val));
+        } else {
+          this.applyScale(val / 480, true);
+        }
+      });
+    });
+
+    document.getElementById('btnResetDialSize')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (sizeSlider) sizeSlider.value = '480';
+      if (sizeBadge) sizeBadge.textContent = '480px';
+      this.containerEl.style.setProperty('--circle-dock-size', '480px');
+      this.containerEl.style.removeProperty('--box-dock-width');
+      this.containerEl.style.removeProperty('--box-dock-height');
+      localStorage.setItem('ssiro_circle_dock_size', '480');
+      this.applyScale(1.0, true);
+    });
+
     // Close layout popover on outside click
     window.addEventListener('click', (e) => {
       const pop = document.getElementById('dockLayoutPopover');
@@ -1835,6 +2206,9 @@ export class Toolbar {
             this.penIslandEl.classList.add('collapsed');
           }
         }
+
+        // Synchronize Circular Dial active wedge
+        this.updateCircleDialActiveWedge(state.activeTool, state.activeShape);
       }
 
       // Active color swatch synchronization

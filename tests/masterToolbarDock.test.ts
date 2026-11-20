@@ -288,5 +288,48 @@ describe('Master Floating Dock & Dynamic Inking Island Suite', () => {
       expect(handleRight).not.toBeNull();
       expect(dragRim).not.toBeNull();
     });
+
+    it('renders concentric radial dial wheel SVG and perimeter resize handle', () => {
+      const svg = document.getElementById('circleWheelSvg');
+      const circleHandle = document.getElementById('circleResizeHandle');
+      const activeWedge = document.getElementById('circleActiveWedge');
+      const exitWedge = document.getElementById('circleExitWedge');
+
+      expect(svg).not.toBeNull();
+      expect(circleHandle).not.toBeNull();
+      expect(activeWedge).not.toBeNull();
+      expect(exitWedge).not.toBeNull();
+    });
+
+    it('supports scaling dial size via slider, preset pills, and reset button', () => {
+      const slider = document.getElementById('layoutSizeSlider') as HTMLInputElement;
+      const badge = document.getElementById('layoutSizeBadge');
+      const resetBtn = document.getElementById('btnResetDialSize') as HTMLButtonElement;
+      const pills = document.querySelectorAll('.layout-size-pill[data-size]');
+
+      expect(slider).not.toBeNull();
+      expect(badge).not.toBeNull();
+      expect(resetBtn).not.toBeNull();
+      expect(pills.length).toBeGreaterThanOrEqual(4);
+
+      // Switch to circle layout
+      toolbar.setLayout('circle');
+      expect(toolbar.getLayout()).toBe('circle');
+
+      // Test preset pill click
+      const pill580 = Array.from(pills).find(p => p.getAttribute('data-size') === '580') as HTMLButtonElement;
+      expect(pill580).not.toBeNull();
+      pill580.click();
+
+      expect(slider.value).toBe('580');
+      expect(badge?.textContent).toBe('580px');
+      expect(localStorage.getItem('ssiro_circle_dock_size')).toBe('580');
+
+      // Test reset button
+      resetBtn.click();
+      expect(slider.value).toBe('480');
+      expect(badge?.textContent).toBe('480px');
+      expect(localStorage.getItem('ssiro_circle_dock_size')).toBe('480');
+    });
   });
 });
