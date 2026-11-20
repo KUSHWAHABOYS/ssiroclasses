@@ -761,7 +761,9 @@
   margin-top: 1px;
 }
 
-/* Circular Resize Grip Handle (Interactive direct drag & touch scale) */
+/* ==========================================================================
+   CIRCULAR RESIZE BEZEL NOTCH GRIP (Flush on dial perimeter, tactile knurled grooves)
+   ========================================================================== */
 .circle-resize-handle {
   display: none;
 }
@@ -769,37 +771,211 @@
 .toolbar-container.layout-circle .circle-resize-handle {
   display: flex;
   position: absolute;
-  right: 12px;
-  bottom: 12px;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: rgba(14, 165, 233, 0.25);
-  border: 2px solid #38bdf8;
-  box-shadow: 0 0 15px rgba(56, 189, 248, 0.7);
+  /* Mathematically placed right on the bottom-right perimeter rim at 45° angle */
+  right: calc(14.64% - 17px);
+  bottom: calc(14.64% - 7px);
+  width: 34px;
+  height: 14px;
+  border-radius: 7px;
+  background: rgba(10, 19, 36, 0.95);
+  border: 1.5px solid #0ea5e9;
+  box-shadow: 0 0 12px rgba(14, 165, 233, 0.55), inset 0 0 6px rgba(14, 165, 233, 0.25);
   align-items: center;
   justify-content: center;
-  color: #38bdf8;
+  gap: 3px;
+  transform: rotate(-45deg);
   cursor: nwse-resize;
   z-index: 12;
-  transition: transform 120ms ease, background 120ms ease;
+  transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
   touch-action: none;
 }
 
-.toolbar-container.layout-circle .circle-resize-handle:hover {
-  transform: scale(1.15);
-  background: rgba(14, 165, 233, 0.45);
-  box-shadow: 0 0 22px rgba(56, 189, 248, 0.95);
-  color: #ffffff;
+/* Touch hit area expander without affecting visual size */
+.toolbar-container.layout-circle .circle-resize-handle::before {
+  content: '';
+  position: absolute;
+  top: -14px;
+  bottom: -14px;
+  left: -14px;
+  right: -14px;
 }
 
+.toolbar-container.layout-circle .circle-resize-handle .bezel-notch-groove {
+  width: 2px;
+  height: 8px;
+  border-radius: 1px;
+  background: #38bdf8;
+  opacity: 0.85;
+  pointer-events: none;
+  transition: background 160ms ease, height 160ms ease;
+}
+
+.toolbar-container.layout-circle .circle-resize-handle:hover,
+.toolbar-container.layout-circle.is-resizing .circle-resize-handle {
+  border-color: #38bdf8;
+  background: rgba(14, 165, 233, 0.35);
+  box-shadow: 0 0 20px rgba(56, 189, 248, 0.9), inset 0 0 8px rgba(56, 189, 248, 0.4);
+}
+
+.toolbar-container.layout-circle .circle-resize-handle:hover .bezel-notch-groove,
+.toolbar-container.layout-circle.is-resizing .circle-resize-handle .bezel-notch-groove {
+  background: #ffffff;
+  height: 10px;
+}
+
+/* ==========================================================================
+   CONCENTRIC ORBITAL CROWN HALO (Contextual Properties Crown in Circle Mode)
+   Curved crown arc hugging the top perimeter of the circular dial,
+   dynamically scaled in lockstep with --circle-dock-size.
+   ========================================================================== */
 .toolbar-container.layout-circle .pen-dynamic-island {
   position: absolute;
-  bottom: calc(100% + 56px);
+  bottom: calc(100% + 10px);
   left: 50%;
   transform: translateX(-50%);
   margin-bottom: 0;
   z-index: 20;
+  width: calc(var(--circle-dock-size, 480px) * 0.96);
+  max-width: calc(100vw - 20px);
+  border-radius: calc(var(--circle-dock-size, 480px) * 0.10) !important;
+  padding: calc(var(--circle-dock-size, 480px) * 0.012) calc(var(--circle-dock-size, 480px) * 0.022) !important;
+  gap: calc(var(--circle-dock-size, 480px) * 0.014) !important;
+  background: radial-gradient(ellipse at 50% 120%, rgba(18, 28, 48, 0.98) 0%, rgba(8, 14, 25, 0.97) 100%) !important;
+  border: 2px solid rgba(245, 158, 11, 0.75) !important;
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.88), 0 0 28px rgba(245, 158, 11, 0.35), inset 0 1px 2px rgba(255, 255, 255, 0.28) !important;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.toolbar-container.layout-circle .pen-dynamic-island::-webkit-scrollbar {
+  display: none;
+}
+
+/* Downward golden pointer notch linking the crown directly to 12 o'clock tool wedge */
+.toolbar-container.layout-circle .pen-dynamic-island::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 8px solid rgba(245, 158, 11, 0.85);
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.85));
+  pointer-events: none;
+}
+
+/* Collapsed transition in circle layout */
+.toolbar-container.layout-circle .pen-dynamic-island.collapsed {
+  opacity: 0 !important;
+  transform: translateX(-50%) translateY(10px) scale(0.96) !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
+}
+
+/* Inner Panels (Pen, Marker, Eraser, Laser) in Circle Layout */
+.toolbar-container.layout-circle .island-panel {
+  gap: calc(var(--circle-dock-size, 480px) * 0.014) !important;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+/* Tip / Mode Buttons proportional scaling */
+.toolbar-container.layout-circle .island-tip-btn {
+  height: calc(var(--circle-dock-size, 480px) * 0.058) !important;
+  padding: 0 calc(var(--circle-dock-size, 480px) * 0.018) !important;
+  font-size: calc(var(--circle-dock-size, 480px) * 0.022) !important;
+  border-radius: calc(var(--circle-dock-size, 480px) * 0.022) !important;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Stroke Label proportional scaling */
+.toolbar-container.layout-circle .island-stroke-label {
+  font-size: calc(var(--circle-dock-size, 480px) * 0.019) !important;
+  letter-spacing: 0.5px;
+  margin-right: 2px;
+}
+
+/* Stroke Dot Buttons proportional scaling */
+.toolbar-container.layout-circle .stroke-dot-btn {
+  width: calc(var(--circle-dock-size, 480px) * 0.052) !important;
+  height: calc(var(--circle-dock-size, 480px) * 0.052) !important;
+  min-width: unset !important;
+  min-height: unset !important;
+  border-radius: 50% !important;
+}
+
+.toolbar-container.layout-circle .stroke-dot.dot-1 {
+  width: calc(var(--circle-dock-size, 480px) * 0.008) !important;
+  height: calc(var(--circle-dock-size, 480px) * 0.008) !important;
+}
+
+.toolbar-container.layout-circle .stroke-dot.dot-2 {
+  width: calc(var(--circle-dock-size, 480px) * 0.014) !important;
+  height: calc(var(--circle-dock-size, 480px) * 0.014) !important;
+}
+
+.toolbar-container.layout-circle .stroke-dot.dot-4 {
+  width: calc(var(--circle-dock-size, 480px) * 0.022) !important;
+  height: calc(var(--circle-dock-size, 480px) * 0.022) !important;
+}
+
+.toolbar-container.layout-circle .stroke-dot.dot-8 {
+  width: calc(var(--circle-dock-size, 480px) * 0.030) !important;
+  height: calc(var(--circle-dock-size, 480px) * 0.030) !important;
+}
+
+/* Tactile Color Swatches proportional scaling */
+.toolbar-container.layout-circle .color-swatch-tactile,
+.toolbar-container.layout-circle .color-swatch {
+  width: calc(var(--circle-dock-size, 480px) * 0.048) !important;
+  height: calc(var(--circle-dock-size, 480px) * 0.048) !important;
+  border-radius: 50% !important;
+  flex-shrink: 0;
+}
+
+/* Spectrum Custom Color Picker Button proportional scaling */
+.toolbar-container.layout-circle .color-swatch-spectrum {
+  width: calc(var(--circle-dock-size, 480px) * 0.048) !important;
+  height: calc(var(--circle-dock-size, 480px) * 0.048) !important;
+  border-radius: 50% !important;
+  flex-shrink: 0;
+}
+
+.toolbar-container.layout-circle .color-swatch-spectrum .spectrum-plus {
+  font-size: calc(var(--circle-dock-size, 480px) * 0.028) !important;
+}
+
+/* Dividers proportional scaling */
+.toolbar-container.layout-circle .island-sep {
+  height: calc(var(--circle-dock-size, 480px) * 0.045) !important;
+  margin: 0 calc(var(--circle-dock-size, 480px) * 0.004) !important;
+}
+
+/* Adaptive Pressure Feedback proportional scaling */
+.toolbar-container.layout-circle .island-pressure-feedback {
+  font-size: calc(var(--circle-dock-size, 480px) * 0.018) !important;
+  padding: calc(var(--circle-dock-size, 480px) * 0.006) calc(var(--circle-dock-size, 480px) * 0.014) !important;
+  border-radius: calc(var(--circle-dock-size, 480px) * 0.018) !important;
+  white-space: nowrap;
+}
+
+.toolbar-container.layout-circle .island-pressure-feedback svg {
+  width: calc(var(--circle-dock-size, 480px) * 0.026) !important;
+  height: calc(var(--circle-dock-size, 480px) * 0.026) !important;
+}
+
+@media (max-width: 768px) {
+  .toolbar-container.layout-circle .island-pressure-feedback span {
+    display: none;
+  }
 }
 
 /* Dock Sections & Dividers */
@@ -1389,7 +1565,7 @@
 }
 
 .toolbar-container.layout-circle .dock-layout-popover {
-  bottom: calc(100% + 56px);
+  bottom: calc(100% + 12px);
   left: 50%;
   transform: translateX(-50%);
   top: auto;

@@ -391,14 +391,11 @@ export class Toolbar {
             <path id="circleInnerActiveWedge" d="" fill="url(#innerShapeGrad)" stroke="#38bdf8" stroke-width="2" style="display:none;"/>
           </svg>
 
-          <!-- Dedicated Circular Dial Resize Grip Handle (Direct Drag & Touch Resize) -->
-          <div class="circle-resize-handle" id="circleResizeHandle" title="Drag to Resize Dial (or 2-finger pinch)">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5">
-              <polyline points="15 3 21 3 21 9"/>
-              <polyline points="9 21 3 21 3 15"/>
-              <line x1="21" y1="3" x2="14" y2="10"/>
-              <line x1="3" y1="21" x2="10" y2="14"/>
-            </svg>
+          <!-- Integrated Bezel Notch Tactile Grip (Flush on dial perimeter, precision knurled ridges) -->
+          <div class="circle-resize-handle" id="circleResizeHandle" title="Drag Rim to Resize Dial (or 2-finger pinch, double-click to reset)">
+            <span class="bezel-notch-groove"></span>
+            <span class="bezel-notch-groove"></span>
+            <span class="bezel-notch-groove"></span>
           </div>
 
           <!-- SECTION 1: Drag Anchor, Layout Morph, Select, Auto-Straighten -->

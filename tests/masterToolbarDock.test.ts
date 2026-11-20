@@ -289,7 +289,7 @@ describe('Master Floating Dock & Dynamic Inking Island Suite', () => {
       expect(dragRim).not.toBeNull();
     });
 
-    it('renders concentric radial dial wheel SVG and perimeter resize handle', () => {
+    it('renders concentric radial dial wheel SVG and perimeter resize handle with tactile grooves', () => {
       const svg = document.getElementById('circleWheelSvg');
       const circleHandle = document.getElementById('circleResizeHandle');
       const activeWedge = document.getElementById('circleActiveWedge');
@@ -299,6 +299,16 @@ describe('Master Floating Dock & Dynamic Inking Island Suite', () => {
       expect(circleHandle).not.toBeNull();
       expect(activeWedge).not.toBeNull();
       expect(exitWedge).not.toBeNull();
+
+      const grooves = circleHandle?.querySelectorAll('.bezel-notch-groove');
+      expect(grooves?.length).toBe(3);
+    });
+
+    it('renders and scales orbital halo crown dynamic island in circle layout', () => {
+      toolbar.setLayout('circle');
+      const island = document.getElementById('penDynamicIsland');
+      expect(island).not.toBeNull();
+      expect(document.querySelector('.toolbar-container.layout-circle')).not.toBeNull();
     });
 
     it('supports scaling dial size via slider, preset pills, and reset button', () => {
