@@ -16,6 +16,8 @@ import { fullscreenService } from './core/fullscreen';
 import { store } from './state/store';
 // SSIRO-UPDATE: Welcome Screen
 import { welcomeScreen } from './ui/welcomeScreen';
+// TEACHER-SUITE: Import Classroom Tools
+import { timerController, curtainController, spotlightController } from './tools/teachingTools';
 // SSIRO-UPDATE: Zoom and Magnifier subsystems
 import { zoomController } from './zoom/zoomController';
 import { magnifierLensController } from './zoom/magnifierLens';
@@ -160,6 +162,10 @@ class SmartStudioApp {
     translatorOverlayManager.init();
     // STUDIO-LIBRARY: Initialize Studio Library modal (in-device persistent storage)
     libraryModal.init();
+    // TEACHER-SUITE: Initialize Classroom Tools Suite
+    timerController.init();
+    curtainController.init();
+    spotlightController.init();
 
     // SSIRO-UPDATE: touch-action:none on stage while Magnifier/Zoom are active per C7
     store.subscribe((state, prev) => {

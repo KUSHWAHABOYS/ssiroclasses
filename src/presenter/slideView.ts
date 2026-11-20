@@ -234,8 +234,8 @@ export class SlideView {
       totalPages: 1
     });
 
-    this.fileNameEl.textContent = '';
-    this.pageCounterEl.textContent = '1 / 1';
+    if (this.fileNameEl) this.fileNameEl.textContent = '';
+    if (this.pageCounterEl) this.pageCounterEl.textContent = '1 / 1';
 
     welcomeScreen.show();
     return true;

@@ -69,6 +69,15 @@ export class AnnotationStore {
     this.redrawAll();
   }
 
+  setBoardStrokes(strokes: Stroke[]): void {
+    this.boardStrokes = [...strokes];
+    this.strokes = [...strokes];
+    this.undoStack = [];
+    this.redoStack = [];
+    this.clearCanvases();
+    this.redrawAll();
+  }
+
   getStrokes(): Stroke[] {
     return this.strokes.filter((s) => !s.replacedBy);
   }

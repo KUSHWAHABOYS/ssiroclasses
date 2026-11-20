@@ -105,18 +105,18 @@
 
 .header {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 52px;
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0) 100%);
+  top: 14px;
+  left: 20px;
+  right: 20px;
+  height: 40px;
+  background: transparent;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 20px;
+  padding: 0;
   z-index: 45;
   transition: opacity var(--trans-normal), transform var(--trans-normal);
-  pointer-events: auto;
+  pointer-events: none;
 }
 
 .header.hidden, .stage.zen-mode .header {
@@ -128,36 +128,66 @@
 .header-left, .header-right {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
+}
+
+/* Minimalist Floating Status Pill */
+.header-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(13, 18, 28, 0.78);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 9999px;
+  padding: 4px 14px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+  pointer-events: auto;
 }
 
 .channel-badge {
   font-weight: 700;
-  font-size: 14px;
+  font-size: 12px;
   letter-spacing: 0.5px;
-  color: var(--primary-accent);
+  color: #fbbf24;
   background: rgba(245, 158, 11, 0.15);
   border: 1px solid rgba(245, 158, 11, 0.3);
-  padding: 4px 10px;
-  border-radius: 6px;
+  padding: 2px 8px;
+  border-radius: 9999px;
 }
 
 .file-name {
-  font-size: 13px;
-  color: var(--text-secondary);
-  max-width: 280px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #e2e8f0;
+  max-width: 320px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
+/* Page Indicator Pill */
+.header-page-pill {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(13, 18, 28, 0.78);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 9999px;
+  padding: 4px 14px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+  pointer-events: auto;
+}
+
 .page-counter {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-primary);
-  background: rgba(255, 255, 255, 0.1);
-  padding: 4px 12px;
-  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fbbf24;
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
 }
 
 .header-btn {
@@ -208,29 +238,31 @@
 }
 
 .chevron-btn {
-  width: 72px;
-  height: 72px;
+  width: 64px;
+  height: 64px;
   border-radius: 50%;
-  background: rgba(18, 20, 26, 0.4);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: var(--text-primary);
+  background: rgba(18, 20, 26, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #fbbf24;
   display: flex;
   align-items: center;
   justify-content: center;
-  opacity: 0.15;
+  opacity: 0; /* Fully invisible by default - 100% clean PPT view! */
   transition: opacity var(--trans-normal), transform var(--trans-fast), background var(--trans-fast);
   cursor: pointer;
-  pointer-events: auto; /* ECON: Only the chevron button itself receives mouse/touch events */
+  pointer-events: auto;
 }
 
+.nav-edge-zone:hover .chevron-btn,
+.nav-edge-zone:focus-within .chevron-btn,
 .chevron-btn:hover,
 .chevron-btn:focus-visible,
 .chevron-btn.touch-active {
-  opacity: 0.85;
+  opacity: 0.75;
   background: rgba(18, 20, 26, 0.85);
-  transform: scale(1.08);
+  transform: scale(1.05);
 }
 
 .stage.zen-mode .chevron-btn.idle-faded {

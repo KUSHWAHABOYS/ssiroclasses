@@ -1,7 +1,7 @@
 import { BoardThemeId, store } from '../state/store';
 import { BOARD_THEMES, BoardThemeDef } from './themes';
 import { layerManager } from '../core/layers';
-import { annotationStore } from '../draw/annotationStore';
+import { annotationStore, Stroke } from '../draw/annotationStore';
 import { slideRenderer } from '../presenter/renderer';
 // WELCOME-FIX: import welcomeScreen for state transitions
 import { welcomeScreen } from '../ui/welcomeScreen';
@@ -9,6 +9,8 @@ import { welcomeScreen } from '../ui/welcomeScreen';
 export class BlackboardStudio {
   private dockEl!: HTMLElement;
   private currentTheme: BoardThemeDef = BOARD_THEMES.slate;
+  private boardPages: Stroke[][] = [[]];
+  private currentPageIndex: number = 0;
 
   init(): void {
     this.dockEl = document.getElementById('boardDock') as HTMLElement;
@@ -39,7 +41,15 @@ export class BlackboardStudio {
         <!-- Unified toolbar mounted dynamically -->
       </div>
 
-      <div class="board-dock-right">
+      <div class="board-dock-right" style="display:flex; align-items:center; gap:8px;">
+        <!-- Multi-Page Blackboard Navigation -->
+        <div class="board-page-controls" id="boardPageControls">
+          <button class="board-page-btn" id="btnBoardPrevPage" type="button" title="पिछला पेज (Previous Board Page)">◀</button>
+          <span class="board-page-indicator" id="boardPageIndicator">1 / 1</span>
+          <button class="board-page-btn" id="btnBoardNextPage" type="button" title="अगला पेज (Next Board Page)">▶</button>
+          <button class="board-page-btn" id="btnBoardAddPage" type="button" title="नया बोर्ड पेज जोड़ें (Add New Blackboard Page)">➕</button>
+        </div>
+
         <button class="board-close-btn" id="btnBoardClose" title="Close Board (Return to Slide)">
           <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           <span>✕ बंद करें</span>
@@ -60,6 +70,19 @@ export class BlackboardStudio {
       });
     });
 
+    // Multi-page navigation
+    document.getElementById('btnBoardPrevPage')?.addEventListener('click', () => {
+      this.prevPage();
+    });
+
+    document.getElementById('btnBoardNextPage')?.addEventListener('click', () => {
+      this.nextPage();
+    });
+
+    document.getElementById('btnBoardAddPage')?.addEventListener('click', () => {
+      this.addPage();
+    });
+
     // Close button
     document.getElementById('btnBoardClose')?.addEventListener('click', () => {
       this.closeBoard();
@@ -76,6 +99,39 @@ export class BlackboardStudio {
     });
   }
 
+  addPage(): void {
+    this.boardPages[this.currentPageIndex] = annotationStore.getStrokes();
+    this.boardPages.push([]);
+    this.currentPageIndex = this.boardPages.length - 1;
+    annotationStore.setBoardStrokes([]);
+    this.updatePageIndicator();
+  }
+
+  prevPage(): void {
+    if (this.currentPageIndex > 0) {
+      this.boardPages[this.currentPageIndex] = annotationStore.getStrokes();
+      this.currentPageIndex--;
+      annotationStore.setBoardStrokes(this.boardPages[this.currentPageIndex] || []);
+      this.updatePageIndicator();
+    }
+  }
+
+  nextPage(): void {
+    if (this.currentPageIndex < this.boardPages.length - 1) {
+      this.boardPages[this.currentPageIndex] = annotationStore.getStrokes();
+      this.currentPageIndex++;
+      annotationStore.setBoardStrokes(this.boardPages[this.currentPageIndex] || []);
+      this.updatePageIndicator();
+    }
+  }
+
+  private updatePageIndicator(): void {
+    const ind = document.getElementById('boardPageIndicator');
+    if (ind) {
+      ind.textContent = `${this.currentPageIndex + 1} / ${this.boardPages.length}`;
+    }
+  }
+
   toggleBoard(): void {
     if (store.getState().isBoardMode) {
       this.closeBoard();
@@ -89,9 +145,13 @@ export class BlackboardStudio {
     store.setState({ isBoardMode: true, appState: 'board' });
     this.dockEl.classList.remove('hidden');
     this.renderBoardSurface();
+    this.updatePageIndicator();
   }
 
   closeBoard(): void {
+    // Save current board page strokes
+    this.boardPages[this.currentPageIndex] = annotationStore.getStrokes();
+
     annotationStore.switchToDeck();
     this.dockEl.classList.add('hidden');
 

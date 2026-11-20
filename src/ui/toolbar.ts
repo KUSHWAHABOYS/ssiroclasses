@@ -10,6 +10,9 @@ import { micController, MicState } from '../voice/micController';
 import { gestureWatchdog } from '../core/gestureWatchdog';
 // SSIRO-UPDATE: Welcome screen
 import { welcomeScreen } from './welcomeScreen';
+// TEACHER-SUITE: Smart Classroom Tools Suite
+import { timerController, curtainController, spotlightController, splitScreenController, pdfNotesExporter } from '../tools/teachingTools';
+import { slideView } from '../presenter/slideView';
 
 export class Toolbar {
   private containerEl!: HTMLElement;
@@ -362,6 +365,46 @@ export class Toolbar {
 
           <!-- SECTION 6: Studio Hub & Extensions -->
           <div class="dock-section">
+            <!-- TEACHER TOOLS SUITE -->
+            <button class="dock-btn-icon" id="btnToolTimer" title="टाइमर / स्टॉपवॉच (Countdown Timer & Stopwatch)">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+              </svg>
+            </button>
+
+            <button class="dock-btn-icon" id="btnToolCurtain" title="पर्दा टूल (Curtain / Screen Shade)">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                <line x1="3" y1="11" x2="21" y2="11" stroke-width="2.5"/>
+                <polyline points="9 15 12 18 15 15"/>
+              </svg>
+            </button>
+
+            <button class="dock-btn-icon" id="btnToolSpotlight" title="स्पॉटलाइट फोकस (Spotlight Focus)">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="4"/>
+                <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
+              </svg>
+            </button>
+
+            <button class="dock-btn-icon" id="btnToolSplitBoard" title="स्प्लिट स्क्रीन ब्लैकबोर्ड (50:50 Dual Split Board)">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                <line x1="12" y1="3" x2="12" y2="21"/>
+              </svg>
+            </button>
+
+            <button class="dock-btn-icon" id="btnToolExportPdf" title="क्लास नोट्स डाउनलोड करें (1-Click Export Notes PDF)">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+            </button>
+
+            <div class="dock-sep"></div>
+
             <button class="dock-btn-icon" id="btnMediaOverlay" title="Media Overlay">
               <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
                 <rect width="18" height="18" x="3" y="3" rx="2" ry="2"/>
@@ -1017,18 +1060,43 @@ export class Toolbar {
       annotationStore.clearAll();
     });
 
+    // TEACHER-SUITE: Wire Classroom Tools
+    document.getElementById('btnToolTimer')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (this.isDragging) return;
+      timerController.toggle();
+    });
+
+    document.getElementById('btnToolCurtain')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (this.isDragging) return;
+      curtainController.toggle();
+    });
+
+    document.getElementById('btnToolSpotlight')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (this.isDragging) return;
+      spotlightController.toggle();
+    });
+
+    document.getElementById('btnToolSplitBoard')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (this.isDragging) return;
+      splitScreenController.toggle();
+    });
+
+    document.getElementById('btnToolExportPdf')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (this.isDragging) return;
+      pdfNotesExporter.exportCurrentSession();
+    });
+
     // Session Exit Button ("बंद करें")
     document.getElementById('btnCloseSession')?.addEventListener('click', (e) => {
       e.stopPropagation();
       if (this.isDragging) return;
-      // Smoothly return to Welcome Screen
-      welcomeScreen.show();
-      store.setState({
-        appState: 'welcome',
-        isBoardMode: false,
-        isZen: false
-      });
-      fullscreenService.exitZen();
+      // Smoothly return to Welcome Screen & clean up session
+      slideView.closeDeck();
     });
 
     // MIC-AI: Wire Mic button and top-bar mirror button

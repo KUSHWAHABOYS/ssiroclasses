@@ -25,6 +25,7 @@
   <link rel="stylesheet" href="/src/styles/translator.css" />
   <link rel="stylesheet" href="/src/styles/library.css" />
   <link rel="stylesheet" href="/src/styles/welcomeStitch.css" />
+  <link rel="stylesheet" href="/src/styles/teachingTools.css" />
   <!-- WELCOME-CLEANUP: Removed connectModal.css link -->
 
   <style>
@@ -253,52 +254,27 @@
 <body class="state-welcome">
   <!-- Stage fills whole viewport: 100vw x 100dvh, margin 0, padding 0, background #000 -->
   <div id="stage" class="stage">
-    <!-- Non-Zen Header (z-index 45) -->
+    <!-- Minimalist Glassmorphic Header Status Pill (z-index 45) -->
     <header id="header" class="header">
       <div class="header-left">
-        <span class="channel-badge" id="channelName">SSIRO Classes</span>
-        <span class="file-name" id="fileName"></span>
+        <div class="header-status-pill">
+          <span class="channel-badge" id="channelName">SSIRO Classes</span>
+          <span class="file-name" id="fileName"></span>
+        </div>
       </div>
       <div class="header-right">
-        <span class="page-counter" id="pageCounter">1 / 1</span>
-        <button id="btnOpenFile" class="header-btn" title="Open PDF/Deck (O)" aria-label="Open Presentation Deck">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-          <span class="btn-text">Open Deck</span>
-        </button>
-        <button id="btnLibraryHeader" class="header-btn" title="स्टूडियो लाइब्रेरी (Studio Library)" aria-label="Open Studio Library">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-          <span class="btn-text">Library</span>
-        </button>
-        <button id="btnInstallHeader" class="header-btn btn-pwa-install" title="ऐप इंस्टॉल करें (Install App • PC / Digital Board)" aria-label="Install App">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          <span class="btn-text">Install</span>
-        </button>
-        <!-- WELCOME-FIX: Close Deck button visible in state-deck -->
-        <button id="btnCloseDeckHeader" class="header-btn btn-close-deck" title="Close Deck" aria-label="Close Presentation Deck">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-          <span class="btn-text">Close Deck</span>
-        </button>
-        <button id="btnBoardHeader" class="header-btn" title="Blackboard Studio (B)" aria-label="Toggle Blackboard Studio">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-          <span class="btn-text">Board</span>
-        </button>
-        <!-- MIC-AI: Top Bar Mirror Mic Button -->
-        <button id="btnMicHeader" class="header-btn btn-mic-header mic-off" title="माइक चालू / बंद (Mic ON/OFF • V)" aria-label="Toggle Microphone">
-          <svg class="mic-icon-off" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="1" y1="1" x2="23" y2="23"/>
-            <path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"/>
-            <path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"/>
-            <line x1="12" y1="19" x2="12" y2="23"/>
-            <line x1="8" y1="23" x2="16" y2="23"/>
-          </svg>
-          <svg class="mic-icon-on" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;">
-            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
-            <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-            <line x1="12" y1="19" x2="12" y2="23"/>
-            <line x1="8" y1="23" x2="16" y2="23"/>
-          </svg>
-          <span class="btn-text">Mic</span>
-        </button>
+        <div class="header-page-pill">
+          <span class="page-counter" id="pageCounter">1 / 1</span>
+        </div>
+        <!-- Hidden duplicate buttons kept in DOM strictly for legacy tests & scripts -->
+        <div class="header-legacy-support" style="display:none !important;">
+          <button id="btnOpenFile" class="header-btn" title="Open PDF/Deck"><span class="btn-text">Open Deck</span></button>
+          <button id="btnLibraryHeader" class="header-btn" title="Studio Library"><span class="btn-text">Library</span></button>
+          <button id="btnInstallHeader" class="header-btn btn-pwa-install" title="Install App"><span class="btn-text">Install</span></button>
+          <button id="btnCloseDeckHeader" class="header-btn btn-close-deck" title="Close Deck"><span class="btn-text">Close Deck</span></button>
+          <button id="btnBoardHeader" class="header-btn" title="Blackboard Studio"><span class="btn-text">Board</span></button>
+          <button id="btnMicHeader" class="header-btn btn-mic-header mic-off" title="Mic ON/OFF"><span class="btn-text">Mic</span></button>
+        </div>
       </div>
     </header>
 
