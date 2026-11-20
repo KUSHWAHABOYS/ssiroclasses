@@ -307,8 +307,9 @@ describe('Master Floating Dock & Dynamic Inking Island Suite', () => {
     it('renders and scales orbital halo crown dynamic island in circle layout', () => {
       toolbar.setLayout('circle');
       const island = document.getElementById('penDynamicIsland');
+      const container = document.getElementById('toolbarContainer');
       expect(island).not.toBeNull();
-      expect(document.querySelector('.toolbar-container.layout-circle')).not.toBeNull();
+      expect(container?.classList.contains('layout-circle')).toBe(true);
     });
 
     it('supports scaling dial size via slider, preset pills, and reset button', () => {
