@@ -593,7 +593,7 @@ export class PdfNotesExporter {
 
       // Build pure standard PDF 1.4 binary document with zero dependencies
       const pdfBytes = this.buildSingleImagePdf(jpegBytes, compCanvas.width, compCanvas.height);
-      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+      const blob = new Blob([pdfBytes.buffer as ArrayBuffer], { type: 'application/pdf' });
       const url = URL.createObjectURL(blob);
 
       // Download
