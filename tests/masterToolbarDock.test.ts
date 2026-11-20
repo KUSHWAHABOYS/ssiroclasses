@@ -87,8 +87,10 @@ describe('Master Floating Dock & Dynamic Inking Island Suite', () => {
     it('automatically collapses Dynamic Island when non-pen tool is selected', () => {
       const island = document.getElementById('penDynamicIsland');
       const selectBtn = document.getElementById('btnToolSelect');
+      const penBtn = document.getElementById('btnToolPen');
 
-      // Initially Pen is active -> not collapsed
+      // Double-click/tapping active Pen opens island
+      penBtn?.click();
       expect(island?.classList.contains('collapsed')).toBe(false);
 
       // Select tool clicked
@@ -96,10 +98,13 @@ describe('Master Floating Dock & Dynamic Inking Island Suite', () => {
       expect(store.getState().activeTool).toBe('select');
       expect(island?.classList.contains('collapsed')).toBe(true);
 
-      // Pen tool clicked back
-      const penBtn = document.getElementById('btnToolPen');
+      // Pen tool single-clicked back: selects Pen while keeping island collapsed
       penBtn?.click();
       expect(store.getState().activeTool).toBe('pen');
+      expect(island?.classList.contains('collapsed')).toBe(true);
+
+      // Double-clicking Pen opens island
+      penBtn?.dispatchEvent(new MouseEvent('dblclick', { bubbles: true }));
       expect(island?.classList.contains('collapsed')).toBe(false);
     });
   });
@@ -199,26 +204,78 @@ describe('Master Floating Dock & Dynamic Inking Island Suite', () => {
       expect(btnSplit).toBeNull();
     });
 
-    it('supports Dynamic Island across Pen, Marker, Eraser, and Laser', () => {
+    it('supports Dynamic Island across Pen, Marker, Eraser, and Laser with double-tap expand', () => {
       const island = document.getElementById('penDynamicIsland');
       const markerBtn = document.getElementById('btnToolHighlighter');
       const eraserBtn = document.getElementById('btnToolEraser');
       const laserBtn = document.getElementById('btnToolMagnifier');
 
+      // Single click selects tool and keeps island collapsed
       markerBtn?.click();
       expect(store.getState().activeTool).toBe('highlighter');
+      expect(island?.classList.contains('collapsed')).toBe(true);
+
+      // Clicking already active marker opens island
+      markerBtn?.click();
       expect(island?.classList.contains('collapsed')).toBe(false);
       expect(document.getElementById('islandPanelMarker')?.style.display).not.toBe('none');
 
+      // Single click on Eraser selects it, collapses island
       eraserBtn?.click();
       expect(store.getState().activeTool).toBe('eraser');
+      expect(island?.classList.contains('collapsed')).toBe(true);
+
+      // Double-click on Eraser opens island
+      eraserBtn?.dispatchEvent(new MouseEvent('dblclick', { bubbles: true }));
       expect(island?.classList.contains('collapsed')).toBe(false);
       expect(document.getElementById('islandPanelEraser')?.style.display).not.toBe('none');
 
+      // Single click on Laser selects it, collapses island
       laserBtn?.click();
       expect(store.getState().activeTool).toBe('magnifier');
+      expect(island?.classList.contains('collapsed')).toBe(true);
+
+      // Double-click on Laser opens island with 4 laser modes
+      laserBtn?.dispatchEvent(new MouseEvent('dblclick', { bubbles: true }));
       expect(island?.classList.contains('collapsed')).toBe(false);
       expect(document.getElementById('islandPanelLaser')?.style.display).not.toBe('none');
+
+      // Check 4 modes: Dot, Trail, Ring, Box
+      const btnDot = document.querySelector('.laser-mode-btn[data-laser-mode="dot"]') as HTMLButtonElement;
+      const btnTrail = document.querySelector('.laser-mode-btn[data-laser-mode="trail"]') as HTMLButtonElement;
+      const btnRing = document.querySelector('.laser-mode-btn[data-laser-mode="ring"]') as HTMLButtonElement;
+      const btnBox = document.querySelector('.laser-mode-btn[data-laser-mode="box"]') as HTMLButtonElement;
+
+      expect(btnDot).not.toBeNull();
+      expect(btnTrail).not.toBeNull();
+      expect(btnRing).not.toBeNull();
+      expect(btnBox).not.toBeNull();
+
+      btnBox?.click();
+      expect(btnBox?.classList.contains('active')).toBe(true);
+    });
+
+    it('starts toolbar in compact mode with More button expanding secondary suite', () => {
+      const tier2 = document.getElementById('toolbarTier2');
+      const maxBtn = document.getElementById('btnTierToggle');
+      const maxLabel = document.getElementById('tierToggleLabel');
+
+      expect(tier2).not.toBeNull();
+      expect(maxBtn).not.toBeNull();
+
+      // By default collapsed
+      expect(tier2?.classList.contains('collapsed')).toBe(true);
+      expect(maxLabel?.textContent).toBe('More');
+
+      // Click More -> expands
+      maxBtn?.click();
+      expect(tier2?.classList.contains('collapsed')).toBe(false);
+      expect(maxLabel?.textContent).toBe('Less');
+
+      // Click Less -> collapses back
+      maxBtn?.click();
+      expect(tier2?.classList.contains('collapsed')).toBe(true);
+      expect(maxLabel?.textContent).toBe('More');
     });
 
     it('displays compact "Screen" label for screen button and preserves it in Zen mode', () => {

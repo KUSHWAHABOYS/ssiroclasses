@@ -392,6 +392,57 @@
   flex-shrink: 0;
 }
 
+/* Secondary Collapsible Section */
+.dock-secondary-section {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  flex-shrink: 0;
+  transition: opacity 160ms ease;
+}
+
+.dock-secondary-section.collapsed {
+  display: none !important;
+}
+
+.toolbar-container.layout-vertical .dock-secondary-section {
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Max / Expand Toggle Button */
+.dock-btn.dock-btn-max {
+  background: rgba(56, 189, 248, 0.08);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  color: #38bdf8;
+  font-weight: 600;
+}
+
+.dock-btn.dock-btn-max:hover {
+  background: rgba(56, 189, 248, 0.18);
+  border-color: rgba(56, 189, 248, 0.5);
+  color: #7dd3fc;
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.25);
+}
+
+.dock-btn.dock-btn-max.active {
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.28), rgba(14, 165, 233, 0.38));
+  border-color: #38bdf8;
+  color: #ffffff;
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.4);
+}
+
+/* Laser Presenter Layer */
+.laser-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 35;
+}
+
 .dock-sep {
   width: 1px;
   height: 24px;
