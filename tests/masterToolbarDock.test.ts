@@ -40,7 +40,7 @@ describe('Master Floating Dock & Dynamic Inking Island Suite', () => {
       const tipBtns = island?.querySelectorAll('.island-tip-btn[data-tip]');
       expect(tipBtns?.length).toBe(4);
 
-      const strokeDots = island?.querySelectorAll('.stroke-dot-btn');
+      const strokeDots = island?.querySelectorAll('#islandStrokeGroup .stroke-dot-btn');
       expect(strokeDots?.length).toBe(4);
 
       const swatches = island?.querySelectorAll('.color-swatch-tactile');
