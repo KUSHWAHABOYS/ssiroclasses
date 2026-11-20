@@ -389,7 +389,7 @@ export class DrawingEngine {
           id: `shape-${Date.now()}-${Math.random()}`,
           tool: 'shape',
           color: state.activeColor,
-          size: state.penSize,
+          size: state.shapeSize || state.penSize || 2,
           alpha: state.penAlpha,
           points: [this.startPoint, endP],
           shapeType: state.activeShape,
@@ -415,7 +415,7 @@ export class DrawingEngine {
           id: `arrow-${Date.now()}-${Math.random()}`,
           tool: 'arrow',
           color: state.activeColor,
-          size: state.penSize,
+          size: state.shapeSize || state.penSize || 2,
           alpha: state.penAlpha,
           points: [this.startPoint, currentPt],
           startPoint: this.startPoint,
@@ -605,7 +605,7 @@ export class DrawingEngine {
 
     ctx.save();
     ctx.strokeStyle = state.activeColor;
-    ctx.lineWidth = state.penSize * wf;
+    ctx.lineWidth = (state.shapeSize || state.penSize || 2) * wf;
     ctx.globalAlpha = state.penAlpha;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
@@ -623,12 +623,12 @@ export class DrawingEngine {
     ctx.save();
     ctx.strokeStyle = state.activeColor;
     ctx.fillStyle = state.activeColor;
-    ctx.lineWidth = state.penSize * wf;
+    ctx.lineWidth = (state.shapeSize || state.penSize || 2) * wf;
     ctx.globalAlpha = state.penAlpha;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
 
-    annotationStore.drawArrow(ctx, start, current, state.penSize * wf);
+    annotationStore.drawArrow(ctx, start, current, (state.shapeSize || state.penSize || 2) * wf);
     ctx.restore();
   }
 

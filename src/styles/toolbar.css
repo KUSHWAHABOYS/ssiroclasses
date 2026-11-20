@@ -384,6 +384,131 @@
   display: none;
 }
 
+/* ==========================================================================
+   DYNAMIC PROPERTIES ISLAND - VERTICAL DOCK ORIENTATION (खड़ा सब-टूलबार)
+   Harmonized with Vertical Master Dock: opens vertically right beside dock
+   ========================================================================== */
+.toolbar-container.layout-vertical .pen-dynamic-island {
+  flex-direction: column;
+  width: 58px;
+  min-width: 58px;
+  max-width: 62px;
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 8px 4px;
+  border-radius: 26px;
+  gap: 6px;
+  align-items: center;
+  scrollbar-width: none !important;
+  box-shadow: 0 20px 48px -10px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(245, 158, 11, 0.35);
+}
+
+.toolbar-container.layout-vertical .pen-dynamic-island::-webkit-scrollbar {
+  display: none !important;
+}
+
+.toolbar-container.layout-vertical .pen-dynamic-island.collapsed {
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
+  position: absolute;
+  transform: scale(0.92);
+  top: 0;
+}
+
+.toolbar-container.layout-vertical .island-panel {
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+}
+
+.toolbar-container.layout-vertical .island-sep {
+  width: 28px;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.12);
+  margin: 2px 0;
+}
+
+.toolbar-container.layout-vertical .island-tips-group {
+  flex-direction: column;
+  gap: 3px;
+  width: 100%;
+  align-items: center;
+}
+
+.toolbar-container.layout-vertical .island-tip-btn {
+  width: 48px;
+  padding: 4px 1px;
+  font-size: 9px;
+  text-align: center;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+.toolbar-container.layout-vertical .island-stroke-group {
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+}
+
+.toolbar-container.layout-vertical .island-stroke-label {
+  font-size: 8px;
+  margin: 0 0 1px 0;
+  text-align: center;
+}
+
+.toolbar-container.layout-vertical .stroke-dot-btn {
+  width: 22px;
+  height: 22px;
+}
+
+.toolbar-container.layout-vertical .island-swatches-group {
+  display: grid;
+  grid-template-columns: repeat(2, 18px);
+  gap: 4px;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.toolbar-container.layout-vertical .color-swatch-tactile {
+  width: 17px;
+  height: 17px;
+}
+
+.toolbar-container.layout-vertical .color-swatch-tactile.active {
+  width: 18px;
+  height: 18px;
+  transform: scale(1.12);
+}
+
+.toolbar-container.layout-vertical .color-swatch-spectrum {
+  width: 17px;
+  height: 17px;
+}
+
+.toolbar-container.layout-vertical .island-pressure-feedback {
+  display: none !important;
+}
+
+.toolbar-container.layout-vertical .island-action-btn {
+  flex-direction: column;
+  width: 48px;
+  padding: 4px 2px;
+  font-size: 8.5px;
+  gap: 2px;
+  text-align: center;
+  border-radius: 6px;
+}
+
+.toolbar-container.layout-vertical .island-action-btn span {
+  font-size: 8px;
+  line-height: 1.1;
+}
+
 /* Dock Sections & Dividers */
 .dock-section {
   display: flex;

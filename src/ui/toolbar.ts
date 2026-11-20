@@ -278,6 +278,53 @@ export class Toolbar {
               <span>Pin Lens</span>
             </button>
           </div>
+
+          <!-- 1E. SHAPE & ARROW PROPERTIES PANEL (Square, Circle, Triangle, Line, Arrow - Thickness & Colors) -->
+          <div class="island-panel island-panel-shape" id="islandPanelShape" style="display:none;">
+            <!-- Shape Type Selector -->
+            <div class="island-tips-group" id="shapeTypesGroup">
+              <button class="island-tip-btn shape-type-btn active" data-shape-type="rect" type="button" title="Rectangle / Box [ ]">Box</button>
+              <button class="island-tip-btn shape-type-btn" data-shape-type="circle" type="button" title="Circle O">Circle</button>
+              <button class="island-tip-btn shape-type-btn" data-shape-type="triangle" type="button" title="Triangle △">Tri</button>
+              <button class="island-tip-btn shape-type-btn" data-shape-type="line" type="button" title="Straight Line ╱">Line</button>
+              <button class="island-tip-btn shape-type-btn" data-shape-type="arrow" type="button" title="Smart Arrow →">Arrow</button>
+            </div>
+
+            <div class="island-sep"></div>
+
+            <!-- Shape Stroke Thickness: 1px (Ultra-thin), 2px (Fine), 4px (Medium), 8px (Bold) -->
+            <div class="island-stroke-group" id="shapeStrokeGroup">
+              <span class="island-stroke-label">STROKE</span>
+              <button class="stroke-dot-btn shape-stroke-btn" data-shape-stroke="1" type="button" title="1px (Ultra-thin / बारीक रेखा)">
+                <span class="stroke-dot" style="width:2.5px; height:2.5px;"></span>
+              </button>
+              <button class="stroke-dot-btn shape-stroke-btn active" data-shape-stroke="2" type="button" title="2px (Fine / सामान्य)">
+                <span class="stroke-dot dot-2"></span>
+              </button>
+              <button class="stroke-dot-btn shape-stroke-btn" data-shape-stroke="4" type="button" title="4px (Medium / मध्यम)">
+                <span class="stroke-dot dot-4"></span>
+              </button>
+              <button class="stroke-dot-btn shape-stroke-btn" data-shape-stroke="8" type="button" title="8px (Bold / हेडिंग हाईलाइट)">
+                <span class="stroke-dot dot-8"></span>
+              </button>
+            </div>
+
+            <div class="island-sep"></div>
+
+            <!-- Shape Color Swatches -->
+            <div class="island-swatches-group" id="shapeSwatchesGroup">
+              ${this.swatches
+                .map(
+                  (c, i) =>
+                    `<div class="color-swatch color-swatch-tactile shape-swatch ${i === 1 ? 'active' : ''}" style="background-color: ${c};" data-color="${c}"></div>`
+                )
+                .join('')}
+              <div class="color-swatch-spectrum" id="btnCustomColorShape" title="Custom Spectrum Color">
+                <span class="spectrum-plus">+</span>
+                <input type="color" id="inputCustomColorShape" style="position: absolute; opacity: 0; width: 0; height: 0; pointer-events: none;" />
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- 2. STUDIO MASTER FLOATING DOCK -->
@@ -1137,6 +1184,17 @@ export class Toolbar {
     this.containerEl.style.left = `${curLeft}px`;
     this.containerEl.style.top = `${curTop}px`;
     this.preExpandLeft = curLeft;
+
+    const wrapper = document.getElementById('masterToolbarWrapper');
+    if (wrapper) {
+      if (this.currentLayout === 'vertical') {
+        const isLeftHalf = curLeft < window.innerWidth / 2;
+        wrapper.style.flexDirection = isLeftHalf ? 'row-reverse' : 'row';
+      } else {
+        wrapper.style.flexDirection = 'column';
+      }
+    }
+
     store.updateSettings({
       toolbarPos: { x: Math.round(curLeft), y: Math.round(curTop) }
     });
@@ -1264,7 +1322,7 @@ export class Toolbar {
 
     // Tool buttons (including individual shapes & sub-menus)
     const toolBtns = this.containerEl.querySelectorAll<HTMLButtonElement>('[data-tool]');
-    const inkingTools = ['pen', 'highlighter', 'eraser', 'magnifier'];
+    const inkingTools = ['pen', 'highlighter', 'eraser', 'magnifier', 'shape', 'arrow'];
     let lastTappedTool: string | null = null;
     let lastTapTimestamp = 0;
 
@@ -1343,8 +1401,27 @@ export class Toolbar {
         if (tool === 'shape' && shape) {
           popoverManager.close();
           zoomPopoverManager.close();
-          this.penIslandEl?.classList.add('collapsed');
-          store.setState({ activeTool: 'shape', activeShape: shape });
+          const currentShape = store.getState().activeShape;
+          if (isDoubleTap || (currentTool === 'shape' && currentShape === shape)) {
+            store.setState({ activeTool: 'shape', activeShape: shape });
+            this.penIslandEl?.classList.toggle('collapsed');
+          } else {
+            store.setState({ activeTool: 'shape', activeShape: shape });
+            this.penIslandEl?.classList.add('collapsed');
+          }
+          return;
+        }
+
+        if (tool === 'arrow') {
+          popoverManager.close();
+          zoomPopoverManager.close();
+          if (isDoubleTap || currentTool === 'arrow') {
+            store.setState({ activeTool: 'arrow' });
+            this.penIslandEl?.classList.toggle('collapsed');
+          } else {
+            store.setState({ activeTool: 'arrow' });
+            this.penIslandEl?.classList.add('collapsed');
+          }
           return;
         }
 
@@ -1574,6 +1651,60 @@ export class Toolbar {
     magZoomBtns.forEach((b) => {
       const z = parseFloat(b.getAttribute('data-mag-zoom') || '2.0');
       b.classList.toggle('active', Math.abs(z - curMagZoom) < 0.3);
+    });
+
+    // Inking Island: Shape & Arrow Controls (Shape Types, Stroke 1/2/4/8px, Colors)
+    const shapeTypeBtns = this.containerEl.querySelectorAll<HTMLButtonElement>('.shape-type-btn');
+    shapeTypeBtns.forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (this.isDragging) return;
+        shapeTypeBtns.forEach((b) => b.classList.remove('active'));
+        btn.classList.add('active');
+        const type = btn.getAttribute('data-shape-type');
+        if (type === 'arrow') {
+          store.setState({ activeTool: 'arrow' });
+        } else if (type) {
+          store.setState({ activeTool: 'shape', activeShape: type as ShapeType });
+        }
+      });
+    });
+
+    const shapeStrokeBtns = this.containerEl.querySelectorAll<HTMLButtonElement>('.shape-stroke-btn');
+    shapeStrokeBtns.forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (this.isDragging) return;
+        shapeStrokeBtns.forEach((b) => b.classList.remove('active'));
+        btn.classList.add('active');
+        const stroke = parseInt(btn.getAttribute('data-shape-stroke') || '2', 10);
+        store.setState({ shapeSize: stroke });
+      });
+    });
+
+    const shapeSwatches = this.containerEl.querySelectorAll<HTMLDivElement>('.shape-swatch');
+    shapeSwatches.forEach((swatch) => {
+      swatch.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (this.isDragging) return;
+        const color = swatch.getAttribute('data-color');
+        if (color) {
+          store.setState({ activeColor: color });
+        }
+      });
+    });
+
+    const btnCustomColorShape = document.getElementById('btnCustomColorShape');
+    const inputCustomColorShape = document.getElementById('inputCustomColorShape') as HTMLInputElement | null;
+    btnCustomColorShape?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      inputCustomColorShape?.click();
+    });
+    inputCustomColorShape?.addEventListener('input', (e) => {
+      const color = (e.target as HTMLInputElement).value;
+      if (color) {
+        store.setState({ activeColor: color });
+      }
     });
 
     // Undo & Redo & Clear All
@@ -1864,17 +1995,26 @@ export class Toolbar {
 
         // Toggle and morph Dynamic Inking Island when switching tools:
         if (this.penIslandEl) {
-          const inkingTools = ['pen', 'highlighter', 'eraser', 'magnifier'];
+          const inkingTools = ['pen', 'highlighter', 'eraser', 'magnifier', 'shape', 'arrow'];
           if (inkingTools.includes(state.activeTool)) {
             const panelPen = document.getElementById('islandPanelPen');
             const panelMarker = document.getElementById('islandPanelMarker');
             const panelEraser = document.getElementById('islandPanelEraser');
             const panelLaser = document.getElementById('islandPanelLaser');
+            const panelShape = document.getElementById('islandPanelShape');
 
             if (panelPen) panelPen.style.display = state.activeTool === 'pen' ? 'flex' : 'none';
             if (panelMarker) panelMarker.style.display = state.activeTool === 'highlighter' ? 'flex' : 'none';
             if (panelEraser) panelEraser.style.display = state.activeTool === 'eraser' ? 'flex' : 'none';
             if (panelLaser) panelLaser.style.display = state.activeTool === 'magnifier' ? 'flex' : 'none';
+            if (panelShape) panelShape.style.display = (state.activeTool === 'shape' || state.activeTool === 'arrow') ? 'flex' : 'none';
+
+            if (panelShape && (state.activeTool === 'shape' || state.activeTool === 'arrow')) {
+              const activeType = state.activeTool === 'arrow' ? 'arrow' : state.activeShape;
+              panelShape.querySelectorAll('.shape-type-btn').forEach((btn) => {
+                btn.classList.toggle('active', btn.getAttribute('data-shape-type') === activeType);
+              });
+            }
 
             // NOTE: Do NOT automatically un-collapse penIslandEl here.
             // Property island opens strictly on double-tap or tapping the active inking tool.
@@ -1886,7 +2026,9 @@ export class Toolbar {
                 pen: '#f59e0b',
                 highlighter: '#38bdf8',
                 eraser: '#ef4444',
-                magnifier: '#a855f7'
+                magnifier: '#a855f7',
+                shape: '#38bdf8',
+                arrow: '#38bdf8'
               };
               orbitRim.setAttribute('stroke', glowColors[state.activeTool] || '#f59e0b');
             }
@@ -1914,6 +2056,15 @@ export class Toolbar {
         strokeBtns.forEach((btn) => {
           const size = parseInt(btn.getAttribute('data-size') || '0', 10);
           btn.classList.toggle('active', size === state.penSize);
+        });
+      }
+
+      // Shape stroke size synchronization
+      if (state.shapeSize !== prev.shapeSize) {
+        const shapeStrokeBtns = this.containerEl.querySelectorAll<HTMLButtonElement>('.shape-stroke-btn');
+        shapeStrokeBtns.forEach((btn) => {
+          const sz = parseInt(btn.getAttribute('data-shape-stroke') || '2', 10);
+          btn.classList.toggle('active', sz === (state.shapeSize || 2));
         });
       }
 

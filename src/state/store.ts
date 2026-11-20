@@ -45,6 +45,7 @@ export interface AppState {
   dominantEdgeColor: string;
   penSize: number;
   penAlpha: number;
+  shapeSize: number;
   highlighterWidth: number;
   highlighterAlpha: number;
   eraserSize: number;
@@ -83,6 +84,7 @@ class Store {
       dominantEdgeColor: '#000000',
       penSize: settings.defaultPenSize,
       penAlpha: settings.defaultPenAlpha,
+      shapeSize: 2,
       highlighterWidth: settings.defaultHighlighterWidth,
       highlighterAlpha: settings.defaultHighlighterAlpha,
       eraserSize: settings.defaultEraserSize,
