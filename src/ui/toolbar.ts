@@ -867,10 +867,6 @@ export class Toolbar {
       originLeft = rect.left;
       unscaledWidth = rect.width / initialScale;
 
-      if (this.currentLayout === 'circle') {
-        initialCircleSize = parseFloat(getComputedStyle(this.containerEl).getPropertyValue('--circle-dock-size')) || 490;
-      }
-
       gestureWatchdog.registerGesture('toolbar-resize', () => stopResize(), e.pointerId);
       this.wakeFromGhost();
     });
@@ -880,33 +876,19 @@ export class Toolbar {
       gestureWatchdog.recordActivity('toolbar-resize');
 
       const dx = e.clientX - startX;
+      const targetRenderedWidth = (unscaledWidth * initialScale) + dx;
+      const newScale = targetRenderedWidth / Math.max(100, unscaledWidth);
 
-      if (this.currentLayout === 'circle') {
-        const newSize = Math.max(240, Math.min(950, Math.round(initialCircleSize + dx)));
-        this.containerEl.style.setProperty('--circle-dock-size', `${newSize}px`);
-        localStorage.setItem('ssiro_circle_dock_size', String(newSize));
-        const slider = document.getElementById('layoutSizeSlider') as HTMLInputElement | null;
-        if (slider) slider.value = String(newSize);
-        const badge = document.getElementById('layoutSizeBadge');
-        if (badge) badge.textContent = `${newSize}px`;
-        if (this.scaleBadgeEl) {
-          this.scaleBadgeEl.textContent = `Circle: ${newSize}px (${Math.round((newSize / 480) * 100)}%)`;
-        }
-      } else {
-        const targetRenderedWidth = (unscaledWidth * initialScale) + dx;
-        const newScale = targetRenderedWidth / Math.max(100, unscaledWidth);
+      // Clamp scale between 0.50 and 2.50
+      const clampedScale = Math.max(0.50, Math.min(2.50, Math.round(newScale * 100) / 100));
+      this.applyScale(clampedScale, false);
 
-        // Clamp scale between 0.50 and 2.50
-        const clampedScale = Math.max(0.50, Math.min(2.50, Math.round(newScale * 100) / 100));
-        this.applyScale(clampedScale, false);
-
-        // If enlarged beyond viewport right boundary, shift left so it stays on screen
-        const currentRenderedWidth = unscaledWidth * clampedScale;
-        const maxLeft = window.innerWidth - currentRenderedWidth - 8;
-        const curLeft = parseFloat(this.containerEl.style.left) || originLeft;
-        if (curLeft > maxLeft && maxLeft > 8) {
-          this.containerEl.style.left = `${maxLeft}px`;
-        }
+      // If enlarged beyond viewport right boundary, shift left so it stays on screen
+      const currentRenderedWidth = unscaledWidth * clampedScale;
+      const maxLeft = window.innerWidth - currentRenderedWidth - 8;
+      const curLeft = parseFloat(this.containerEl.style.left) || originLeft;
+      if (curLeft > maxLeft && maxLeft > 8) {
+        this.containerEl.style.left = `${maxLeft}px`;
       }
     });
 
@@ -942,43 +924,17 @@ export class Toolbar {
         startX_E = e.clientX;
         try { handleE.setPointerCapture(e.pointerId); } catch {}
         this.containerEl.classList.add('is-resizing-w');
-        if (this.currentLayout === 'circle') {
-          initialW = parseFloat(getComputedStyle(this.containerEl).getPropertyValue('--circle-dock-size')) || 490;
-        } else if (this.currentLayout === 'box') {
-          initialW = parseFloat(getComputedStyle(this.containerEl).getPropertyValue('--box-dock-width')) || 540;
-        } else {
-          initialW = this.masterDockEl.getBoundingClientRect().width / (this.toolbarScale || 1);
-        }
+        initialW = this.masterDockEl.getBoundingClientRect().width / (this.toolbarScale || 1);
         this.wakeFromGhost();
       });
 
       window.addEventListener('pointermove', (e: PointerEvent) => {
         if (!isResizingW) return;
         const dx = (e.clientX - startX_E) / (this.toolbarScale || 1);
-        if (this.currentLayout === 'circle') {
-          const newSize = Math.max(240, Math.min(950, Math.round(initialW + dx)));
-          this.containerEl.style.setProperty('--circle-dock-size', `${newSize}px`);
-          localStorage.setItem('ssiro_circle_dock_size', String(newSize));
-          const slider = document.getElementById('layoutSizeSlider') as HTMLInputElement | null;
-          if (slider) slider.value = String(newSize);
-          const badge = document.getElementById('layoutSizeBadge');
-          if (badge) badge.textContent = `${newSize}px`;
-          if (this.scaleBadgeEl) {
-            this.scaleBadgeEl.textContent = `Circle: ${newSize}px (${Math.round((newSize / 480) * 100)}%)`;
-          }
-        } else if (this.currentLayout === 'box') {
-          const newW = Math.max(280, Math.min(window.innerWidth - 32, Math.round(initialW + dx)));
-          this.containerEl.style.setProperty('--box-dock-width', `${newW}px`);
-          localStorage.setItem('ssiro_box_dock_width', String(newW));
-          if (this.scaleBadgeEl) {
-            this.scaleBadgeEl.textContent = `${newW}px (Width)`;
-          }
-        } else {
-          const newW = Math.max(300, Math.min(window.innerWidth - 32, Math.round(initialW + dx)));
-          this.masterDockEl.style.width = `${newW}px`;
-          if (this.scaleBadgeEl) {
-            this.scaleBadgeEl.textContent = `${newW}px (Width)`;
-          }
+        const newW = Math.max(300, Math.min(window.innerWidth - 32, Math.round(initialW + dx)));
+        this.masterDockEl.style.width = `${newW}px`;
+        if (this.scaleBadgeEl) {
+          this.scaleBadgeEl.textContent = `${newW}px (Width)`;
         }
       });
 
@@ -1009,11 +965,6 @@ export class Toolbar {
         isResizingH = true;
         startY_S = e.clientY;
         initialScale_S = this.toolbarScale || 1.0;
-        if (this.currentLayout === 'circle') {
-          initialSize_S = parseFloat(getComputedStyle(this.containerEl).getPropertyValue('--circle-dock-size')) || 480;
-        } else if (this.currentLayout === 'box') {
-          initialSize_S = parseFloat(getComputedStyle(this.containerEl).getPropertyValue('--box-dock-height')) || 180;
-        }
         try { handleS.setPointerCapture(e.pointerId); } catch {}
         this.containerEl.classList.add('is-resizing-h');
         this.wakeFromGhost();
@@ -1022,31 +973,11 @@ export class Toolbar {
       window.addEventListener('pointermove', (e: PointerEvent) => {
         if (!isResizingH) return;
         const dy = e.clientY - startY_S;
-        if (this.currentLayout === 'circle') {
-          const newSize = Math.max(240, Math.min(950, Math.round(initialSize_S + dy)));
-          this.containerEl.style.setProperty('--circle-dock-size', `${newSize}px`);
-          localStorage.setItem('ssiro_circle_dock_size', String(newSize));
-          const slider = document.getElementById('layoutSizeSlider') as HTMLInputElement | null;
-          if (slider) slider.value = String(newSize);
-          const badge = document.getElementById('layoutSizeBadge');
-          if (badge) badge.textContent = `${newSize}px`;
-          if (this.scaleBadgeEl) {
-            this.scaleBadgeEl.textContent = `Circle: ${newSize}px (${Math.round((newSize / 480) * 100)}%)`;
-          }
-        } else if (this.currentLayout === 'box') {
-          const newH = Math.max(120, Math.min(window.innerHeight - 60, Math.round(initialSize_S + dy)));
-          this.containerEl.style.setProperty('--box-dock-height', `${newH}px`);
-          localStorage.setItem('ssiro_box_dock_height', String(newH));
-          if (this.scaleBadgeEl) {
-            this.scaleBadgeEl.textContent = `${newH}px (Height)`;
-          }
-        } else {
-          const factor = 1 + (dy / 250);
-          const newScale = Math.max(0.50, Math.min(2.50, Math.round(initialScale_S * factor * 100) / 100));
-          this.applyScale(newScale, false);
-          if (this.scaleBadgeEl) {
-            this.scaleBadgeEl.textContent = `${Math.round(newScale * 100)}% (Scale)`;
-          }
+        const factor = 1 + (dy / 250);
+        const newScale = Math.max(0.50, Math.min(2.50, Math.round(initialScale_S * factor * 100) / 100));
+        this.applyScale(newScale, false);
+        if (this.scaleBadgeEl) {
+          this.scaleBadgeEl.textContent = `${Math.round(newScale * 100)}% (Scale)`;
         }
       });
 
@@ -1155,7 +1086,7 @@ export class Toolbar {
     setTimeout(() => this.clampToViewport(), 50);
   }
 
-  public updateCircleDialActiveWedge(): void {
+  public updateCircleDialActiveWedge(_tool?: string, _shape?: string): void {
     // No-op preserved for interface compatibility
   }
 
