@@ -10,9 +10,10 @@ export class TimerController {
   private timerInterval: number | null = null;
   private mode: 'timer' | 'stopwatch' = 'timer';
   private isRunning = false;
-  private seconds = 120; // Default 2 minutes
-  private initialSeconds = 120;
+  private seconds = 60; // Default 1 minute
+  private initialSeconds = 60;
   private isMinimized = false;
+  private readonly CIRCUMFERENCE = 2 * Math.PI * 42; // approx 263.89
 
   init(): void {
     if (document.getElementById('timerWidget')) return;
@@ -24,43 +25,93 @@ export class TimerController {
     const stage = document.getElementById('stage') || document.body;
     const widget = document.createElement('div');
     widget.id = 'timerWidget';
-    widget.className = 'timer-widget';
+    widget.className = 'timer-widget hud-panel';
     widget.style.display = 'none';
 
     widget.innerHTML = `
-      <div class="timer-header">
-        <div class="timer-drag-handle" id="timerDragHandle" title="Drag Timer">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#fbbf24" stroke-width="2.2">
-            <circle cx="12" cy="12" r="10"/>
-            <polyline points="12 6 12 12 16 14"/>
-          </svg>
-          <span id="timerTitle">Timer</span>
+      <!-- Top Compact Header / Drag Bar -->
+      <div id="timerDragHandle" class="timer-header cursor-grab">
+        <div class="timer-header-left">
+          <div class="timer-clock-badge">
+            <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+          <span class="timer-title-text" id="timerTitle">Timer</span>
+          <span id="activePulse" class="timer-active-pulse" style="display:none;"></span>
         </div>
+
         <div class="timer-actions">
-          <button class="timer-icon-btn" id="btnTimerMinimize" title="Minimize / Expand">─</button>
-          <button class="timer-icon-btn" id="btnTimerClose" title="Close">✕</button>
+          <button id="btnTimerMinimize" title="Minimize / Expand" class="timer-icon-btn" type="button">
+            <svg width="10" height="10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M20 12H4"/>
+            </svg>
+          </button>
+          <button id="btnTimerClose" title="Close" class="timer-icon-btn timer-btn-close" type="button">
+            <svg width="10" height="10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
         </div>
       </div>
 
-      <div class="timer-full-controls">
+      <!-- Collapsible Body Section -->
+      <div id="timerBody" class="timer-body">
+        <!-- Mode Switcher (Countdown / Stopwatch) -->
         <div class="timer-mode-pills">
-          <button class="timer-mode-btn active" id="btnModeTimer" type="button">Countdown</button>
-          <button class="timer-mode-btn" id="btnModeStopwatch" type="button">Stopwatch</button>
+          <button id="btnModeTimer" class="timer-mode-btn active" type="button">Countdown</button>
+          <button id="btnModeStopwatch" class="timer-mode-btn" type="button">Stopwatch</button>
         </div>
 
-        <div class="timer-display" id="timerDisplay">02:00</div>
+        <!-- Compact Dial / Circular Gauge Area -->
+        <div class="timer-dial-container">
+          <div class="timer-dial-wrapper">
+            <svg class="timer-svg-gauge" viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r="42" stroke="currentColor" stroke-width="5" class="timer-ring-bg" />
+              <circle id="progressRing" cx="50" cy="50" r="42" stroke="currentColor" stroke-width="5" stroke-linecap="round"
+                      stroke-dasharray="263.89" stroke-dashoffset="0"
+                      class="timer-ring-progress amber-glow-stroke" />
+            </svg>
 
-        <div class="timer-presets" id="timerPresets">
-          <button class="timer-preset-pill" data-sec="30" type="button">30s</button>
-          <button class="timer-preset-pill" data-sec="60" type="button">1m</button>
-          <button class="timer-preset-pill active" data-sec="120" type="button">2m</button>
-          <button class="timer-preset-pill" data-sec="300" type="button">5m</button>
+            <div class="timer-time-center">
+              <span id="timerDisplay" class="mono-num timer-time-num">01:00</span>
+            </div>
+          </div>
         </div>
 
-        <div class="timer-controls">
-          <button class="timer-btn-primary" id="btnTimerStartPause" type="button">Start</button>
-          <button class="timer-btn-secondary" id="btnTimerReset" type="button">Reset</button>
+        <!-- Quick Preset Chips (Countdown Only) -->
+        <div id="timerPresets" class="timer-presets-row">
+          <button data-sec="30" class="chip-preset timer-preset-pill" type="button">30s</button>
+          <button data-sec="60" class="chip-preset timer-preset-pill active" type="button">1m</button>
+          <button data-sec="120" class="chip-preset timer-preset-pill" type="button">2m</button>
+          <button data-sec="300" class="chip-preset timer-preset-pill" type="button">5m</button>
         </div>
+
+        <!-- Main Action Buttons (Start / Pause & Reset) -->
+        <div class="timer-actions-grid">
+          <button id="btnTimerStartPause" class="btn-amber-glow timer-btn-toggle" type="button">
+            <svg id="iconToggle" width="14" height="14" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/>
+            </svg>
+            <span id="labelToggle">Start</span>
+          </button>
+
+          <button id="btnTimerReset" class="timer-btn-reset" type="button">
+            <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+            </svg>
+            <span>Reset</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Bottom-right Resize Grip Handle -->
+      <div id="timerResizeGrip" class="resize-handle" title="Drag to Resize Widget">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor">
+          <circle cx="8" cy="8" r="1.2"/>
+          <circle cx="4" cy="8" r="1.2"/>
+          <circle cx="8" cy="4" r="1.2"/>
+        </svg>
       </div>
     `;
 
@@ -79,42 +130,74 @@ export class TimerController {
     let initialLeft = 0;
     let initialTop = 0;
 
-    handle.addEventListener('pointerdown', (e: PointerEvent) => {
+    handle?.addEventListener('pointerdown', (e: PointerEvent) => {
+      if ((e.target as HTMLElement).closest('button')) return;
       isDragging = true;
       startX = e.clientX;
       startY = e.clientY;
       const rect = this.widgetEl!.getBoundingClientRect();
       initialLeft = rect.left;
       initialTop = rect.top;
-      handle.setPointerCapture(e.pointerId);
+      try { handle.setPointerCapture(e.pointerId); } catch {}
     });
 
-    window.addEventListener('pointermove', (e: PointerEvent) => {
+    handle?.addEventListener('pointermove', (e: PointerEvent) => {
       if (!isDragging || !this.widgetEl) return;
       const dx = e.clientX - startX;
       const dy = e.clientY - startY;
-      this.widgetEl.style.left = `${Math.max(10, Math.min(window.innerWidth - 180, initialLeft + dx))}px`;
-      this.widgetEl.style.top = `${Math.max(10, Math.min(window.innerHeight - 100, initialTop + dy))}px`;
+      const maxLeft = Math.max(10, window.innerWidth - this.widgetEl.offsetWidth - 10);
+      const maxTop = Math.max(10, window.innerHeight - this.widgetEl.offsetHeight - 10);
+      this.widgetEl.style.left = `${Math.max(10, Math.min(maxLeft, initialLeft + dx))}px`;
+      this.widgetEl.style.top = `${Math.max(10, Math.min(maxTop, initialTop + dy))}px`;
       this.widgetEl.style.right = 'auto';
     });
 
-    const stopDrag = () => {
-      isDragging = false;
-    };
-    window.addEventListener('pointerup', stopDrag);
-    window.addEventListener('pointercancel', stopDrag);
+    const stopDrag = () => { isDragging = false; };
+    handle?.addEventListener('pointerup', stopDrag);
+    handle?.addEventListener('pointercancel', stopDrag);
+
+    // Resizing
+    const resizeGrip = this.widgetEl.querySelector('#timerResizeGrip') as HTMLElement;
+    if (resizeGrip) {
+      let isResizing = false;
+      let rStartX = 0;
+      let startW = 0;
+
+      resizeGrip.addEventListener('pointerdown', (e: PointerEvent) => {
+        e.stopPropagation();
+        e.preventDefault();
+        isResizing = true;
+        rStartX = e.clientX;
+        startW = this.widgetEl!.offsetWidth;
+        try { resizeGrip.setPointerCapture(e.pointerId); } catch {}
+      });
+
+      resizeGrip.addEventListener('pointermove', (e: PointerEvent) => {
+        if (!isResizing || !this.widgetEl) return;
+        const newW = Math.min(340, Math.max(210, startW + (e.clientX - rStartX)));
+        this.widgetEl.style.width = `${newW}px`;
+      });
+
+      const stopResize = () => { isResizing = false; };
+      resizeGrip.addEventListener('pointerup', stopResize);
+      resizeGrip.addEventListener('pointercancel', stopResize);
+    }
 
     // Minimize & Close
-    document.getElementById('btnTimerMinimize')?.addEventListener('click', () => {
+    document.getElementById('btnTimerMinimize')?.addEventListener('click', (e) => {
+      e.stopPropagation();
       this.isMinimized = !this.isMinimized;
+      const timerBody = document.getElementById('timerBody');
+      if (timerBody) timerBody.style.display = this.isMinimized ? 'none' : 'flex';
       this.widgetEl?.classList.toggle('minimized', this.isMinimized);
     });
 
-    document.getElementById('btnTimerClose')?.addEventListener('click', () => {
+    document.getElementById('btnTimerClose')?.addEventListener('click', (e) => {
+      e.stopPropagation();
       this.hide();
     });
 
-    // Modes
+    // Mode Switchers
     document.getElementById('btnModeTimer')?.addEventListener('click', () => {
       this.setMode('timer');
     });
@@ -122,7 +205,7 @@ export class TimerController {
       this.setMode('stopwatch');
     });
 
-    // Presets
+    // Preset Chips
     this.widgetEl.querySelectorAll('.timer-preset-pill').forEach((btn) => {
       btn.addEventListener('click', () => {
         const sec = parseInt(btn.getAttribute('data-sec') || '60', 10);
@@ -175,7 +258,7 @@ export class TimerController {
       if (titleEl) titleEl.textContent = 'Timer';
       btnT?.classList.add('active');
       btnS?.classList.remove('active');
-      if (presetsEl) presetsEl.style.display = 'flex';
+      if (presetsEl) presetsEl.style.display = 'grid';
       this.seconds = this.initialSeconds;
     } else {
       if (titleEl) titleEl.textContent = 'Stopwatch';
@@ -192,6 +275,11 @@ export class TimerController {
     this.mode = 'timer';
     this.initialSeconds = sec;
     this.seconds = sec;
+
+    this.widgetEl?.querySelectorAll('.timer-preset-pill').forEach((b) => {
+      b.classList.toggle('active', parseInt(b.getAttribute('data-sec') || '0', 10) === sec);
+    });
+
     this.updateDisplay();
   }
 
@@ -204,9 +292,20 @@ export class TimerController {
   }
 
   private start(): void {
+    if (this.mode === 'timer' && this.seconds <= 0) {
+      this.seconds = this.initialSeconds;
+    }
     this.isRunning = true;
-    const btn = document.getElementById('btnTimerStartPause');
-    if (btn) btn.textContent = 'Pause';
+
+    const labelToggle = document.getElementById('labelToggle');
+    const iconToggle = document.getElementById('iconToggle');
+    const activePulse = document.getElementById('activePulse');
+
+    if (labelToggle) labelToggle.textContent = 'Pause';
+    if (iconToggle) {
+      iconToggle.innerHTML = `<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />`;
+    }
+    if (activePulse) activePulse.style.display = 'inline-block';
 
     if (this.timerInterval) clearInterval(this.timerInterval);
     this.timerInterval = window.setInterval(() => {
@@ -216,7 +315,8 @@ export class TimerController {
           this.updateDisplay();
           if (this.seconds === 0) {
             this.pause();
-            this.playChime();
+            this.playAlertTone();
+            this.flashWidget();
           }
         }
       } else {
@@ -232,8 +332,16 @@ export class TimerController {
       clearInterval(this.timerInterval);
       this.timerInterval = null;
     }
-    const btn = document.getElementById('btnTimerStartPause');
-    if (btn) btn.textContent = 'Start';
+
+    const labelToggle = document.getElementById('labelToggle');
+    const iconToggle = document.getElementById('iconToggle');
+    const activePulse = document.getElementById('activePulse');
+
+    if (labelToggle) labelToggle.textContent = 'Start';
+    if (iconToggle) {
+      iconToggle.innerHTML = `<path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/>`;
+    }
+    if (activePulse) activePulse.style.display = 'none';
   }
 
   private reset(): void {
@@ -244,6 +352,7 @@ export class TimerController {
 
   private updateDisplay(): void {
     const disp = document.getElementById('timerDisplay');
+    const progressRing = document.getElementById('progressRing') as SVGCircleElement | null;
     if (!disp) return;
 
     const mins = Math.floor(this.seconds / 60);
@@ -251,34 +360,42 @@ export class TimerController {
     const str = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
     disp.textContent = str;
 
-    if (this.mode === 'timer' && this.seconds <= 10 && this.seconds > 0) {
-      disp.classList.add('warning');
-    } else {
-      disp.classList.remove('warning');
+    if (progressRing) {
+      if (this.mode === 'timer') {
+        const ratio = this.initialSeconds > 0 ? (this.seconds / this.initialSeconds) : 0;
+        progressRing.style.strokeDashoffset = String(this.CIRCUMFERENCE * (1 - ratio));
+      } else {
+        const ratio = (this.seconds % 60) / 60;
+        progressRing.style.strokeDashoffset = String(this.CIRCUMFERENCE * (1 - ratio));
+      }
     }
   }
 
-  // Synthesized Web Audio chime on completion (0 external MP3 files needed)
-  private playChime(): void {
+  // Harmonic alert chime tone generator via Web Audio API (0 external MP3 files needed)
+  private playAlertTone(): void {
     try {
       const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
       if (!AudioContextClass) return;
-      const ctx = new AudioContextClass();
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
-      osc.frequency.setValueAtTime(880, ctx.currentTime + 0.15); // A5
-
-      gain.gain.setValueAtTime(0.3, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.9);
-
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start();
-      osc.stop(ctx.currentTime + 0.9);
+      const audioCtx = new AudioContextClass();
+      [880, 1100, 1320].forEach((freq, idx) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.frequency.value = freq;
+        const startTime = audioCtx.currentTime + idx * 0.12;
+        gain.gain.setValueAtTime(0.18, startTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.18);
+        osc.start(startTime);
+        osc.stop(startTime + 0.18);
+      });
     } catch {}
+  }
+
+  private flashWidget(): void {
+    if (!this.widgetEl) return;
+    this.widgetEl.classList.add('flash-ring');
+    setTimeout(() => this.widgetEl?.classList.remove('flash-ring'), 1200);
   }
 }
 
