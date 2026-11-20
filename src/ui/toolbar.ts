@@ -1301,9 +1301,6 @@ export class Toolbar {
         this.clampToViewport();
       }
     };
-        this.clampToViewport();
-      }
-    };
 
     this.containerEl.addEventListener('touchend', endPinch, { passive: true });
     this.containerEl.addEventListener('touchcancel', endPinch, { passive: true });
