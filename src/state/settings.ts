@@ -77,7 +77,7 @@ export interface AppSettings {
   manualCropBottom: number;
   manualCropLeft: number;
   manualCropRight: number;
-  // TOOLBAR: Shape & Tool Idle Revert (15s default, 0 = stay on tool forever)
+  // TOOLBAR: Shape & Tool Idle Revert (30s default, 0 = stay on tool forever)
   autoRevertToPenSeconds?: number;
 }
 
@@ -163,7 +163,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   manualCropBottom: 0,
   manualCropLeft: 0,
   manualCropRight: 0,
-  autoRevertToPenSeconds: 15
+  autoRevertToPenSeconds: 30
 };
 
 export function generateSyncUrl(settings?: AppSettings): string {

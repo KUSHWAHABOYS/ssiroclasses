@@ -66,12 +66,12 @@ export class DrawingEngine {
         this.cancelCurrentStroke();
       }
 
-      // TEACHER-FLOW: Auto-revert idle fallback: if switched to temporary tool, return to Pen after idle
+      // TEACHER-FLOW: Auto-revert idle fallback: if switched to temporary tool, return to Pen after idle (30s)
       if (state.activeTool !== prev.activeTool) {
         if (state.activeTool === 'eraser' || state.activeTool === 'shape' || state.activeTool === 'arrow') {
-          this.scheduleAutoRevertToPen(8000);
+          this.scheduleAutoRevertToPen(30000);
         } else if (state.activeTool === 'highlighter') {
-          this.scheduleAutoRevertToPen(10000);
+          this.scheduleAutoRevertToPen(30000);
         } else if (state.activeTool === 'pen') {
           this.cancelAutoRevert();
         }
@@ -81,9 +81,20 @@ export class DrawingEngine {
     this.createEraserCursor();
   }
 
+  private autoColorPalette = ['#f59e0b', '#38bdf8', '#22c55e', '#fb923c', '#e879f9', '#ffffff'];
+  private autoColorIndex = 0;
+
+  private advanceAutoColorCycle(): void {
+    const state = store.getState();
+    if (!state.isAutoColorCycleEnabled) return;
+    this.autoColorIndex = (this.autoColorIndex + 1) % this.autoColorPalette.length;
+    const nextColor = this.autoColorPalette[this.autoColorIndex];
+    store.setState({ activeColor: nextColor });
+  }
+
   scheduleAutoRevertToPen(delayMs?: number): void {
     this.cancelAutoRevert();
-    const settingSec = store.getState().settings.autoRevertToPenSeconds ?? 15;
+    const settingSec = store.getState().settings.autoRevertToPenSeconds ?? 30;
     if (settingSec === 0) return; // 0 disables auto-revert (stay on tool)
     const effectiveMs = delayMs !== undefined ? delayMs : (settingSec * 1000);
     this.autoRevertTimer = window.setTimeout(() => {
@@ -367,15 +378,50 @@ export class DrawingEngine {
       // Finished eraser stroke - guarantee residual cursor circle is removed
       this.updateEraserCursor(0, 0, 0, false);
       this.currentStrokePoints = [];
-      // Auto-revert back to Pen after idle period (allows multiple erasures)
-      this.scheduleAutoRevertToPen(8000);
+      // Auto-revert back to Pen after idle period (30s timeout allows continuous erasures)
+      this.scheduleAutoRevertToPen(30000);
       return;
     }
 
     if (state.activeTool === 'shape' && this.startPoint) {
-      // Minimum-size rule: drag distance < 6px discarded per B6.4
       const dist = Math.hypot(currentPt.x - this.startPoint.x, currentPt.y - this.startPoint.y);
-      if (dist >= 6) {
+      const isStamp = state.activeShape === 'check' || state.activeShape === 'cross';
+
+      if (isStamp && dist < 12) {
+        // TEACHER-STAMP: Single tap stamps dedicated Check (✓) or Cross (✗) at consistent visible size
+        const stampDim = state.stampSize || 38;
+        const half = stampDim / 2;
+        const startPt = { x: this.startPoint.x - half, y: this.startPoint.y - half };
+        const endPt = { x: this.startPoint.x + half, y: this.startPoint.y + half };
+        const stampColor = state.isAutoColorCycleEnabled
+          ? state.activeColor
+          : (state.activeShape === 'check'
+              ? (state.activeColor === '#ef4444' ? '#22c55e' : state.activeColor)
+              : (state.activeColor === '#22c55e' ? '#ef4444' : state.activeColor));
+
+        const stroke: Stroke = {
+          id: `stamp-${Date.now()}-${Math.random()}`,
+          tool: 'shape',
+          color: stampColor,
+          size: Math.max(3, Math.round(stampDim / 10)),
+          alpha: state.penAlpha,
+          points: [startPt, endPt],
+          shapeType: state.activeShape,
+          startPoint: startPt,
+          endPoint: endPt,
+          box: {
+            x: startPt.x,
+            y: startPt.y,
+            width: stampDim,
+            height: stampDim
+          },
+          timestamp: Date.now()
+        };
+        annotationStore.addStroke(stroke);
+        this.lastStrokeCommittedTime = performance.now();
+        this.scheduleAutoRevertToPen(30000);
+        this.advanceAutoColorCycle();
+      } else if (dist >= 6) {
         let endP = currentPt;
         if (shortcutManager.isShiftDown && (state.activeShape === 'rect' || state.activeShape === 'circle' || state.activeShape === 'triangle')) {
           const side = Math.max(Math.abs(currentPt.x - this.startPoint.x), Math.abs(currentPt.y - this.startPoint.y));
@@ -385,11 +431,19 @@ export class DrawingEngine {
           };
         }
 
+        const strokeColor = isStamp && !state.isAutoColorCycleEnabled
+          ? (state.activeShape === 'check'
+              ? (state.activeColor === '#ef4444' ? '#22c55e' : state.activeColor)
+              : (state.activeColor === '#22c55e' ? '#ef4444' : state.activeColor))
+          : state.activeColor;
+
         const stroke: Stroke = {
           id: `shape-${Date.now()}-${Math.random()}`,
           tool: 'shape',
-          color: state.activeColor,
-          size: state.shapeSize || state.penSize || 2,
+          color: strokeColor,
+          size: isStamp
+            ? Math.max(3, Math.round(Math.max(Math.abs(endP.x - this.startPoint.x), Math.abs(endP.y - this.startPoint.y)) / 10))
+            : (state.shapeSize || state.penSize || 2),
           alpha: state.penAlpha,
           points: [this.startPoint, endP],
           shapeType: state.activeShape,
@@ -405,8 +459,9 @@ export class DrawingEngine {
         };
         annotationStore.addStroke(stroke);
         this.lastStrokeCommittedTime = performance.now();
-        // Keep shape tool active! Sensible 15s idle timer enables drawing multiple shapes continuously
-        this.scheduleAutoRevertToPen();
+        // Keep shape tool active! 30s idle timer enables drawing multiple shapes continuously
+        this.scheduleAutoRevertToPen(30000);
+        this.advanceAutoColorCycle();
       }
     } else if (state.activeTool === 'arrow' && this.startPoint) {
       const dist = Math.hypot(currentPt.x - this.startPoint.x, currentPt.y - this.startPoint.y);
@@ -430,8 +485,9 @@ export class DrawingEngine {
         };
         annotationStore.addStroke(stroke);
         this.lastStrokeCommittedTime = performance.now();
-        // Keep arrow tool active! Sensible 15s idle timer enables drawing multiple arrows continuously
-        this.scheduleAutoRevertToPen();
+        // Keep arrow tool active! 30s idle timer enables drawing multiple arrows continuously
+        this.scheduleAutoRevertToPen(30000);
+        this.advanceAutoColorCycle();
       }
     } else if (state.activeTool === 'pen' || state.activeTool === 'highlighter') {
       if (this.currentStrokePoints.length > 0) {
@@ -483,9 +539,10 @@ export class DrawingEngine {
         annotationStore.addStroke(stroke);
         this.lastStrokeCommittedTime = performance.now();
 
-        // Auto-revert back to Pen after highlighting
+        // Auto-revert back to Pen after highlighting (30s timeout allows continuous highlighting)
         if (isHighlighter) {
-          this.scheduleAutoRevertToPen(2500);
+          this.scheduleAutoRevertToPen(30000);
+          this.advanceAutoColorCycle();
         }
 
         // ECON: Notify Smart Ink for pen or highlighter when smartInkEnabled is true (pure code features work offline)

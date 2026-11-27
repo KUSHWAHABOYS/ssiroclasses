@@ -279,7 +279,7 @@ export class Toolbar {
             </button>
           </div>
 
-          <!-- 1E. SHAPE & ARROW PROPERTIES PANEL (Square, Circle, Triangle, Line, Arrow - Thickness & Colors) -->
+          <!-- 1E. SHAPE, ARROW & STAMP PROPERTIES PANEL (Square, Circle, Triangle, Line, Arrow, Check, Cross) -->
           <div class="island-panel island-panel-shape" id="islandPanelShape" style="display:none;">
             <!-- Shape Type Selector -->
             <div class="island-tips-group" id="shapeTypesGroup">
@@ -288,6 +288,8 @@ export class Toolbar {
               <button class="island-tip-btn shape-type-btn" data-shape-type="triangle" type="button" title="Triangle △">Tri</button>
               <button class="island-tip-btn shape-type-btn" data-shape-type="line" type="button" title="Straight Line ╱">Line</button>
               <button class="island-tip-btn shape-type-btn" data-shape-type="arrow" type="button" title="Smart Arrow →">Arrow</button>
+              <button class="island-tip-btn shape-type-btn btn-tip-check" data-shape-type="check" type="button" title="Correct Stamp ✓">✓ Check</button>
+              <button class="island-tip-btn shape-type-btn btn-tip-cross" data-shape-type="cross" type="button" title="Wrong Stamp ✗">✗ Cross</button>
             </div>
 
             <div class="island-sep"></div>
@@ -309,6 +311,20 @@ export class Toolbar {
               </button>
             </div>
 
+            <!-- Stamp Size Group (S: 26px, M: 38px, L: 52px) -->
+            <div class="island-stroke-group" id="stampSizeGroup" style="display:none;">
+              <span class="island-stroke-label">STAMP</span>
+              <button class="stroke-dot-btn stamp-size-btn" data-stamp-size="26" type="button" title="26px (Small / छोटा)">
+                <span style="font-size:10px; font-weight:700; color:rgba(255,255,255,0.85);">S</span>
+              </button>
+              <button class="stroke-dot-btn stamp-size-btn active" data-stamp-size="38" type="button" title="38px (Medium / संतुलित)">
+                <span style="font-size:10px; font-weight:700; color:rgba(255,255,255,0.85);">M</span>
+              </button>
+              <button class="stroke-dot-btn stamp-size-btn" data-stamp-size="52" type="button" title="52px (Large / बड़ा)">
+                <span style="font-size:10px; font-weight:700; color:rgba(255,255,255,0.85);">L</span>
+              </button>
+            </div>
+
             <div class="island-sep"></div>
 
             <!-- Shape Color Swatches -->
@@ -324,6 +340,14 @@ export class Toolbar {
                 <input type="color" id="inputCustomColorShape" style="position: absolute; opacity: 0; width: 0; height: 0; pointer-events: none;" />
               </div>
             </div>
+
+            <div class="island-sep"></div>
+
+            <!-- Auto Color Cycle Toggle (🎨 Cycle) -->
+            <button class="island-action-btn btn-auto-color-cycle" id="btnAutoColorCycle" type="button" title="Toggle Auto-Color Cycle (रंग-बिरंगी आकृतियाँ)">
+              <span class="auto-color-icon">🎨</span>
+              <span id="labelAutoColor">Auto: OFF</span>
+            </button>
           </div>
         </div>
 
@@ -434,7 +458,7 @@ export class Toolbar {
 
           <div class="dock-sep"></div>
 
-          <!-- SECTION 3: Shapes (Square, Circle, Triangle, Line, Arrow - In First Order) -->
+          <!-- SECTION 3: Shapes & Stamps (Square, Circle, Triangle, Line, Arrow, Check, Cross) -->
           <div class="dock-section">
             <div class="dock-shapes-pill" id="dockShapesPill">
               <button class="shape-dock-btn tool-btn" id="btnToolRect" data-tool="shape" data-shape="rect" title="Rectangle / Box [ ]">
@@ -461,6 +485,17 @@ export class Toolbar {
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
                   <line x1="5" y1="12" x2="19" y2="12"/>
                   <polyline points="13 6 19 12 13 18"/>
+                </svg>
+              </button>
+              <button class="shape-dock-btn tool-btn btn-stamp-check" id="btnToolCheck" data-tool="shape" data-shape="check" title="Right / Check Stamp (✓)">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#22c55e" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+              </button>
+              <button class="shape-dock-btn tool-btn btn-stamp-cross" id="btnToolCross" data-tool="shape" data-shape="cross" title="Wrong / Cross Stamp (✗)">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#ef4444" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"/>
+                  <line x1="6" y1="6" x2="18" y2="18"/>
                 </svg>
               </button>
             </div>
@@ -1402,11 +1437,17 @@ export class Toolbar {
           popoverManager.close();
           zoomPopoverManager.close();
           const currentShape = store.getState().activeShape;
+          const updates: any = { activeTool: 'shape', activeShape: shape };
+          if (shape === 'check' && !store.getState().isAutoColorCycleEnabled) {
+            if (store.getState().activeColor === '#ef4444') updates.activeColor = '#22c55e';
+          } else if (shape === 'cross' && !store.getState().isAutoColorCycleEnabled) {
+            if (store.getState().activeColor === '#22c55e') updates.activeColor = '#ef4444';
+          }
           if (isDoubleTap || (currentTool === 'shape' && currentShape === shape)) {
-            store.setState({ activeTool: 'shape', activeShape: shape });
+            store.setState(updates);
             this.penIslandEl?.classList.toggle('collapsed');
           } else {
-            store.setState({ activeTool: 'shape', activeShape: shape });
+            store.setState(updates);
             this.penIslandEl?.classList.add('collapsed');
           }
           return;
@@ -1653,7 +1694,7 @@ export class Toolbar {
       b.classList.toggle('active', Math.abs(z - curMagZoom) < 0.3);
     });
 
-    // Inking Island: Shape & Arrow Controls (Shape Types, Stroke 1/2/4/8px, Colors)
+    // Inking Island: Shape & Arrow Controls (Shape Types, Stroke 1/2/4/8px, Stamp Size S/M/L, Auto Color, Colors)
     const shapeTypeBtns = this.containerEl.querySelectorAll<HTMLButtonElement>('.shape-type-btn');
     shapeTypeBtns.forEach((btn) => {
       btn.addEventListener('click', (e) => {
@@ -1665,7 +1706,13 @@ export class Toolbar {
         if (type === 'arrow') {
           store.setState({ activeTool: 'arrow' });
         } else if (type) {
-          store.setState({ activeTool: 'shape', activeShape: type as ShapeType });
+          const updates: any = { activeTool: 'shape', activeShape: type as ShapeType };
+          if (type === 'check' && !store.getState().isAutoColorCycleEnabled) {
+            if (store.getState().activeColor === '#ef4444') updates.activeColor = '#22c55e';
+          } else if (type === 'cross' && !store.getState().isAutoColorCycleEnabled) {
+            if (store.getState().activeColor === '#22c55e') updates.activeColor = '#ef4444';
+          }
+          store.setState(updates);
         }
       });
     });
@@ -1680,6 +1727,26 @@ export class Toolbar {
         const stroke = parseInt(btn.getAttribute('data-shape-stroke') || '2', 10);
         store.setState({ shapeSize: stroke });
       });
+    });
+
+    const stampSizeBtns = this.containerEl.querySelectorAll<HTMLButtonElement>('.stamp-size-btn');
+    stampSizeBtns.forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (this.isDragging) return;
+        stampSizeBtns.forEach((b) => b.classList.remove('active'));
+        btn.classList.add('active');
+        const size = parseInt(btn.getAttribute('data-stamp-size') || '38', 10);
+        store.setState({ stampSize: size });
+      });
+    });
+
+    const btnAutoColorCycle = document.getElementById('btnAutoColorCycle');
+    btnAutoColorCycle?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (this.isDragging) return;
+      const curr = store.getState().isAutoColorCycleEnabled;
+      store.setState({ isAutoColorCycleEnabled: !curr });
     });
 
     const shapeSwatches = this.containerEl.querySelectorAll<HTMLDivElement>('.shape-swatch');
@@ -2014,6 +2081,11 @@ export class Toolbar {
               panelShape.querySelectorAll('.shape-type-btn').forEach((btn) => {
                 btn.classList.toggle('active', btn.getAttribute('data-shape-type') === activeType);
               });
+              const isStamp = state.activeTool === 'shape' && (state.activeShape === 'check' || state.activeShape === 'cross');
+              const strokeGroup = document.getElementById('shapeStrokeGroup');
+              const stampGroup = document.getElementById('stampSizeGroup');
+              if (strokeGroup) strokeGroup.style.display = isStamp ? 'none' : 'flex';
+              if (stampGroup) stampGroup.style.display = isStamp ? 'flex' : 'none';
             }
 
             // NOTE: Do NOT automatically un-collapse penIslandEl here.
@@ -2066,6 +2138,27 @@ export class Toolbar {
           const sz = parseInt(btn.getAttribute('data-shape-stroke') || '2', 10);
           btn.classList.toggle('active', sz === (state.shapeSize || 2));
         });
+      }
+
+      // Stamp size synchronization
+      if (state.stampSize !== prev.stampSize) {
+        const stampSizeBtns = this.containerEl.querySelectorAll<HTMLButtonElement>('.stamp-size-btn');
+        stampSizeBtns.forEach((btn) => {
+          const s = parseInt(btn.getAttribute('data-stamp-size') || '38', 10);
+          btn.classList.toggle('active', s === (state.stampSize || 38));
+        });
+      }
+
+      // Auto Color Cycle toggle sync
+      if (state.isAutoColorCycleEnabled !== prev.isAutoColorCycleEnabled) {
+        const btnAutoColorCycle = document.getElementById('btnAutoColorCycle');
+        const labelAutoColor = document.getElementById('labelAutoColor');
+        if (btnAutoColorCycle) {
+          btnAutoColorCycle.classList.toggle('active', state.isAutoColorCycleEnabled);
+        }
+        if (labelAutoColor) {
+          labelAutoColor.textContent = state.isAutoColorCycleEnabled ? 'Auto: ON' : 'Auto: OFF';
+        }
       }
 
       // Auto-Straighten toggle sync

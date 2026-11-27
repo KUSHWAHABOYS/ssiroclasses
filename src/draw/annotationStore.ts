@@ -449,6 +449,27 @@ export class AnnotationStore {
       ctx.stroke();
     } else if (type === 'double_arrow') {
       this.drawArrow(ctx, start, end, ctx.lineWidth, true);
+    } else if (type === 'check') {
+      const minX = Math.min(start.x, end.x);
+      const minY = Math.min(start.y, end.y);
+      const w = Math.max(Math.abs(end.x - start.x), 24);
+      const h = Math.max(Math.abs(end.y - start.y), 24);
+      ctx.beginPath();
+      ctx.moveTo(minX + w * 0.14, minY + h * 0.52);
+      ctx.lineTo(minX + w * 0.40, minY + h * 0.82);
+      ctx.lineTo(minX + w * 0.88, minY + h * 0.16);
+      ctx.stroke();
+    } else if (type === 'cross') {
+      const minX = Math.min(start.x, end.x);
+      const minY = Math.min(start.y, end.y);
+      const w = Math.max(Math.abs(end.x - start.x), 24);
+      const h = Math.max(Math.abs(end.y - start.y), 24);
+      ctx.beginPath();
+      ctx.moveTo(minX + w * 0.18, minY + h * 0.18);
+      ctx.lineTo(minX + w * 0.82, minY + h * 0.82);
+      ctx.moveTo(minX + w * 0.82, minY + h * 0.18);
+      ctx.lineTo(minX + w * 0.18, minY + h * 0.82);
+      ctx.stroke();
     }
   }
 

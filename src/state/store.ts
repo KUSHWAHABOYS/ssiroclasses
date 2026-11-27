@@ -2,7 +2,7 @@ import { AppSettings, loadSettings, saveSettings } from './settings';
 
 // SSIRO-UPDATE: Register magnifier, zoom, and live AI translate lens tools
 export type ActiveTool = 'select' | 'pen' | 'highlighter' | 'eraser' | 'shape' | 'arrow' | 'text' | 'magnifier' | 'zoom' | 'translate';
-export type ShapeType = 'rect' | 'circle' | 'triangle' | 'line';
+export type ShapeType = 'rect' | 'circle' | 'triangle' | 'line' | 'check' | 'cross';
 export type BoardThemeId = 'slate' | 'chalkboard' | 'chroma' | 'navy' | 'maths';
 
 export interface DeckPage {
@@ -46,6 +46,8 @@ export interface AppState {
   penSize: number;
   penAlpha: number;
   shapeSize: number;
+  stampSize: number;
+  isAutoColorCycleEnabled: boolean;
   highlighterWidth: number;
   highlighterAlpha: number;
   eraserSize: number;
@@ -85,6 +87,8 @@ class Store {
       penSize: settings.defaultPenSize,
       penAlpha: settings.defaultPenAlpha,
       shapeSize: 2,
+      stampSize: 38,
+      isAutoColorCycleEnabled: false,
       highlighterWidth: settings.defaultHighlighterWidth,
       highlighterAlpha: settings.defaultHighlighterAlpha,
       eraserSize: settings.defaultEraserSize,
