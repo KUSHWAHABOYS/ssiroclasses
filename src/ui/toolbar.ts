@@ -276,12 +276,14 @@ export class Toolbar {
 
             <div class="island-sep"></div>
 
-            <!-- Zoom Multiplier: 2×, 3×, 4× -->
+            <!-- Zoom Multiplier: 1.0×, 1.2×, 1.5×, 2×, 3× -->
             <div class="island-tips-group" id="magZoomGroup">
               <span class="island-stroke-label" style="font-size:10px; font-weight:700; color:#94a3b8; margin-right:2px;">ZOOM</span>
+              <button class="island-tip-btn mag-zoom-btn" data-mag-zoom="1.0" type="button" title="1.0× Full View (No Cutoff / कोई टेक्स्ट नहीं कटेगा)">1.0×</button>
+              <button class="island-tip-btn mag-zoom-btn" data-mag-zoom="1.2" type="button" title="1.2× Wide View (हल्का ज़ूम)">1.2×</button>
+              <button class="island-tip-btn mag-zoom-btn" data-mag-zoom="1.5" type="button" title="1.5× Gentle Zoom (संतुलित)">1.5×</button>
               <button class="island-tip-btn mag-zoom-btn active" data-mag-zoom="2.0" type="button" title="2× Clear Zoom">2×</button>
-              <button class="island-tip-btn mag-zoom-btn" data-mag-zoom="3.0" type="button" title="3× Standard Zoom">3×</button>
-              <button class="island-tip-btn mag-zoom-btn" data-mag-zoom="4.0" type="button" title="4× Deep Zoom">4×</button>
+              <button class="island-tip-btn mag-zoom-btn" data-mag-zoom="3.0" type="button" title="3× Deep Zoom">3×</button>
             </div>
 
             <div class="island-sep"></div>
@@ -1707,7 +1709,7 @@ export class Toolbar {
     const curMagZoom = curSettings.magnifierZoom || 2.0;
     magZoomBtns.forEach((b) => {
       const z = parseFloat(b.getAttribute('data-mag-zoom') || '2.0');
-      b.classList.toggle('active', Math.abs(z - curMagZoom) < 0.3);
+      b.classList.toggle('active', Math.abs(z - curMagZoom) < 0.15);
     });
 
     // Inking Island: Shape & Arrow Controls (Shape Types, Stroke 1/2/4/8px, Stamp Size S/M/L, Auto Color, Colors)

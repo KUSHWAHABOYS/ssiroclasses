@@ -294,9 +294,9 @@ export class MagnifierLensController {
         const newSize = Math.max(120, Math.min(600, (settings.magnifierSize || 280) + step));
         store.updateSettings({ magnifierSize: newSize });
       } else {
-        // Change magnification
-        const step = e.deltaY < 0 ? 0.25 : -0.25;
-        const newZoom = Math.max(1.5, Math.min(8.0, (settings.magnifierZoom || 3.0) + step));
+        // Change magnification (down to 1.0x wide-angle frame view per teacher request)
+        const step = e.deltaY < 0 ? 0.2 : -0.2;
+        const newZoom = Math.max(1.0, Math.min(8.0, (settings.magnifierZoom || 2.0) + step));
         store.updateSettings({ magnifierZoom: Number(newZoom.toFixed(2)) });
         zoomController.showIndicator(`${newZoom.toFixed(1)}×`);
       }
@@ -552,7 +552,7 @@ export class MagnifierLensController {
     const btnZoomIn = container.querySelector('.btn-zoom-in') as HTMLElement;
     btnZoomIn?.addEventListener('click', (e) => {
       e.stopPropagation();
-      lens.zoom = Math.min(8.0, lens.zoom + 0.5);
+      lens.zoom = Math.min(8.0, Math.round((lens.zoom + 0.2) * 10) / 10);
       updateZoomBadge();
       this.needsRedraw = true;
     });
@@ -560,7 +560,8 @@ export class MagnifierLensController {
     const btnZoomOut = container.querySelector('.btn-zoom-out') as HTMLElement;
     btnZoomOut?.addEventListener('click', (e) => {
       e.stopPropagation();
-      lens.zoom = Math.max(1.5, lens.zoom - 0.5);
+      // Minimum zoom down to 1.0x prevents side/edge text cutoff
+      lens.zoom = Math.max(1.0, Math.round((lens.zoom - 0.2) * 10) / 10);
       updateZoomBadge();
       this.needsRedraw = true;
     });
@@ -933,21 +934,102 @@ export class MagnifierLensController {
         const bitmapSw = sw * scaleX;
         const bitmapSh = sh * scaleY;
 
-        ctx.drawImage(
-          bitmap,
-          bitmapSx, bitmapSy, bitmapSw, bitmapSh,
-          destOffsetX, destOffsetY, width, height
-        );
+        // EDGE-SAFE: Prevent side/edge text cutoff when lens is placed near slide margins
+        let srcX = bitmapSx;
+        let srcY = bitmapSy;
+        let srcW = bitmapSw;
+        let srcH = bitmapSh;
+        let dstX = destOffsetX;
+        let dstY = destOffsetY;
+        let dstW = width;
+        let dstH = height;
+
+        if (srcX < 0) {
+          const trim = -srcX;
+          const ratio = trim / srcW;
+          dstX += ratio * dstW;
+          dstW -= ratio * dstW;
+          srcW -= trim;
+          srcX = 0;
+        }
+        if (srcY < 0) {
+          const trim = -srcY;
+          const ratio = trim / srcH;
+          dstY += ratio * dstH;
+          dstH -= ratio * dstH;
+          srcH -= trim;
+          srcY = 0;
+        }
+        if (srcX + srcW > bitmap.width) {
+          const excess = (srcX + srcW) - bitmap.width;
+          const ratio = excess / srcW;
+          dstW -= ratio * dstW;
+          srcW = bitmap.width - srcX;
+        }
+        if (srcY + srcH > bitmap.height) {
+          const excess = (srcY + srcH) - bitmap.height;
+          const ratio = excess / srcH;
+          dstH -= ratio * dstH;
+          srcH = bitmap.height - srcY;
+        }
+
+        if (srcW > 0 && srcH > 0 && dstW > 0 && dstH > 0) {
+          ctx.drawImage(
+            bitmap,
+            srcX, srcY, srcW, srcH,
+            dstX, dstY, dstW, dstH
+          );
+        }
       }
     }
 
-    // 5. Draw Annotation Ink inside lens
+    // 5. Draw Annotation Ink inside lens (with edge safe clamping)
     const dpr = window.devicePixelRatio || 1;
-    ctx.drawImage(
-      layerManager.annotationCanvas,
-      sx * dpr, sy * dpr, sw * dpr, sh * dpr,
-      destOffsetX, destOffsetY, width, height
-    );
+    let annSrcX = sx * dpr;
+    let annSrcY = sy * dpr;
+    let annSrcW = sw * dpr;
+    let annSrcH = sh * dpr;
+    let annDstX = destOffsetX;
+    let annDstY = destOffsetY;
+    let annDstW = width;
+    let annDstH = height;
+
+    if (annSrcX < 0) {
+      const trim = -annSrcX;
+      const ratio = trim / annSrcW;
+      annDstX += ratio * annDstW;
+      annDstW -= ratio * annDstW;
+      annSrcW -= trim;
+      annSrcX = 0;
+    }
+    if (annSrcY < 0) {
+      const trim = -annSrcY;
+      const ratio = trim / annSrcH;
+      annDstY += ratio * annDstH;
+      annDstH -= ratio * annDstH;
+      annSrcH -= trim;
+      annSrcY = 0;
+    }
+    if (annSrcX + annSrcW > layerManager.annotationCanvas.width) {
+      const excess = (annSrcX + annSrcW) - layerManager.annotationCanvas.width;
+      const ratio = excess / annSrcW;
+      annDstW -= ratio * annDstW;
+      annSrcW = layerManager.annotationCanvas.width - annSrcX;
+    }
+    if (annSrcY + annSrcH > layerManager.annotationCanvas.height) {
+      const excess = (annSrcY + annSrcH) - layerManager.annotationCanvas.height;
+      const ratio = excess / annSrcH;
+      annDstH -= ratio * annDstH;
+      annSrcH = layerManager.annotationCanvas.height - annSrcY;
+    }
+
+    if (annSrcW > 0 && annSrcH > 0 && annDstW > 0 && annDstH > 0) {
+      ctx.drawImage(
+        layerManager.annotationCanvas,
+        annSrcX, annSrcY, annSrcW, annSrcH,
+        annDstX, annDstY, annDstW, annDstH
+      );
+    }
 
     // 6. Faint curved glass reflection arc (~12% opacity per spec C5) - circle only
     if (isCircle) {

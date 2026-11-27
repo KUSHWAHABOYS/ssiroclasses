@@ -33,14 +33,15 @@ export class ZoomPopoverManager {
         <span>🔍 Magnifier Settings</span>
       </div>
 
-      <!-- Quick Zoom presets -->
+      <!-- Quick Zoom presets (1.0x to 4x) -->
       <div class="popover-row">
         <label><span>Quick Zoom</span></label>
         <div class="popover-presets" id="magQuickPresets">
-          <button type="button" class="popover-preset-btn ${(settings.magnifierZoom || 3.0) === 2.0 ? 'active' : ''}" data-zoom="2.0">2× Clear</button>
-          <button type="button" class="popover-preset-btn ${(settings.magnifierZoom || 3.0) === 3.0 ? 'active' : ''}" data-zoom="3.0">3× Standard</button>
-          <button type="button" class="popover-preset-btn ${(settings.magnifierZoom || 3.0) === 4.0 ? 'active' : ''}" data-zoom="4.0">4× Large</button>
-          <button type="button" class="popover-preset-btn ${(settings.magnifierZoom || 3.0) === 6.0 ? 'active' : ''}" data-zoom="6.0">6× Detail</button>
+          <button type="button" class="popover-preset-btn ${(settings.magnifierZoom || 2.0) === 1.0 ? 'active' : ''}" data-zoom="1.0">1.0× Frame</button>
+          <button type="button" class="popover-preset-btn ${(settings.magnifierZoom || 2.0) === 1.2 ? 'active' : ''}" data-zoom="1.2">1.2× Wide</button>
+          <button type="button" class="popover-preset-btn ${(settings.magnifierZoom || 2.0) === 1.5 ? 'active' : ''}" data-zoom="1.5">1.5×</button>
+          <button type="button" class="popover-preset-btn ${(settings.magnifierZoom || 2.0) === 2.0 ? 'active' : ''}" data-zoom="2.0">2× Clear</button>
+          <button type="button" class="popover-preset-btn ${(settings.magnifierZoom || 2.0) === 3.0 ? 'active' : ''}" data-zoom="3.0">3× Deep</button>
         </div>
       </div>
 
@@ -53,13 +54,13 @@ export class ZoomPopoverManager {
         <input type="range" class="popover-slider" id="magSizeSlider" min="120" max="600" step="10" value="${settings.magnifierSize || 280}" />
       </div>
 
-      <!-- Magnification -->
+      <!-- Magnification (Down to 1.0x prevents side text cutoff) -->
       <div class="popover-row">
         <label>
           <span>Zoom</span>
-          <span id="magZoomVal">${settings.magnifierZoom || 3.0}×</span>
+          <span id="magZoomVal">${(settings.magnifierZoom || 2.0).toFixed(1)}×</span>
         </label>
-        <input type="range" class="popover-slider" id="magZoomSlider" min="1.5" max="8" step="0.5" value="${settings.magnifierZoom || 3.0}" />
+        <input type="range" class="popover-slider" id="magZoomSlider" min="1.0" max="8.0" step="0.1" value="${settings.magnifierZoom || 2.0}" />
       </div>
 
       <!-- Shape -->

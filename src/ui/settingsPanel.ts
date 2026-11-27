@@ -396,7 +396,7 @@ export class SettingsPanel {
                 </div>
                 <div style="display:flex; align-items:center; gap:16px;">
                   <span class="material-symbols-outlined" style="color:#d0c5b1; font-size:20px;">zoom_in</span>
-                  <input type="range" class="stitch-slider" id="zoom-slider" min="1.5" max="8.0" step="0.5" value="${s.magnifierZoom || 4.0}" />
+                  <input type="range" class="stitch-slider" id="zoom-slider" min="1.0" max="8.0" step="0.1" value="${s.magnifierZoom || 2.0}" />
                   <span class="material-symbols-outlined" style="color:#d0c5b1; font-size:20px;">search</span>
                 </div>
                 <div style="display:flex; justify-content:space-between; align-items:center; padding-top:4px;">
