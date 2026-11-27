@@ -394,11 +394,8 @@ export class DrawingEngine {
         const half = stampDim / 2;
         const startPt = { x: this.startPoint.x - half, y: this.startPoint.y - half };
         const endPt = { x: this.startPoint.x + half, y: this.startPoint.y + half };
-        const stampColor = state.isAutoColorCycleEnabled
-          ? state.activeColor
-          : (state.activeShape === 'check'
-              ? (state.activeColor === '#ef4444' ? '#22c55e' : state.activeColor)
-              : (state.activeColor === '#22c55e' ? '#ef4444' : state.activeColor));
+        // Check is ALWAYS Green (#22c55e), Cross is ALWAYS Red (#ef4444)
+        const stampColor = state.activeShape === 'check' ? '#22c55e' : '#ef4444';
 
         const stroke: Stroke = {
           id: `stamp-${Date.now()}-${Math.random()}`,
@@ -421,7 +418,7 @@ export class DrawingEngine {
         annotationStore.addStroke(stroke);
         this.lastStrokeCommittedTime = performance.now();
         this.scheduleAutoRevertToPen(30000);
-        this.advanceAutoColorCycle();
+        // Do not advance auto color cycle on stamps so pen color remains stable
       } else if (dist >= 6) {
         let endP = currentPt;
         if (shortcutManager.isShiftDown && (state.activeShape === 'rect' || state.activeShape === 'circle' || state.activeShape === 'triangle')) {
@@ -432,10 +429,9 @@ export class DrawingEngine {
           };
         }
 
-        const strokeColor = isStamp && !state.isAutoColorCycleEnabled
-          ? (state.activeShape === 'check'
-              ? (state.activeColor === '#ef4444' ? '#22c55e' : state.activeColor)
-              : (state.activeColor === '#22c55e' ? '#ef4444' : state.activeColor))
+        // Check is ALWAYS Green (#22c55e), Cross is ALWAYS Red (#ef4444)
+        const strokeColor = isStamp
+          ? (state.activeShape === 'check' ? '#22c55e' : '#ef4444')
           : state.activeColor;
 
         const stroke: Stroke = {
@@ -462,7 +458,9 @@ export class DrawingEngine {
         this.lastStrokeCommittedTime = performance.now();
         // Keep shape tool active! 30s idle timer enables drawing multiple shapes continuously
         this.scheduleAutoRevertToPen(30000);
-        this.advanceAutoColorCycle();
+        if (!isStamp) {
+          this.advanceAutoColorCycle();
+        }
       }
     } else if (state.activeTool === 'arrow' && this.startPoint) {
       const dist = Math.hypot(currentPt.x - this.startPoint.x, currentPt.y - this.startPoint.y);
@@ -665,8 +663,12 @@ export class DrawingEngine {
     }
 
     ctx.save();
-    ctx.strokeStyle = state.activeColor;
-    ctx.lineWidth = (state.shapeSize || state.penSize || 2) * wf;
+    const isCheck = shape === 'check';
+    const isCross = shape === 'cross';
+    ctx.strokeStyle = isCheck ? '#22c55e' : (isCross ? '#ef4444' : state.activeColor);
+    ctx.lineWidth = (isCheck || isCross)
+      ? Math.max(3, Math.round(Math.max(Math.abs(endP.x - start.x), Math.abs(endP.y - start.y)) / 10)) * wf
+      : (state.shapeSize || state.penSize || 2) * wf;
     ctx.globalAlpha = state.penAlpha;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';

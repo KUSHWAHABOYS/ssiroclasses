@@ -450,6 +450,7 @@ export class AnnotationStore {
     } else if (type === 'double_arrow') {
       this.drawArrow(ctx, start, end, ctx.lineWidth, true);
     } else if (type === 'check') {
+      ctx.strokeStyle = '#22c55e';
       const minX = Math.min(start.x, end.x);
       const minY = Math.min(start.y, end.y);
       const w = Math.max(Math.abs(end.x - start.x), 24);
@@ -460,6 +461,7 @@ export class AnnotationStore {
       ctx.lineTo(minX + w * 0.88, minY + h * 0.16);
       ctx.stroke();
     } else if (type === 'cross') {
+      ctx.strokeStyle = '#ef4444';
       const minX = Math.min(start.x, end.x);
       const minY = Math.min(start.y, end.y);
       const w = Math.max(Math.abs(end.x - start.x), 24);

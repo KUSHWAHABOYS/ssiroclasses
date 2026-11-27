@@ -1456,10 +1456,10 @@ export class Toolbar {
           zoomPopoverManager.close();
           const currentShape = store.getState().activeShape;
           const updates: any = { activeTool: 'shape', activeShape: shape };
-          if (shape === 'check' && !store.getState().isAutoColorCycleEnabled) {
-            if (store.getState().activeColor === '#ef4444') updates.activeColor = '#22c55e';
-          } else if (shape === 'cross' && !store.getState().isAutoColorCycleEnabled) {
-            if (store.getState().activeColor === '#22c55e') updates.activeColor = '#ef4444';
+          if (shape === 'check') {
+            updates.activeColor = '#22c55e';
+          } else if (shape === 'cross') {
+            updates.activeColor = '#ef4444';
           }
           if (isDoubleTap || (currentTool === 'shape' && currentShape === shape)) {
             store.setState(updates);
@@ -1725,10 +1725,10 @@ export class Toolbar {
           store.setState({ activeTool: 'arrow' });
         } else if (type) {
           const updates: any = { activeTool: 'shape', activeShape: type as ShapeType };
-          if (type === 'check' && !store.getState().isAutoColorCycleEnabled) {
-            if (store.getState().activeColor === '#ef4444') updates.activeColor = '#22c55e';
-          } else if (type === 'cross' && !store.getState().isAutoColorCycleEnabled) {
-            if (store.getState().activeColor === '#22c55e') updates.activeColor = '#ef4444';
+          if (type === 'check') {
+            updates.activeColor = '#22c55e';
+          } else if (type === 'cross') {
+            updates.activeColor = '#ef4444';
           }
           store.setState(updates);
         }
