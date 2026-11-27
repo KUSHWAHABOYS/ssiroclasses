@@ -428,6 +428,19 @@ export class VoiceCommandService {
         store.updateSettings({ magnifierSpotlight: !cur });
         break;
 
+      case 'color_cycle':
+        const cycleCur = store.getState().isAutoColorCycleEnabled;
+        store.setState({ isAutoColorCycleEnabled: !cycleCur });
+        break;
+
+      case 'stamp_check':
+        store.setState({ activeTool: 'shape', activeShape: 'check' });
+        break;
+
+      case 'stamp_cross':
+        store.setState({ activeTool: 'shape', activeShape: 'cross' });
+        break;
+
       case 'fullscreen':
         fullscreenService.toggleZen();
         break;

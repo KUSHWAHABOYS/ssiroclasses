@@ -160,6 +160,14 @@ export class Toolbar {
               </svg>
               <span>Pressure Curve: Adaptive</span>
             </div>
+
+            <div class="island-sep"></div>
+
+            <!-- Auto Color Cycle Toggle (🎨 Auto Color) -->
+            <button class="island-action-btn btn-auto-color-cycle" id="btnAutoColorPen" type="button" title="Toggle Auto-Color Cycle (हर बार नया आकर्षक रंग)">
+              <span class="auto-color-icon">🎨</span>
+              <span class="label-auto-color">Auto: OFF</span>
+            </button>
           </div>
 
           <!-- 1B. MARKER / HIGHLIGHTER PANEL -->
@@ -203,6 +211,14 @@ export class Toolbar {
             <div class="island-pressure-feedback" title="Translucent Glow Mode">
               <span>Soft Highlighter</span>
             </div>
+
+            <div class="island-sep"></div>
+
+            <!-- Auto Color Cycle Toggle (🎨 Auto Color) -->
+            <button class="island-action-btn btn-auto-color-cycle" id="btnAutoColorMarker" type="button" title="Toggle Auto-Color Cycle (हर बार नया आकर्षक रंग)">
+              <span class="auto-color-icon">🎨</span>
+              <span class="label-auto-color">Auto: OFF</span>
+            </button>
           </div>
 
           <!-- 1C. ERASER PANEL -->
@@ -346,7 +362,7 @@ export class Toolbar {
             <!-- Auto Color Cycle Toggle (🎨 Cycle) -->
             <button class="island-action-btn btn-auto-color-cycle" id="btnAutoColorCycle" type="button" title="Toggle Auto-Color Cycle (रंग-बिरंगी आकृतियाँ)">
               <span class="auto-color-icon">🎨</span>
-              <span id="labelAutoColor">Auto: OFF</span>
+              <span class="label-auto-color" id="labelAutoColor">Auto: OFF</span>
             </button>
           </div>
         </div>
@@ -1741,12 +1757,14 @@ export class Toolbar {
       });
     });
 
-    const btnAutoColorCycle = document.getElementById('btnAutoColorCycle');
-    btnAutoColorCycle?.addEventListener('click', (e) => {
-      e.stopPropagation();
-      if (this.isDragging) return;
-      const curr = store.getState().isAutoColorCycleEnabled;
-      store.setState({ isAutoColorCycleEnabled: !curr });
+    const autoColorBtns = this.containerEl.querySelectorAll<HTMLButtonElement>('.btn-auto-color-cycle');
+    autoColorBtns.forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (this.isDragging) return;
+        const curr = store.getState().isAutoColorCycleEnabled;
+        store.setState({ isAutoColorCycleEnabled: !curr });
+      });
     });
 
     const shapeSwatches = this.containerEl.querySelectorAll<HTMLDivElement>('.shape-swatch');
@@ -2149,16 +2167,16 @@ export class Toolbar {
         });
       }
 
-      // Auto Color Cycle toggle sync
+      // Auto Color Cycle toggle sync across Pen, Shapes, and Marker panels
       if (state.isAutoColorCycleEnabled !== prev.isAutoColorCycleEnabled) {
-        const btnAutoColorCycle = document.getElementById('btnAutoColorCycle');
-        const labelAutoColor = document.getElementById('labelAutoColor');
-        if (btnAutoColorCycle) {
-          btnAutoColorCycle.classList.toggle('active', state.isAutoColorCycleEnabled);
-        }
-        if (labelAutoColor) {
-          labelAutoColor.textContent = state.isAutoColorCycleEnabled ? 'Auto: ON' : 'Auto: OFF';
-        }
+        const autoColorBtns = this.containerEl.querySelectorAll<HTMLButtonElement>('.btn-auto-color-cycle');
+        autoColorBtns.forEach((btn) => {
+          btn.classList.toggle('active', state.isAutoColorCycleEnabled);
+        });
+        const autoColorLabels = this.containerEl.querySelectorAll<HTMLElement>('.label-auto-color, #labelAutoColor');
+        autoColorLabels.forEach((lbl) => {
+          lbl.textContent = state.isAutoColorCycleEnabled ? 'Auto: ON' : 'Auto: OFF';
+        });
       }
 
       // Auto-Straighten toggle sync

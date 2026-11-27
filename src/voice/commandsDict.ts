@@ -317,7 +317,16 @@ export function matchCommandFromDict(phrase: string): { action: string; icon: st
     return { action: 'size_thinner', icon: '✏️▼' };
   }
 
-  // 7. Tools
+  // 7. Tools & Stamps
+  if (/(?:ऑटो\s*कलर|रंग\s*बदलो|कलर\s*बदलो|auto\s*color|color\s*cycle|cycle\s*color)/i.test(norm)) {
+    return { action: 'color_cycle', icon: '🎨' };
+  }
+  if (/(?:सही\s*का\s*निशान|सही\s*मार्क|सही\s*टिक|राइट\s*मार्क|चेक\s*मार्क|राइट\s*का\s*निशान|right\s*mark|check\s*mark|tick\s*mark|check\s*stamp)/i.test(norm)) {
+    return { action: 'stamp_check', icon: '✓' };
+  }
+  if (/(?:गलत\s*का\s*निशान|गलत\s*मार्क|रॉन्ग\s*मार्क|क्रॉस\s*मार्क|रॉन्ग\s*का\s*निशान|wrong\s*mark|cross\s*mark|wrong\s*stamp|cross\s*stamp)/i.test(norm)) {
+    return { action: 'stamp_cross', icon: '✗' };
+  }
   if (/pen|पेन|कलम/i.test(norm)) {
     return { action: 'tool:pen', icon: '✏️' };
   }

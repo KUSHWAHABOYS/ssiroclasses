@@ -81,7 +81,8 @@ export class DrawingEngine {
     this.createEraserCursor();
   }
 
-  private autoColorPalette = ['#f59e0b', '#38bdf8', '#22c55e', '#fb923c', '#e879f9', '#ffffff'];
+  // TEACHER-CYCLE: Vibrant high-contrast pedagogical colors excluding pure white per teacher request
+  private autoColorPalette = ['#f59e0b', '#38bdf8', '#22c55e', '#fb923c', '#e879f9', '#facc15', '#f43f5e'];
   private autoColorIndex = 0;
 
   private advanceAutoColorCycle(): void {
@@ -542,6 +543,9 @@ export class DrawingEngine {
         // Auto-revert back to Pen after highlighting (30s timeout allows continuous highlighting)
         if (isHighlighter) {
           this.scheduleAutoRevertToPen(30000);
+          this.advanceAutoColorCycle();
+        } else if (state.activeTool === 'pen') {
+          // TEACHER-CYCLE: Every time teacher lifts pen after drawing/writing, advance to next vibrant color
           this.advanceAutoColorCycle();
         }
 
