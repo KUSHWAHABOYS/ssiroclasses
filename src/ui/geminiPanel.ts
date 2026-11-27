@@ -107,7 +107,7 @@ export class GeminiPanel {
           <div style="display:flex; align-items:center; gap:6px;">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3L12 3z"/></svg>
             <span style="font-weight:700; font-size:14px; white-space:nowrap;">AI Assistant</span>
-            <span id="aiActiveModelLabel" style="font-size:11px; font-weight:normal; color:var(--primary-accent); background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:4px; max-width:140px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">Gemini Flash-Lite</span>
+            <span id="aiActiveModelLabel" style="font-size:11px; font-weight:normal; color:var(--primary-accent); background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:4px; max-width:140px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">AI Model</span>
           </div>
           <div id="aiUsageMeter" style="font-size:10px; color:rgba(255,255,255,0.6); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
             Calls: 0 • ~0 tok
@@ -151,9 +151,9 @@ export class GeminiPanel {
         </div>
       </div>
 
-      <!-- Chrome Gemini Footnote (Part C6.6) -->
+      <!-- Footnote -->
       <div class="chrome-gemini-hint" style="font-size:10px; color:rgba(255,255,255,0.45); text-align:center; padding:2px 8px; overflow-wrap:anywhere;">
-        Tip: You can also ask questions using Chrome's top Ask Gemini feature.
+        Tip: Ask questions, analyze slides, or explain concepts across all configured AI providers.
       </div>
 
       <!-- Input Row -->
@@ -436,7 +436,7 @@ export class GeminiPanel {
       window.dispatchEvent(
         new CustomEvent('app-toast', {
           detail: {
-            message: 'No AI key configured. Please add your API key in Settings → Gemini AI Studio.',
+            message: 'No AI key configured. Please add your API key in Settings → AI Studio & Keys.',
             isError: true
           }
         })
@@ -476,7 +476,7 @@ export class GeminiPanel {
       window.dispatchEvent(
         new CustomEvent('app-toast', {
           detail: {
-            message: 'Please configure your API Key in Settings → Gemini AI Studio.',
+            message: 'Please configure your API Key in Settings → AI Studio & Keys.',
             isError: true
           }
         })
@@ -546,7 +546,7 @@ export class GeminiPanel {
       window.dispatchEvent(
         new CustomEvent('app-toast', {
           detail: {
-            message: 'Please configure your API Key in Settings → Gemini AI Studio.',
+            message: 'Please configure your API Key in Settings → AI Studio & Keys.',
             isError: true
           }
         })

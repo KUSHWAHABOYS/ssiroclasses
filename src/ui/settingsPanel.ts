@@ -138,12 +138,12 @@ export class SettingsPanel {
                 <span class="material-symbols-outlined tab-chevron" style="font-size:16px; opacity:0.5;">chevron_right</span>
               </button>
 
-              <!-- Tab 6: Gemini AI Studio -->
+              <!-- Tab 6: Universal AI Studio -->
               <button class="tab-nav-btn ${this.activeTab === 'tab-gemini' ? 'active' : ''}" data-tab="tab-gemini">
                 <div style="display:flex; align-items:center; gap:12px;">
                   <span class="material-symbols-outlined tab-icon" style="font-size:22px; color:#ffb873;">smart_toy</span>
                   <div style="display:flex; flex-direction:column; line-height:1.2;">
-                    <span style="font-size:14px; font-weight:600;">Gemini AI Studio</span>
+                    <span style="font-size:14px; font-weight:600;">Universal AI Studio</span>
                   </div>
                 </div>
                 <span class="material-symbols-outlined tab-chevron" style="font-size:16px; opacity:0.5;">chevron_right</span>
@@ -704,15 +704,15 @@ export class SettingsPanel {
             </section>
 
             <!-- ==========================================
-                 PANEL 6: GEMINI AI TEACHING ENGINE
+                 PANEL 6: UNIVERSAL AI TEACHING ENGINE
                  ========================================== -->
             <section class="settings-panel ${this.activeTab === 'tab-gemini' ? '' : 'hidden'}" id="tab-gemini">
               <div>
                 <h2 style="font-size:22px; font-weight:700; color:#fff7eb; margin:0;">
-                  Gemini AI Teaching Engine
+                  Universal AI Teaching Engine
                 </h2>
                 <p style="font-size:13.5px; color:#d0c5b1; margin:4px 0 0 0;">
-                  Instant classroom explanations, formula step-by-step solutions, and multi-modal reasoning.
+                  Instant classroom explanations, historical insights, translation, and multi-modal reasoning.
                 </p>
               </div>
 
@@ -1262,9 +1262,19 @@ export class SettingsPanel {
         }
         if (detectedFeedback) {
           detectedFeedback.style.display = 'flex';
+          detectedFeedback.style.flexDirection = 'column';
+          detectedFeedback.style.alignItems = 'flex-start';
           detectedFeedback.style.color = '#38bdf8';
           const defaultMod = (meta.adapter as any)?.defaultModel || 'Auto High-Speed Model';
-          detectedFeedback.innerHTML = `✨ <strong>Auto-Detected:</strong> ${meta.name} &bull; Model: <code>${defaultMod}</code>`;
+          let corsNotice = '';
+          if (!meta.allowsBrowserCors) {
+            corsNotice = `<span style="color:#fbbf24; font-size:11.5px; font-weight:normal; margin-top:4px; line-height:1.4;">
+              ⚠️ <strong>ब्राउज़र CORS सूचना:</strong> ${meta.name} API वेब ब्राउज़र से सीधी कॉल की अनुमति नहीं देता (CORS प्रतिबंध)। 
+              वेब ब्राउज़र में तुरंत, बिना लैग और <strong>100% मुफ्त</strong> AI व अनुवाद के लिए <strong>Google Gemini Key</strong> (aistudio.google.com) या <strong>OpenRouter Key</strong> इस्तेमाल करें। 
+              (Android APK ऐप में ${meta.name} सीधे काम करता है)।
+            </span>`;
+          }
+          detectedFeedback.innerHTML = `<div>✨ <strong>Auto-Detected:</strong> ${meta.name} &bull; Model: <code>${defaultMod}</code></div>${corsNotice}`;
         }
       } else {
         if (keyStatusBadge) {

@@ -82,14 +82,16 @@ setInterval(eradicateNetlifyBadges, 300);
 if ('serviceWorker' in navigator) {
   import('virtual:pwa-register')
     .then(({ registerSW }) => {
-      registerSW({
+      const updateSW = registerSW({
         immediate: true,
         onNeedRefresh() {
-          console.log('New Smart Studio update available.');
-          // SSIRO-UPDATE: Show reload toast on new version ready
+          console.log('New Smart Studio update available. Auto-updating cache...');
+          try {
+            updateSW(true);
+          } catch {}
           window.dispatchEvent(
             new CustomEvent('app-toast', {
-              detail: { message: 'New version available — Reload to update' }
+              detail: { message: 'Updated to latest version! (नवीनतम संस्करण लोड हो गया)' }
             })
           );
         },

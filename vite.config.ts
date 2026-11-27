@@ -138,8 +138,10 @@ export default defineConfig({
         ]
       },
       workbox: {
-        // WELCOME-CLEANUP: Bump service worker cache version to v1.4.2
-        cacheId: 'ssiro-smart-studio-v1.4.2',
+        // Bump service worker cache version to v1.4.3
+        cacheId: 'ssiro-smart-studio-v1.4.3',
+        skipWaiting: true,
+        clientsClaim: true,
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2,wasm}']
       }
     })

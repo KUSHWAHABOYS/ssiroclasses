@@ -613,11 +613,11 @@ export class Toolbar {
                 <span class="dock-label">AI OCR</span>
               </button>
 
-              <button class="dock-btn tool-btn" id="btnGemini" title="Gemini AI Teaching Assistant">
+              <button class="dock-btn tool-btn" id="btnGemini" title="AI Assistant (AI शिक्षण सहायक)">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3L12 3z"/>
                 </svg>
-                <span class="dock-label">Gemini</span>
+                <span class="dock-label">AI Assistant</span>
               </button>
             </div>
 

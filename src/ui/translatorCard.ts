@@ -178,6 +178,12 @@ export class TranslatorCardManager {
                  <button class="header-btn" id="btnOpenSettingsFromTrans" style="background:#f59e0b; color:#000; font-weight:700; padding:9px 18px; border-radius:8px; border:none; cursor:pointer; font-size:13px; display:inline-flex; align-items:center; gap:8px; box-shadow:0 2px 6px rgba(245,158,11,0.3);">
                    <span>⚙️ सेटिंग्स खोलें (Open Settings)</span>
                  </button>`
+              : errorMsg && errorMsg.toLowerCase().includes('cors')
+              ? `⚠️ <strong>ब्राउज़र CORS प्रतिबंध:</strong> xAI Grok या OpenAI वेब ब्राउज़र से सीधी कॉल की अनुमति नहीं देते।<br/><br/>
+                 वेब ब्राउज़र में तुरंत, बिना लैग और <strong>100% मुफ्त</strong> अनुवाद के लिए <strong>Google Gemini API Key</strong> या <strong>OpenRouter Key</strong> का उपयोग करें। (Android ऐप में Grok सीधे काम करता है)।<br/><br/>
+                 <button class="header-btn" id="btnOpenSettingsFromTrans" style="background:#f59e0b; color:#000; font-weight:700; padding:9px 18px; border-radius:8px; border:none; cursor:pointer; font-size:13px; display:inline-flex; align-items:center; gap:8px; box-shadow:0 2px 6px rgba(245,158,11,0.3);">
+                   <span>⚙️ सेटिंग्स में Key बदलें (Open Settings)</span>
+                 </button>`
               : this.escapeHtml(errorMsg)
           }
         </div>

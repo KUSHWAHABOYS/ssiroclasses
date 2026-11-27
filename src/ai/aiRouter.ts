@@ -369,7 +369,13 @@ export class AIRouter {
       }
 
       if (modelCandidates.length === 0) {
-        const defModel = (meta.adapter as any).config?.defaultVisionModel || (meta.adapter as any).config?.defaultModel || 'gemini-2.0-flash-lite';
+        const defModel =
+          (isVisionTask ? (meta.adapter as any).defaultVisionModel : (meta.adapter as any).defaultModel) ||
+          (meta.adapter as any).defaultVisionModel ||
+          (meta.adapter as any).defaultModel ||
+          (meta.adapter as any).config?.defaultVisionModel ||
+          (meta.adapter as any).config?.defaultModel ||
+          (isVisionTask ? 'grok-2-vision-latest' : 'grok-2-latest');
         modelCandidates = [
           {
             id: defModel,
