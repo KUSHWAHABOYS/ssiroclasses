@@ -216,19 +216,33 @@ export function getCustomProvider(baseUrl: string, modelName = 'default'): AIPro
 }
 
 /**
- * Step 1: Detect provider from key shape
+ * Step 1: Detect provider from key shape (Universal AI Auto-Detection)
  */
 export function detectProviderFromKeyShape(rawKey: string): string | null {
   const key = rawKey.trim();
   if (!key) return null;
 
+  // Specific multi-char prefixes first
+  if (key.startsWith('AIza') || key.startsWith('aiza')) return 'gemini';
+  if (key.startsWith('xai-') || key.startsWith('xai_')) return 'grok';
+  if (key.startsWith('sk-or-')) return 'openrouter';
+  if (key.startsWith('gsk_')) return 'groq';
+  if (key.startsWith('sk-ant-')) return 'anthropic';
+  if (key.startsWith('pplx-')) return 'perplexity';
+  if (key.startsWith('sk-proj-') || key.startsWith('sk-admin-')) return 'openai';
+  if (key.startsWith('sk-ds-')) return 'deepseek';
+  if (key.startsWith('sk-')) return 'openai'; // default fallback for standard OpenAI keys
+
   for (const [id, meta] of Object.entries(PROVIDERS_REGISTRY)) {
     for (const prefix of meta.keyPrefixes) {
-      if (key.startsWith(prefix)) {
+      if (prefix && key.startsWith(prefix)) {
         return id;
       }
     }
   }
+
+  // 39-character alphanumeric token standard for Google Gemini
+  if (/^AIza[0-9A-Za-z-_]{35}$/.test(key)) return 'gemini';
 
   return null;
 }

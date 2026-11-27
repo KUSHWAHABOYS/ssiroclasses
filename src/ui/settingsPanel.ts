@@ -1,5 +1,6 @@
 import { store } from '../state/store';
 import { keyVault } from '../ai/keyVault';
+import { detectProviderFromKeyShape, PROVIDERS_REGISTRY } from '../ai/providers/registry';
 import { slideView } from '../presenter/slideView';
 import { DEFAULT_SETTINGS, AppSettings, generateSyncUrl } from '../state/settings';
 import { slideRenderer } from '../presenter/renderer';
@@ -726,21 +727,25 @@ export class SettingsPanel {
                 </div>
               </div>
 
-              <!-- Gemini API Key -->
+              <!-- Universal Multi-Provider AI API Key -->
               <div class="stitch-card">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                  <label for="gemini-key" style="font-size:14.5px; font-weight:600; color:#fff7eb;">Google AI API Key</label>
-                  <span id="geminiKeyStatusBadge" style="padding:3px 10px; border-radius:9999px; background:rgba(223,130,0,0.2); color:#ffb873; font-size:12px; font-weight:600;">
-                    Connected
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                  <label for="gemini-key" style="font-size:14.5px; font-weight:600; color:#fff7eb;">Universal AI API Key (स्वतः प्रदाता पहचान)</label>
+                  <span id="geminiKeyStatusBadge" style="padding:3px 10px; border-radius:9999px; background:rgba(34,197,94,0.18); color:#34d399; font-size:12px; font-weight:600;">
+                    Auto-Detect Ready
                   </span>
                 </div>
+                <p style="font-size:12px; color:#d0c5b1; margin:6px 0 10px 0; line-height:1.4;">
+                  Paste any API key: <strong>Google Gemini</strong> (<code style="color:#ffd76a;">AIzaSy...</code>), <strong>xAI Grok</strong> (<code style="color:#ffd76a;">xai-...</code>), <strong>OpenRouter</strong> (<code style="color:#ffd76a;">sk-or-...</code>), <strong>Groq</strong> (<code style="color:#ffd76a;">gsk_...</code>), or <strong>OpenAI/Claude</strong>. The system automatically detects your provider and configures the optimal high-speed model without lag!
+                </p>
                 <div class="stitch-input-wrap">
                   <span class="material-symbols-outlined stitch-icon">key</span>
-                  <input type="password" id="gemini-key" class="stitch-input" placeholder="AIzaSy..." />
+                  <input type="password" id="gemini-key" class="stitch-input" placeholder="Paste your API key here (AIzaSy..., xai-..., sk-or-..., gsk_...)" />
                   <button type="button" class="stitch-clear-btn" id="btnToggleKeyVisibility" title="Toggle Visibility">
                     <span class="material-symbols-outlined" id="keyVisIcon" style="font-size:20px;">visibility</span>
                   </button>
                 </div>
+                <div id="detectedProviderFeedback" style="margin-top:8px; font-size:12.5px; font-weight:600; display:none; align-items:center; gap:6px;"></div>
               </div>
 
               <!-- AI Answer Depth -->
@@ -1225,10 +1230,56 @@ export class SettingsPanel {
       store.updateSettings({ showMicDotInZen: showMicDotInZen.checked });
     });
 
-    // 22. AI Key & Visibility
+    // 22. Universal AI Key & Real-Time Auto-Detection
     const geminiKeyInput = this.modalEl.querySelector('#gemini-key') as HTMLInputElement;
     const btnToggleVis = this.modalEl.querySelector('#btnToggleKeyVisibility');
     const keyVisIcon = this.modalEl.querySelector('#keyVisIcon');
+    const keyStatusBadge = this.modalEl.querySelector('#geminiKeyStatusBadge') as HTMLElement;
+    const detectedFeedback = this.modalEl.querySelector('#detectedProviderFeedback') as HTMLElement;
+
+    const updateProviderBadge = (keyVal: string) => {
+      const trimmed = keyVal.trim();
+      if (!trimmed) {
+        if (keyStatusBadge) {
+          keyStatusBadge.textContent = 'No Key Configured';
+          keyStatusBadge.style.background = 'rgba(239,68,68,0.18)';
+          keyStatusBadge.style.color = '#f87171';
+        }
+        if (detectedFeedback) {
+          detectedFeedback.style.display = 'none';
+        }
+        return;
+      }
+
+      const detected = detectProviderFromKeyShape(trimmed);
+      const meta = detected ? PROVIDERS_REGISTRY[detected] : null;
+
+      if (meta) {
+        if (keyStatusBadge) {
+          keyStatusBadge.textContent = `Connected: ${meta.name}`;
+          keyStatusBadge.style.background = 'rgba(34,197,94,0.18)';
+          keyStatusBadge.style.color = '#34d399';
+        }
+        if (detectedFeedback) {
+          detectedFeedback.style.display = 'flex';
+          detectedFeedback.style.color = '#38bdf8';
+          const defaultMod = (meta.adapter as any)?.defaultModel || 'Auto High-Speed Model';
+          detectedFeedback.innerHTML = `✨ <strong>Auto-Detected:</strong> ${meta.name} &bull; Model: <code>${defaultMod}</code>`;
+        }
+      } else {
+        if (keyStatusBadge) {
+          keyStatusBadge.textContent = 'Custom/OpenAI Key';
+          keyStatusBadge.style.background = 'rgba(245,158,11,0.18)';
+          keyStatusBadge.style.color = '#f59e0b';
+        }
+        if (detectedFeedback) {
+          detectedFeedback.style.display = 'flex';
+          detectedFeedback.style.color = '#ffd76a';
+          detectedFeedback.innerHTML = `🔑 Custom/OpenAI-compatible Key &bull; Auto-routing enabled`;
+        }
+      }
+    };
+
     btnToggleVis?.addEventListener('click', () => {
       if (geminiKeyInput.type === 'password') {
         geminiKeyInput.type = 'text';
@@ -1239,10 +1290,16 @@ export class SettingsPanel {
       }
     });
 
+    geminiKeyInput?.addEventListener('input', () => {
+      updateProviderBadge(geminiKeyInput.value);
+    });
+
     geminiKeyInput?.addEventListener('change', async () => {
       const keyVal = geminiKeyInput.value.trim();
       if (keyVal) {
-        await keyVault.storeKey('gemini', keyVal);
+        const detected = detectProviderFromKeyShape(keyVal) || 'gemini';
+        await keyVault.storeKey(detected, keyVal);
+        updateProviderBadge(keyVal);
       }
     });
 
@@ -1318,9 +1375,11 @@ export class SettingsPanel {
         welcomeLine2: welcomeVal
       });
 
-      // Also save Gemini API Key if entered
+      // Also save Universal AI API Key if entered
       if (geminiKeyInput && geminiKeyInput.value.trim()) {
-        await keyVault.storeKey('gemini', geminiKeyInput.value.trim());
+        const keyVal = geminiKeyInput.value.trim();
+        const detected = detectProviderFromKeyShape(keyVal) || 'gemini';
+        await keyVault.storeKey(detected, keyVal);
       }
 
       // Visual feedback
@@ -1336,9 +1395,28 @@ export class SettingsPanel {
   private async loadExistingKeyAsync(): Promise<void> {
     try {
       const geminiKeyInput = this.modalEl.querySelector('#gemini-key') as HTMLInputElement;
-      const key = await keyVault.getKey('gemini');
-      if (geminiKeyInput && key) {
-        geminiKeyInput.value = key;
+      const providers = keyVault.getAllConfiguredProviders();
+      if (providers.length > 0) {
+        const activeProvider = providers[0];
+        const key = await keyVault.getKey(activeProvider);
+        if (geminiKeyInput && key) {
+          geminiKeyInput.value = key;
+          const detected = detectProviderFromKeyShape(key) || activeProvider;
+          const meta = PROVIDERS_REGISTRY[detected];
+          const badge = this.modalEl.querySelector('#geminiKeyStatusBadge') as HTMLElement;
+          const feedback = this.modalEl.querySelector('#detectedProviderFeedback') as HTMLElement;
+          if (badge && meta) {
+            badge.textContent = `Connected: ${meta.name}`;
+            badge.style.background = 'rgba(34,197,94,0.18)';
+            badge.style.color = '#34d399';
+          }
+          if (feedback && meta) {
+            feedback.style.display = 'flex';
+            feedback.style.color = '#38bdf8';
+            const defaultMod = (meta.adapter as any)?.defaultModel || 'Auto High-Speed Model';
+            feedback.innerHTML = `✨ <strong>Auto-Detected:</strong> ${meta.name} &bull; Model: <code>${defaultMod}</code>`;
+          }
+        }
       }
     } catch {}
   }
