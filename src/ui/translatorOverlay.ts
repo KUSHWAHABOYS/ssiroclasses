@@ -114,7 +114,11 @@ export class TranslatorOverlayManager {
       translatorCardManager.showResult(result, rect.x + rect.width, rect.y);
     } catch (err: any) {
       console.error('Translation failed:', err);
-      const isMissingKey = err.message === 'NO_API_KEY' || err.code === 'NO_API_KEY';
+      const isMissingKey =
+        err.message === 'NO_API_KEY' ||
+        err.code === 'NO_API_KEY' ||
+        err.friendly?.code === 'invalid_key' ||
+        (typeof err.message === 'string' && err.message.toLowerCase().includes('api key'));
       translatorCardManager.showError(err.message, isMissingKey, rect.x + rect.width, rect.y);
     }
   }
@@ -144,7 +148,11 @@ export class TranslatorOverlayManager {
       translatorCardManager.showResult(result, window.innerWidth / 2 - 290, 100);
     } catch (err: any) {
       console.error('Full slide translation failed:', err);
-      const isMissingKey = err.message === 'NO_API_KEY' || err.code === 'NO_API_KEY';
+      const isMissingKey =
+        err.message === 'NO_API_KEY' ||
+        err.code === 'NO_API_KEY' ||
+        err.friendly?.code === 'invalid_key' ||
+        (typeof err.message === 'string' && err.message.toLowerCase().includes('api key'));
       translatorCardManager.showError(err.message, isMissingKey, window.innerWidth / 2 - 290, 100);
     }
   }

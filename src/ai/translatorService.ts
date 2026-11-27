@@ -1,5 +1,6 @@
 import { keyVault } from './keyVault';
 import { store } from '../state/store';
+import { aiRouter } from './aiRouter';
 
 export interface TranslationResult {
   detectedLanguage: string;
@@ -55,23 +56,16 @@ export class TranslatorService {
 
   /**
    * Translates an image snippet (English / Sanskrit / Pali) into high-quality Hindi
+   * Supports all configured providers (Gemini, Grok, OpenRouter, OpenAI, etc.)
    * @param base64PngWithoutPrefix Base64 encoded PNG data (without data:image/png;base64,)
    */
   async translateImageRegion(base64PngWithoutPrefix: string): Promise<TranslationResult> {
-    const apiKey = await keyVault.getKey('gemini');
-    if (!apiKey) {
+    const configured = keyVault.getAllConfiguredProviders();
+    if (!keyVault.hasAnyKey() || configured.length === 0) {
       const err: any = new Error('NO_API_KEY');
       err.code = 'NO_API_KEY';
       throw err;
     }
-
-    const initialModel = await this.resolveWorkingModel(apiKey);
-
-    // Build ordered list of candidate models for seamless automatic fallback
-    const candidateList = [
-      initialModel,
-      ...this.fallbackCandidates.filter((m) => m !== initialModel)
-    ];
 
     const systemPrompt = `You are a distinguished scholar and master translator. The user is a teacher lecturing live on a digital smart board to Indian students.
 Examine the provided image (academic screenshot, book passage, Sanskrit shloka, or Pali sutta).
@@ -90,6 +84,51 @@ Return ONLY a valid JSON object with this exact structure:
   ],
   "originalText": "string (transcribed source text)"
 }`;
+
+    const dataUrl = `data:image/png;base64,${base64PngWithoutPrefix}`;
+
+    try {
+      const res = await aiRouter.run(
+        'slide-explain',
+        {
+          image: dataUrl,
+          mimeType: 'image/png',
+          prompt: systemPrompt,
+          temperature: 0.1,
+          maxTokens: 1024
+        },
+        {
+          skipCache: true
+        }
+      );
+
+      if (res && res.text) {
+        return this.parseResponse(res.text);
+      }
+    } catch (aiRouterErr: any) {
+      console.warn('aiRouter translation failed or not supported, checking direct Gemini fallback if key available:', aiRouterErr);
+      const geminiKey = await keyVault.getKey('gemini');
+      if (geminiKey) {
+        return await this.translateWithDirectGemini(base64PngWithoutPrefix, geminiKey, systemPrompt);
+      }
+      throw aiRouterErr;
+    }
+
+    throw new Error('अनुवाद सेवा से कोई उत्तर प्राप्त नहीं हुआ।');
+  }
+
+  private async translateWithDirectGemini(
+    base64PngWithoutPrefix: string,
+    apiKey: string,
+    systemPrompt: string
+  ): Promise<TranslationResult> {
+    const initialModel = await this.resolveWorkingModel(apiKey);
+
+    // Build ordered list of candidate models for seamless automatic fallback
+    const candidateList = [
+      initialModel,
+      ...this.fallbackCandidates.filter((m) => m !== initialModel)
+    ];
 
     const requestBody = {
       contents: [

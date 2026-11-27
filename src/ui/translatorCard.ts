@@ -163,7 +163,7 @@ export class TranslatorCardManager {
               <line x1="12" y1="8" x2="12" y2="12"/>
               <line x1="12" y1="16" x2="12.01" y2="16"/>
             </svg>
-            <span>${isMissingKey ? 'Gemini API Key Required' : 'Error'}</span>
+            <span>${isMissingKey ? 'AI API Key Required' : 'Error'}</span>
           </div>
         </div>
         <div class="trans-actions">
@@ -174,7 +174,10 @@ export class TranslatorCardManager {
         <div style="font-size: 15px; color: #475569; line-height: 1.6;">
           ${
             isMissingKey
-              ? 'To use AI Translation, enter your Google Gemini API Key in Settings.'
+              ? `AI अनुवाद के लिए सेटिंग्स में अपनी API Key (Google Gemini, xAI Grok, OpenRouter, या OpenAI) दर्ज करें।<br/><br/>
+                 <button class="header-btn" id="btnOpenSettingsFromTrans" style="background:#f59e0b; color:#000; font-weight:700; padding:9px 18px; border-radius:8px; border:none; cursor:pointer; font-size:13px; display:inline-flex; align-items:center; gap:8px; box-shadow:0 2px 6px rgba(245,158,11,0.3);">
+                   <span>⚙️ सेटिंग्स खोलें (Open Settings)</span>
+                 </button>`
               : this.escapeHtml(errorMsg)
           }
         </div>
@@ -324,6 +327,9 @@ export class TranslatorCardManager {
       const target = e.target as HTMLElement;
       if (target.closest('#btnTransClose')) {
         this.close();
+      } else if (target.closest('#btnOpenSettingsFromTrans')) {
+        this.close();
+        window.dispatchEvent(new CustomEvent('toggle-settings'));
       } else if (target.closest('#btnTransScaleUp')) {
         e.stopPropagation();
         this.fontScale = Math.min(2.5, Math.round((this.fontScale + 0.15) * 100) / 100);
